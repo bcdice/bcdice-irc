@@ -7,13 +7,14 @@ require 'diceBot/DiceBot'
 require 'diceBot/DiceBotLoader'
 
 require 'bcdice-irc/version'
+require 'bcdice-irc/dice_bot_wrapper'
 
 module BCDiceIRC
   module GUI
     class Application
       def initialize
         @builder = Gtk::Builder.new
-        @bot_class = nil
+        @bot_wrapper = nil
       end
 
       def run!
@@ -23,10 +24,15 @@ module BCDiceIRC
         Gtk.main
       end
 
-      def bot_class=(value)
-        @bot_class = value
+      def bot_wrapper=(value)
+        @bot_wrapper = value
 
-        @help_text_view.buffer.text = @bot_class::HELP_MESSAGE
+        @help_text_view.buffer.text = @bot_wrapper.help_message
+
+        @status_bar.push(
+          @status_bar_change_game_system,
+          "ゲームシステムを「#{@bot_wrapper.name}」に設定しました"
+        )
       end
 
       private
@@ -49,24 +55,27 @@ module BCDiceIRC
         @game_system_combo_box = @builder.get_object('game_system_combo_box')
         @help_text_view = @builder.get_object('help_text_view')
 
-        @bcdice_irc_version_label = @builder.get_object('bcdice_irc_version_label')
         @bcdice_version_label = @builder.get_object('bcdice_version_label')
+
+        @status_bar = @builder.get_object('status_bar')
+        @status_bar_change_game_system = @status_bar.get_context_id('change game system')
       end
 
       def setup_version_labels
-        @bcdice_irc_version_label.text =
-          @bcdice_irc_version_label.text % BCDiceIRC::VERSION
         @bcdice_version_label.text =
-          @bcdice_version_label.text % BCDice::VERSION
+          @bcdice_version_label.text % [BCDiceIRC::VERSION, BCDice::VERSION]
       end
 
       def setup_game_system_combo_box
-        game_system_list_store = Gtk::ListStore.new(Class, String)
-        bot_classes = [DiceBot] + DiceBotLoader.collectDiceBots.map(&:class)
-        bot_classes.each do |bot_class|
+        game_system_list_store = Gtk::ListStore.new(Object, String)
+
+        bots = [DiceBot.new] + DiceBotLoader.collectDiceBots
+        bots.each do |bot|
+          bot_wrapper = DiceBotWrapper.wrap(bot)
+
           row = game_system_list_store.append
-          row[0] = bot_class
-          row[1] = bot_class::NAME
+          row[0] = bot_wrapper
+          row[1] = bot_wrapper.name
         end
 
         @game_system_combo_box.model = game_system_list_store
@@ -82,7 +91,7 @@ module BCDiceIRC
       end
 
       def game_system_combo_box_on_changed
-        self.bot_class = @game_system_combo_box.active_iter[0]
+        self.bot_wrapper = @game_system_combo_box.active_iter[0]
       end
     end
   end

@@ -52,101 +52,22 @@ Author: ocha
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">18</property>
-        <property name="margin_right">18</property>
-        <property name="margin_top">18</property>
-        <property name="margin_bottom">18</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">18</property>
-        <child>
-          <object class="GtkFrame" id="preset_frame">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label_xalign">0</property>
-            <property name="shadow_type">none</property>
-            <child>
-              <object class="GtkAlignment">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_top">6</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkComboBox" id="preset_combo_box">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="hexpand">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="preset_save_button">
-                        <property name="label">gtk-save</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="preset_delete_button">
-                        <property name="label">gtk-delete</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="label">
-              <object class="GtkLabel" id="preset_label">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">プリセット</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_left">18</property>
+            <property name="margin_right">18</property>
+            <property name="margin_top">18</property>
+            <property name="margin_bottom">18</property>
             <property name="vexpand">True</property>
+            <property name="orientation">vertical</property>
             <property name="spacing">18</property>
-            <property name="homogeneous">True</property>
             <child>
-              <object class="GtkFrame" id="irc_settings_frame">
+              <object class="GtkFrame" id="preset_frame">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
                 <child>
@@ -155,15 +76,59 @@ Author: ocha
                     <property name="can_focus">False</property>
                     <property name="margin_top">6</property>
                     <child>
-                      <placeholder/>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkComboBox" id="preset_combo_box">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="hexpand">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="preset_save_button">
+                            <property name="label">gtk-save</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_stock">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="preset_delete_button">
+                            <property name="label">gtk-delete</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_stock">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
                     </child>
                   </object>
                 </child>
                 <child type="label">
-                  <object class="GtkLabel" id="irc_settings_label">
+                  <object class="GtkLabel" id="preset_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">IRC 設定</property>
+                    <property name="label" translatable="yes">プリセット</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -180,13 +145,14 @@ Author: ocha
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="orientation">vertical</property>
+                <property name="vexpand">True</property>
                 <property name="spacing">18</property>
+                <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkFrame" id="game_system_frame">
+                  <object class="GtkFrame" id="irc_server_frame">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -195,20 +161,15 @@ Author: ocha
                         <property name="can_focus">False</property>
                         <property name="margin_top">6</property>
                         <child>
-                          <object class="GtkComboBox" id="game_system_combo_box">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="tooltip_text" translatable="yes">指定されたゲームシステムのダイスボットを使用します</property>
-                            <signal name="changed" handler="game_system_combo_box_on_changed" swapped="no"/>
-                          </object>
+                          <placeholder/>
                         </child>
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="game_system_label">
+                      <object class="GtkLabel" id="irc_server_label">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">ゲームシステム</property>
+                        <property name="label" translatable="yes">IRC サーバ</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -222,45 +183,97 @@ Author: ocha
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="help_frame">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="vexpand">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
+                    <property name="hexpand">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">18</property>
                     <child>
-                      <object class="GtkAlignment">
+                      <object class="GtkFrame" id="game_system_frame">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_top">6</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
                         <child>
-                          <object class="GtkScrolledWindow" id="help_scrolled_window">
+                          <object class="GtkAlignment">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="shadow_type">in</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_top">6</property>
                             <child>
-                              <object class="GtkTextView" id="help_text_view">
+                              <object class="GtkComboBox" id="game_system_combo_box">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="tooltip_text" translatable="yes">ダイスボットの使用法を表示します</property>
-                                <property name="editable">False</property>
-                                <property name="wrap_mode">char</property>
-                                <property name="monospace">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">指定されたゲームシステムのダイスボットを使用します</property>
+                                <signal name="changed" handler="game_system_combo_box_on_changed" swapped="no"/>
                               </object>
                             </child>
                           </object>
                         </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="game_system_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">ゲームシステム</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="help_label">
+                    <child>
+                      <object class="GtkFrame" id="help_frame">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">ヘルプ</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
+                        <property name="vexpand">True</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_top">6</property>
+                            <child>
+                              <object class="GtkScrolledWindow" id="help_scrolled_window">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="shadow_type">in</property>
+                                <child>
+                                  <object class="GtkTextView" id="help_text_view">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="tooltip_text" translatable="yes">ダイスボットの使用法を表示します</property>
+                                    <property name="editable">False</property>
+                                    <property name="wrap_mode">char</property>
+                                    <property name="monospace">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="help_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">ヘルプ</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -276,6 +289,81 @@ Author: ocha
                 <property name="position">1</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkFrame" id="version_frame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkAlignment">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_top">6</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="bcdice_version_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">BCDice IRC v%s, BCDice v%s</property>
+                            <property name="xalign">0</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="copyright_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">(c) Faceless, たいたい竹流 and BCDice Project</property>
+                            <property name="wrap">True</property>
+                            <property name="xalign">0</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel" id="version_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">バージョン情報</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -284,75 +372,16 @@ Author: ocha
           </packing>
         </child>
         <child>
-          <object class="GtkFrame" id="version_frame">
+          <object class="GtkStatusbar" id="status_bar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label_xalign">0</property>
-            <property name="shadow_type">none</property>
-            <child>
-              <object class="GtkAlignment">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_top">6</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <object class="GtkLabel" id="bcdice_irc_version_label">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">BCDice IRC %s</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="bcdice_version_label">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">BCDice %s</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="copyright_label">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">(c) Faceless, たいたい竹流 and BCDice Project</property>
-                        <property name="wrap">True</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="label">
-              <object class="GtkLabel" id="version_label">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">バージョン情報</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
-              </object>
-            </child>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="margin_start">10</property>
+            <property name="margin_end">10</property>
+            <property name="margin_top">6</property>
+            <property name="margin_bottom">6</property>
+            <property name="spacing">12</property>
           </object>
           <packing>
             <property name="expand">False</property>
