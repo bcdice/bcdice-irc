@@ -1,0 +1,3 @@
+[submodule "vendor/bcdice"]
+	path = vendor/bcdice
+	url = https://github.com/bcdice/BCDice.git
