@@ -221,7 +221,6 @@ Author: ocha
                                   <object class="GtkSpinButton" id="port_spin_button">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="xalign">1</property>
                                     <property name="input_purpose">digits</property>
                                     <property name="adjustment">port_adjustment</property>
                                     <property name="climb_rate">10</property>
