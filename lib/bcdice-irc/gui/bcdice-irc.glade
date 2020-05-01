@@ -209,7 +209,6 @@ Author: ocha
                                 <child>
                                   <object class="GtkEntry" id="hostname_entry">
                                     <property name="visible">True</property>
-                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="text" translatable="yes">irc.trpg.net</property>
                                   </object>
@@ -221,7 +220,6 @@ Author: ocha
                                 <child>
                                   <object class="GtkSpinButton" id="port_spin_button">
                                     <property name="visible">True</property>
-                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="xalign">1</property>
                                     <property name="input_purpose">digits</property>
@@ -240,11 +238,11 @@ Author: ocha
                                   <object class="GtkCheckButton" id="password_check_button">
                                     <property name="label" translatable="yes">サーバパスワード</property>
                                     <property name="visible">True</property>
-                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
                                     <property name="halign">end</property>
                                     <property name="draw_indicator">True</property>
+                                    <signal name="toggled" handler="password_check_button_on_toggled" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
@@ -321,13 +319,14 @@ Author: ocha
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton">
+                              <object class="GtkButton" id="connect_disconnect_button">
                                 <property name="label">gtk-connect</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
                                 <property name="halign">end</property>
                                 <property name="use_stock">True</property>
+                                <signal name="clicked" handler="connect_disconnect_button_on_clicked" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
