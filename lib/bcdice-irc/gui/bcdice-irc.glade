@@ -425,7 +425,6 @@ Author: ocha
                                     <property name="tooltip_text" translatable="yes">ダイスボットの使用法を表示します</property>
                                     <property name="editable">False</property>
                                     <property name="wrap_mode">char</property>
-                                    <property name="monospace">True</property>
                                   </object>
                                 </child>
                               </object>
