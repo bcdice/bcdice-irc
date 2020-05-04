@@ -53,7 +53,7 @@ module BCDiceIRC
               raise @irc_bot.last_connection_error
             end
           rescue => e
-            puts("IRC bot start error: #{e}")
+            puts("IRC bot start error:\n#{e.full_message(order: :top)}")
             @queue.push([:connection_error, e])
             @irc_bot_thread = nil
           end

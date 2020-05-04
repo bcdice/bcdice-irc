@@ -6,6 +6,8 @@ require_relative 'cinch_mod'
 
 module BCDiceIRC
   class IRCBot
+    require_relative 'irc_bot/plugin/dice_command'
+
     extend Forwardable
 
     require_relative 'irc_bot/config'
@@ -38,16 +40,22 @@ module BCDiceIRC
       timeouts_config = Cinch::Configuration::Timeouts.new
       timeouts_config.connect = 3
 
-      bot.config.server = @config.hostname
-      bot.config.port = @config.port
-      bot.config.reconnect = false
-      bot.config.timeouts = timeouts_config
-      bot.config.password = @config.password
-      bot.config.encoding = 'UTF-8'
-      bot.config.nick = @config.nick
-      bot.config.user = 'BCDiceIRC'
-      bot.config.realname = 'BCDiceIRC'
-      bot.config.channels = [@config.channel]
+      bot.configure do |c|
+        c.server = @config.hostname
+        c.port = @config.port
+        c.reconnect = false
+        c.timeouts = timeouts_config
+        c.password = @config.password
+        c.encoding = 'UTF-8'
+        c.nick = @config.nick
+        c.user = 'BCDiceIRC'
+        c.realname = 'BCDiceIRC'
+        c.channels = [@config.channel]
+
+        c.plugins.plugins = [
+          Plugin::DiceCommand,
+        ]
+      end
 
       bot.loggers.level = :debug
 
