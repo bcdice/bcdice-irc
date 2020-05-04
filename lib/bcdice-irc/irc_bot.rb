@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 
 require 'forwardable'
+
 require 'cinch'
 require_relative 'cinch_mod'
+
+require 'bcdiceCore'
+
+require_relative 'irc_bot/plugin_config'
 
 module BCDiceIRC
   class IRCBot
@@ -17,10 +22,17 @@ module BCDiceIRC
     def_delegators(:@bot, :last_connection_error)
 
     # @param [Config] config 設定
-    def initialize(config, mediator)
+    # @param [GUI::Mediator] mediator ボットの処理とGUIの処理との仲介
+    # @param [String] game_system_id ゲームシステムID
+    def initialize(config, mediator, game_system_id)
       @config = config
-      @bot = new_bot
       @mediator = mediator
+
+      bcdice_maker = BCDiceMaker.new
+      @bcdice = bcdice_maker.newBcDice
+      @bot = new_bot
+
+      @bcdice.setGameByTitle(game_system_id)
     end
 
     def start!
@@ -53,11 +65,16 @@ module BCDiceIRC
         c.channels = [@config.channel]
 
         c.plugins.plugins = [
-          Plugin::DiceCommand,
+          Plugin::DiceCommand
         ]
+
+        plugin_config = PluginConfig.new(bcdice: @bcdice)
+        c.plugins.options = c.plugins.plugins
+                             .map { |klass| [klass, plugin_config] }
+                             .to_h
       end
 
-      bot.loggers.level = :debug
+      bot.loggers.level = :info
 
       bot.on(:connect) do
         this.mediator.notify_successfully_connected!

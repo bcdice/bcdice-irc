@@ -268,7 +268,7 @@ module BCDiceIRC
           channel: @channel_entry.text
         )
 
-        @mediator.create_irc_bot(@irc_bot_config)
+        @mediator.create_irc_bot(@irc_bot_config, @dice_bot_wrapper.id)
         @mediator.start_irc_bot!
       end
 

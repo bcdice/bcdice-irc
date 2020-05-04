@@ -23,7 +23,7 @@ module BCDiceIRC
         def initialize(*)
           super
 
-          @bcdice_maker = BCDiceMaker.new
+          @bcdice = config.bcdice
         end
 
         private
@@ -35,14 +35,12 @@ module BCDiceIRC
           # ボットに直接送られたメッセージは設定用と見なす
           return if !m.channel || m.target == m.user
 
-          bcdice = @bcdice_maker.newBcDice
-
           message_sink = MessageSink.new(bot, m.channel, m.user)
-          bcdice.setIrcClient(message_sink)
+          @bcdice.setIrcClient(message_sink)
 
-          bcdice.setMessage(m.message)
-          bcdice.setChannel(m.channel.name)
-          bcdice.recievePublicMessage(m.user.nick)
+          @bcdice.setMessage(m.message)
+          @bcdice.setChannel(m.channel.name)
+          @bcdice.recievePublicMessage(m.user.nick)
         end
       end
     end

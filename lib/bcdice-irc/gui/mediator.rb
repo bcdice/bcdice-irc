@@ -37,8 +37,11 @@ module BCDiceIRC
         return true
       end
 
-      def create_irc_bot(config)
-        @irc_bot = IRCBot.new(config, self)
+      # IRCボットを作成する
+      # @param [IRCBot::Config] config IRCボットの設定
+      # @param [String] game_system_id ゲームシステムID
+      def create_irc_bot(config, game_system_id)
+        @irc_bot = IRCBot.new(config, self, game_system_id)
       end
 
       def start_irc_bot!
