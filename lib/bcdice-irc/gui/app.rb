@@ -265,7 +265,8 @@ module BCDiceIRC
           port: @port_spin_button.value.to_i,
           password: @password_check_button.active? ? @password_entry.text : nil,
           nick: @nick_entry.text,
-          channel: @channel_entry.text
+          channel: @channel_entry.text,
+          quit_message: $quitMessage || 'さようなら'
         )
 
         @mediator.create_irc_bot(@irc_bot_config, @dice_bot_wrapper.id)

@@ -12,6 +12,7 @@ require_relative 'irc_bot/plugin_config'
 module BCDiceIRC
   class IRCBot
     require_relative 'irc_bot/plugin/dice_command'
+    require_relative 'irc_bot/plugin/master_command'
 
     extend Forwardable
 
@@ -32,6 +33,7 @@ module BCDiceIRC
       @bcdice = bcdice_maker.newBcDice
       @bot = new_bot
 
+      bcdice_maker.quitFunction = -> { quit! }
       @bcdice.setGameByTitle(game_system_id)
     end
 
@@ -40,7 +42,7 @@ module BCDiceIRC
     end
 
     def quit!
-      @bot.quit('Bye!')
+      @bot.quit(@config.quit_message)
     end
 
     private
@@ -65,7 +67,8 @@ module BCDiceIRC
         c.channels = [@config.channel]
 
         c.plugins.plugins = [
-          Plugin::DiceCommand
+          Plugin::DiceCommand,
+          Plugin::MasterCommand,
         ]
 
         plugin_config = PluginConfig.new(bcdice: @bcdice)
@@ -82,10 +85,6 @@ module BCDiceIRC
 
       bot.on(:message, '.version') do |m|
         m.target.send("BCDiceIRC v#{VERSION}", true)
-      end
-
-      bot.on(:message, '.quit') do |m|
-        this.quit!
       end
 
       bot

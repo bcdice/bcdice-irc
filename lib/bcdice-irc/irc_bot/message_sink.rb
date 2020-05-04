@@ -27,11 +27,14 @@ module BCDiceIRC
       #
       # BCDiceとインターフェースを合わせるためのメソッド。
       #
-      # @param [String] _channel チャンネル（使用しない）
+      # @param [String] channel チャンネル
       # @param [String] message 送信するメッセージ
       # @return [void]
-      def sendMessage(_channel, message)
-        to_channel(message)
+      # @todo プロット機能がチャンネルを指定するため、一時的にそれに合わせる。
+      #   いずれIRCボットがすべて管理するようにするため、不要になる予定。
+      def sendMessage(channel, message)
+        target = Cinch::Target.new(channel, @bot)
+        target.notice(message)
       end
 
       # メッセージの送信者に返信する
@@ -62,7 +65,7 @@ module BCDiceIRC
       end
 
       # BCDiceとインターフェースを合わせるための別名。
-      alias setMessageToChannels broadcast
+      alias sendMessageToChannels broadcast
     end
   end
 end
