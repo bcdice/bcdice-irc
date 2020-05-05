@@ -31,12 +31,10 @@ module BCDiceIRC
           @app.mediator.quit_irc_bot
         end
 
-        # 接続状況表示を更新する
-        # @return [void]
-        def update_connection_status
-          @app.update_connection_status(
-            "#{@app.irc_bot_config.hostname} に接続済み"
-          )
+        # 接続状況を返す
+        # @return [String]
+        def connection_status
+          "#{@app.end_point} に接続しました"
         end
       end
     end

@@ -24,12 +24,10 @@ module BCDiceIRC
           @connect_disconnect_button_sensitive = false
         end
 
-        # 接続状況表示を更新する
-        # @return [void]
-        def update_connection_status
-          @app.update_connection_status(
-            "#{@app.irc_bot_config.hostname} への接続を切断中..."
-          )
+        # 接続状況を返す
+        # @return [String]
+        def connection_status
+          "#{@app.end_point} から切断中..."
         end
       end
     end

@@ -70,6 +70,16 @@ module BCDiceIRC
         @mediator = Mediator.new(self, @log_level)
       end
 
+      # 接続先のエンドポイント（+ホスト名:ポート+）を返す
+      # @return [String]
+      def end_point
+        if @irc_bot_config
+          "#{@irc_bot_config.hostname}:#{@irc_bot_config.port}"
+        else
+          ''
+        end
+      end
+
       # アプリケーションを実行する
       # @return [self]
       def start!
@@ -158,11 +168,10 @@ module BCDiceIRC
       end
 
       # 接続状況表示を更新する
-      # @param [String] message 接続状況を表すメッセージ
       # @return [self]
       # @note ウィジェットの準備が完了してから使うこと。
-      def update_connection_status(message)
-        @status_bar.push(@status_bar_connection, message)
+      def update_connection_status
+        @status_bar.push(@status_bar_connection, @state.connection_status)
         self
       end
 
@@ -327,7 +336,7 @@ module BCDiceIRC
         @connect_disconnect_button.label = @state.connect_disconnect_button_label
         @connect_disconnect_button.sensitive = @state.connect_disconnect_button_sensitive
 
-        @state.update_connection_status if @irc_bot_config
+        update_connection_status if @irc_bot_config
 
         self
       end

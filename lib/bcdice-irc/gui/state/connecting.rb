@@ -37,12 +37,10 @@ module BCDiceIRC
           # 何もしない
         end
 
-        # 接続状況表示を更新する
-        # @return [void]
-        def update_connection_status
-          @app.update_connection_status(
-            "#{@app.irc_bot_config.hostname} に接続中..."
-          )
+        # 接続状況を返す
+        # @return [String]
+        def connection_status
+          "#{@app.end_point} に接続中..."
         end
       end
     end
