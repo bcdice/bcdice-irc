@@ -7,6 +7,7 @@ require_relative 'cinch_mod'
 
 require 'bcdiceCore'
 
+require_relative 'categorizable_logger'
 require_relative 'irc_bot/plugin_config'
 
 module BCDiceIRC
@@ -31,7 +32,7 @@ module BCDiceIRC
     # @param [Config] config 設定
     # @param [GUI::Mediator] mediator ボットの処理とGUIの処理との仲介
     # @param [String] game_system_id ゲームシステムID
-    def initialize(config, mediator, game_system_id)
+    def initialize(config, mediator)
       @config = config
       @mediator = mediator
 
@@ -40,7 +41,7 @@ module BCDiceIRC
       @bot = new_bot
 
       bcdice_maker.quitFunction = -> { quit! }
-      @bcdice.setGameByTitle(game_system_id)
+      @bcdice.setGameByTitle(@config.game_system_id)
     end
 
     def start!
@@ -85,6 +86,8 @@ module BCDiceIRC
                              .map { |klass| [klass, plugin_config] }
                              .to_h
       end
+
+      bot.loggers[0] = CategorizableLogger.new('IRC', $stderr, level: @config.log_level)
 
       bot.on(:connect) do
         this.mediator.notify_successfully_connected

@@ -9,6 +9,8 @@ module BCDiceIRC
       :nick,
       :channel,
       :quit_message,
+      :log_level,
+      :game_system_id,
       keyword_init: true
     )
   end

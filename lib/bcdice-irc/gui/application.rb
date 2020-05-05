@@ -12,6 +12,7 @@ require 'bcdice-irc/version'
 require 'bcdice-irc/dice_bot_wrapper'
 require 'bcdice-irc/irc_bot'
 require 'bcdice-irc/irc_bot/config'
+require 'bcdice-irc/categorizable_logger'
 
 require_relative 'mediator'
 require_relative 'state'
@@ -19,6 +20,10 @@ require_relative 'state'
 module BCDiceIRC
   module GUI
     class Application
+      # ログレベル
+      # @return [Symbol]
+      attr_reader :log_level
+
       # IRCボットの設定
       # @return [IRCBot::Config]
       attr_accessor :irc_bot_config
@@ -42,7 +47,9 @@ module BCDiceIRC
 
       # アプリケーションを初期化する
       # @param [Symbol] log_level ログレベル
-      def initialize(log_level = :info)
+      def initialize(log_level)
+        @log_level = log_level
+
         @builder = Gtk::Builder.new
         @mutex = Mutex.new
 
@@ -59,13 +66,15 @@ module BCDiceIRC
         }
         @state = nil
 
-        @logger = Cinch::Logger::FormattedLogger.new($stderr, level: log_level)
-        @mediator = Mediator.new(self, @logger)
+        @logger = CategorizableLogger.new('Application', $stderr, level: @log_level)
+        @mediator = Mediator.new(self, @log_level)
       end
 
       # アプリケーションを実行する
       # @return [self]
       def start!
+        @logger.debug('Setup start')
+
         collect_dice_bots
 
         load_glade_file
@@ -74,8 +83,14 @@ module BCDiceIRC
         set_last_selected_game_system
         @main_window.show_all
 
+        @logger.debug('Setup end')
+
+        @logger.debug('Start mediator')
         @mediator.start!
+
+        @logger.debug('Main loop start')
         Gtk.main
+        @logger.debug('Main loop end')
 
         self
       end
@@ -117,20 +132,37 @@ module BCDiceIRC
         @game_system_combo_box.active = new_index
       end
 
+      # アプリケーションの状態を変更する
+      # @param [Symbol] id 状態のID
+      # @return [self]
+      def change_state(id)
+        self.state = @states.fetch(id)
+        self
+      end
+
+      # IRCボット設定を更新する
+      # @return [self]
+      def update_irc_bot_config
+        @irc_bot_config = IRCBot::Config.new(
+          hostname: @hostname_entry.text,
+          port: @port_spin_button.value.to_i,
+          password: @password_check_button.active? ? @password_entry.text : nil,
+          nick: @nick_entry.text,
+          channel: @channel_entry.text,
+          quit_message: $quitMessage || 'さようなら',
+          log_level: @log_level,
+          game_system_id: @dice_bot_wrapper.id
+        )
+
+        self
+      end
+
       # 接続状況表示を更新する
       # @param [String] message 接続状況を表すメッセージ
       # @return [self]
       # @note ウィジェットの準備が完了してから使うこと。
       def update_connection_status(message)
         @status_bar.push(@status_bar_connection, message)
-        self
-      end
-
-      # アプリケーションの状態を変更する
-      # @param [Symbol] id 状態のID
-      # @return [self]
-      def change_state(id)
-        self.state = @states.fetch(id)
         self
       end
 
@@ -180,7 +212,7 @@ module BCDiceIRC
       def state=(value)
         @state = value
         update_widgets
-        @logger.info("Application: state -> #{@state.name}")
+        @logger.info("State -> #{@state.name}")
       end
 
       # ダイスボットを収集し、キャッシュする
@@ -303,7 +335,10 @@ module BCDiceIRC
       # メインウィンドウが閉じられたときの処理
       # @return [void]
       def main_window_on_destroy
+        @logger.debug('Stop mediator')
         @mediator.quit!
+        @logger.debug('Mediator has stopped')
+
         Gtk.main_quit
       end
 

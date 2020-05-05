@@ -24,22 +24,13 @@ module BCDiceIRC
           @connect_disconnect_button_sensitive = true
         end
 
-        # 接続/切断ボタンがクリックされたときの処理
+        # 接続ボタンがクリックされたときの処理
         # @return [void]
         def connect_disconnect_button_on_clicked
           @app.change_state(:connecting)
 
-          @app.irc_bot_config = IRCBot::Config.new(
-            hostname: @app.hostname_entry.text,
-            port: @app.port_spin_button.value.to_i,
-            password: @app.password_check_button.active? ? @app.password_entry.text : nil,
-            nick: @app.nick_entry.text,
-            channel: @app.channel_entry.text,
-            quit_message: $quitMessage || 'さようなら'
-          )
-
-          @app.mediator.create_irc_bot(@app.irc_bot_config, @app.dice_bot_wrapper.id)
-          @app.mediator.start_irc_bot
+          @app.update_irc_bot_config
+          @app.mediator.start_irc_bot(@app.irc_bot_config)
         end
 
         # 接続状況表示を更新する

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'cinch'
+require 'bcdice-irc/categorizable_logger'
 
 module BCDiceIRC
   module GUI
@@ -12,10 +12,10 @@ module BCDiceIRC
 
       # 仲介処理を初期化する
       # @param [Application] app GUIアプリ
-      # @param [Object] logger ロガー
-      def initialize(app, logger)
+      # @param [Symbol] log_level ログレベル
+      def initialize(app, log_level)
         @app = app
-        @logger = logger
+        @logger = CategorizableLogger.new('Mediator', $stderr, level: log_level)
 
         @queue = Queue.new
         @thread = nil
@@ -24,7 +24,10 @@ module BCDiceIRC
       end
 
       # 仲介スレッドを起動する
-      # @return [Boolean] 起動に成功したか
+      #
+      # 既に仲介スレッドが起動している場合は何もしない。
+      #
+      # @return [Boolean] 仲介スレッドを起動したか
       def start!
         return false if @thread
 
@@ -37,6 +40,7 @@ module BCDiceIRC
 
       # 仲介スレッドを終了させる
       #
+      # 仲介スレッドが起動していない場合は何もしない。
       # スレッドが終了するまでは待機する。
       #
       # @return [Boolean] 終了に成功したか
@@ -51,36 +55,18 @@ module BCDiceIRC
         return true
       end
 
-      # IRCボットを作成する
-      # @param [IRCBot::Config] config IRCボットの設定
-      # @param [String] game_system_id ゲームシステムID
-      def create_irc_bot(config, game_system_id)
-        @irc_bot = IRCBot.new(config, self, game_system_id)
-        @irc_bot.bot.loggers[0] = @logger
-      end
-
       # IRCボットを起動する
-      # @return [Boolean] 起動に成功したか
-      def start_irc_bot
+      #
+      # 既にIRCボットが起動している場合は何もしない。
+      #
+      # @param [IRCBot::Config] irc_bot_config IRCボットの設定
+      # @return [Boolean] IRCボットの起動を試したか
+      def start_irc_bot(irc_bot_config)
         return false if @irc_bot_thread
 
+        @irc_bot = IRCBot.new(irc_bot_config, self)
         @irc_bot_thread = Thread.new do
-          log_exception = true
-
-          begin
-            success = @irc_bot.start!
-            if success
-              @queue.push([:irc_bot_stopped])
-            else
-              log_exception = false
-              raise @irc_bot.last_connection_exception
-            end
-          rescue => e
-            @logger.exception(e) if log_exception
-            @queue.push([:connection_error, e])
-
-            @irc_bot_thread = nil
-          end
+          irc_bot_thread_proc
         end
 
         return true
@@ -106,8 +92,9 @@ module BCDiceIRC
       private
 
       # 仲介スレッドの処理
+      # @return [void]
       def thread_proc
-        @logger.debug('Mediator: thread start')
+        @logger.debug('Mediator thread start')
 
         loop do
           message, *args = @queue.pop
@@ -128,18 +115,18 @@ module BCDiceIRC
           end
         end
 
-        @logger.debug('Mediator: thread end')
+        @logger.debug('Mediator thread end')
       end
 
       # 仲介スレッド終了メッセージに対する処理
       # @return [self]
       def on_quit
         if @irc_bot_thread
-          @logger.debug('Mediator: IRC bot is running. Try to quit it.')
+          @logger.debug('IRC bot thread is running. Try to stop it.')
 
           @irc_bot.quit!
           @irc_bot_thread.join
-          @logger.debug('Mediator: IRC bot has stopped')
+          @logger.debug('IRC bot thread has stopped')
 
           @irc_bot_thread = nil
         end
@@ -196,6 +183,31 @@ module BCDiceIRC
         end
 
         self
+      end
+
+      # IRCボットスレッドの処理
+      # @return [void]
+      def irc_bot_thread_proc
+        @logger.debug('IRC bot thread start')
+
+        log_exception = true
+
+        begin
+          success = @irc_bot.start!
+          if success
+            @queue.push([:irc_bot_stopped])
+          else
+            log_exception = false
+            raise @irc_bot.last_connection_exception
+          end
+        rescue => e
+          @irc_bot_thread = nil
+
+          @logger.exception(e) if log_exception
+          @queue.push([:connection_error, e])
+        end
+
+        @logger.debug('IRC bot thread end')
       end
     end
   end
