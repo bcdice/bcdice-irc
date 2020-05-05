@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 bcdice_dir = File.expand_path(File.join('vendor', 'bcdice', 'src'), __dir__)
 lib_dir = File.expand_path('lib', __dir__)
@@ -8,6 +9,33 @@ dirs.each do |dir|
 end
 
 require 'bundler/setup'
-require 'bcdice-irc/gui/app'
+require 'optparse'
 
-BCDiceIRC::GUI::Application.new.run!
+require 'bcdice-irc/gui/app'
+require 'bcdice-irc/version'
+
+begin
+  # デバッグ用にbyebugを読み込む
+  require 'byebug'
+rescue LoadError
+  # デバッグ用ライブラリがインストールされていなかったら何もしない
+end
+
+log_level = :warn
+
+OptionParser.new do |opt|
+  opt.on('-v', '--verbose', 'ログを冗長に出力します') do
+    log_level = :info
+  end
+
+  opt.on('--debug', 'デバッグログを出力します') do
+    log_level = :debug
+  end
+
+  opt.version = BCDiceIRC::VERSION
+  opt.release = BCDiceIRC::COMMIT_ID
+
+  opt.parse!(ARGV)
+end
+
+BCDiceIRC::GUI::Application.new(log_level).run!

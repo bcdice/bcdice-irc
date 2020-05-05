@@ -10,3 +10,7 @@ gem 'gtk3'
 
 # IRCボットフレームワーク
 gem 'grinch'
+
+group :development do
+  gem 'byebug'
+end
