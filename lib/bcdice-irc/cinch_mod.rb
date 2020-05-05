@@ -113,4 +113,32 @@ module Cinch
       end
     end
   end
+
+  module Utilities
+    module Encoding
+      def self.encode_incoming(string, encoding)
+        string = string.dup
+        if encoding == :irc
+          string.force_encoding("UTF-8")
+          if !string.valid_encoding?
+            string.force_encoding("CP1252").encode!("UTF-8", invalid: :replace, undef: :replace)
+          end
+        else
+          string.force_encoding(encoding).encode!(invalid: :replace, undef: :replace)
+          string = string.chars.select { |c| c.valid_encoding? }.join
+        end
+
+        return string
+      end
+
+      def self.encode_outgoing(string, encoding)
+        string = string.dup
+        if encoding == :irc
+          encoding = "UTF-8"
+        end
+
+        return string.encode!(encoding, invalid: :replace, undef: :replace).force_encoding("ASCII-8BIT")
+      end
+    end
+  end
 end
