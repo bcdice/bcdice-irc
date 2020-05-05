@@ -12,6 +12,8 @@ module BCDiceIRC
         def initialize(app)
           super('connecting', app)
 
+          @main_window_title = '接続中...'
+
           @hostname_entry_sensitive = false
           @port_spin_button_sensitive = false
           @password_check_button_sensitive = false
@@ -22,6 +24,12 @@ module BCDiceIRC
 
           @connect_disconnect_button_label = CONNECT_BUTTON_LABEL
           @connect_disconnect_button_sensitive = false
+        end
+
+        # 接続状況を返す
+        # @return [String]
+        def connection_status
+          "#{@app.end_point} に接続中..."
         end
 
         # 状態に入ったときの処理
@@ -35,12 +43,6 @@ module BCDiceIRC
         # @todo 接続を中断できるようにする
         def connect_disconnect_button_on_clicked
           # 何もしない
-        end
-
-        # 接続状況を返す
-        # @return [String]
-        def connection_status
-          "#{@app.end_point} に接続中..."
         end
       end
     end

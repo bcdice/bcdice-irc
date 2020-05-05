@@ -12,7 +12,12 @@ module BCDiceIRC
         DISCONNECT_BUTTON_LABEL = 'gtk-disconnect'
 
         # 状態の名前
+        # @return [String]
         attr_reader :name
+
+        # メインウィンドウのタイトル
+        # @return [String]
+        attr_reader :main_window_title
 
         # ホスト名を入力できるか
         # @return [Boolean]
@@ -48,6 +53,8 @@ module BCDiceIRC
           @name = name
           @app = app
 
+          @main_window_title = @name
+
           @hostname_entry_sensitive = false
           @port_spin_button_sensitive = false
           @password_check_button_sensitive = false
@@ -60,6 +67,12 @@ module BCDiceIRC
           @connect_disconnect_button_sensitive = false
         end
 
+        # 接続状況を返す
+        # @return [String]
+        def connection_status
+          '未接続'
+        end
+
         # 状態に入ったときの処理
         # @return [void]
         def on_enter
@@ -70,12 +83,6 @@ module BCDiceIRC
         # @return [void]
         def connect_disconnect_button_on_click
           # 既定では何もしない
-        end
-
-        # 接続状況を返す
-        # @return [String]
-        def connection_status
-          '未接続'
         end
       end
     end

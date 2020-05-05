@@ -46,7 +46,7 @@ Author: ocha
     <property name="width_request">720</property>
     <property name="height_request">600</property>
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">BCDice</property>
+    <property name="title" translatable="yes">BCDice IRC</property>
     <property name="window_position">center</property>
     <property name="default_width">720</property>
     <property name="default_height">640</property>

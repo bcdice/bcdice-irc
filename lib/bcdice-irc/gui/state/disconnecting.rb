@@ -12,6 +12,8 @@ module BCDiceIRC
         def initialize(app)
           super('disconnecting', app)
 
+          @main_window_title = '切断中...'
+
           @hostname_entry_sensitive = false
           @port_spin_button_sensitive = false
           @password_check_button_sensitive = false

@@ -121,7 +121,7 @@ module BCDiceIRC
         @dice_bot_wrapper = value
 
         @help_text_view.buffer.text = @dice_bot_wrapper.help_message
-
+        update_main_window_title
         @status_bar.push(
           @status_bar_change_game_system,
           "ゲームシステムを「#{@dice_bot_wrapper.name}」に設定しました"
@@ -165,6 +165,13 @@ module BCDiceIRC
         )
 
         self
+      end
+
+      # メインウィンドウのタイトルを更新する
+      # @return [self]
+      # @note ウィジェットの準備が完了してから使うこと。
+      def update_main_window_title
+        @main_window.title = "#{@state.main_window_title} - BCDice IRC"
       end
 
       # 接続状況表示を更新する
@@ -220,7 +227,10 @@ module BCDiceIRC
       # @note ウィジェットの準備が完了してから使うこと。
       def state=(value)
         @state = value
+
+        update_main_window_title
         update_widgets
+
         @logger.info("State -> #{@state.name}")
       end
 
