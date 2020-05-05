@@ -27,13 +27,18 @@ module BCDiceIRC
       end
 
       def run!
+        collect_dice_bots
+
         load_glade_file
         setup_components
         @main_window.show_all
+
         @mediator.start!
         Gtk.main
       end
 
+      # ダイスボットラッパを変更する
+      # @param [DiceBotWrapper] value 新しいダイスボットラッパ
       def dice_bot_wrapper=(value)
         @dice_bot_wrapper = value
 
@@ -43,6 +48,19 @@ module BCDiceIRC
           @status_bar_change_game_system,
           "ゲームシステムを「#{@dice_bot_wrapper.name}」に設定しました"
         )
+      end
+
+      # ゲームシステムを名前で指定して変更する
+      #
+      # ゲームシステム名に対応するダイスボットラッパが設定される。
+      # 対応するダイスボットラッパが見つからなかった場合には何もしない。
+      #
+      # @param [String] value 新しいゲームシステム名
+      def game_system_name=(value)
+        new_index = @name_to_dice_bot_wrapper_index[value]
+        return unless new_index
+
+        @game_system_combo_box.active = new_index
       end
 
       def switch_to_connecting_state
@@ -153,6 +171,18 @@ module BCDiceIRC
 
       private
 
+      # ダイスボットを収集し、キャッシュする
+      # @return [self]
+      def collect_dice_bots
+        dice_bots = [DiceBot.new] + DiceBotLoader.collectDiceBots
+        dice_bot_names = dice_bots.map(&:name)
+        @dice_bot_wrappers = dice_bots.map { |bot| DiceBotWrapper.wrap(bot) }
+
+        @name_to_dice_bot_wrapper_index = dice_bot_names.each_with_index.to_h
+
+        self
+      end
+
       def load_glade_file
         glade_file = File.expand_path('bcdice-irc.glade', __dir__)
         @builder.add_from_file(glade_file)
@@ -199,13 +229,10 @@ module BCDiceIRC
       def setup_game_system_combo_box
         game_system_list_store = Gtk::ListStore.new(Object, String)
 
-        bots = [DiceBot.new] + DiceBotLoader.collectDiceBots
-        bots.each do |bot|
-          dice_bot_wrapper = DiceBotWrapper.wrap(bot)
-
+        @dice_bot_wrappers.each do |w|
           row = game_system_list_store.append
-          row[0] = dice_bot_wrapper
-          row[1] = dice_bot_wrapper.name
+          row[0] = w
+          row[1] = w.name
         end
 
         @game_system_combo_box.model = game_system_list_store
@@ -251,12 +278,12 @@ module BCDiceIRC
         )
 
         @mediator.create_irc_bot(@irc_bot_config, @dice_bot_wrapper.id)
-        @mediator.start_irc_bot!
+        @mediator.start_irc_bot
       end
 
       def disconnect_button_on_clicked
         switch_to_disconnecting_state
-        @mediator.quit_irc_bot!
+        @mediator.quit_irc_bot
       end
     end
   end

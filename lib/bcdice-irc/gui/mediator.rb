@@ -4,9 +4,15 @@ require 'cinch'
 
 module BCDiceIRC
   module GUI
+    # IRCボットとGUIとの仲介のクラス
     class Mediator
+      # IRCボット
+      # @return [IRCBot]
       attr_reader :irc_bot
 
+      # 仲介処理を初期化する
+      # @param [App] app GUIアプリ
+      # @param [Symbol] log_level ログレベル
       def initialize(app, log_level = :info)
         @app = app
 
@@ -17,6 +23,8 @@ module BCDiceIRC
         @logger = Cinch::Logger::FormattedLogger.new($stderr, level: log_level)
       end
 
+      # 仲介スレッドを起動する
+      # @return [Boolean] 起動に成功したか
       def start!
         return false if @thread
 
@@ -27,6 +35,11 @@ module BCDiceIRC
         return true
       end
 
+      # 仲介スレッドを終了させる
+      #
+      # スレッドが終了するまでは待機する。
+      #
+      # @return [Boolean] 終了に成功したか
       def quit!
         return false unless @thread
 
@@ -46,7 +59,9 @@ module BCDiceIRC
         @irc_bot.bot.loggers[0] = @logger
       end
 
-      def start_irc_bot!
+      # IRCボットを起動する
+      # @return [Boolean] 起動に成功したか
+      def start_irc_bot
         return false if @irc_bot_thread
 
         @irc_bot_thread = Thread.new do
@@ -71,16 +86,26 @@ module BCDiceIRC
         return true
       end
 
-      def quit_irc_bot!
+      # IRCボットを終了させる
+      def quit_irc_bot
         @queue.push([:quit_irc_bot])
       end
 
-      def notify_successfully_connected!
+      # 接続成功を通知する
+      def notify_successfully_connected
         @queue.push([:successfully_connected])
+      end
+
+      # ゲームシステムが変更されたことを通知する
+      # @param [String] game_system_name ゲームシステム名
+      # @return [void]
+      def notify_game_system_has_been_changed(game_system_name)
+        @queue.push([:game_system_has_been_changed, game_system_name])
       end
 
       private
 
+      # 仲介スレッドの処理
       def thread_proc
         @logger.debug('Mediator: thread start')
 
@@ -98,12 +123,16 @@ module BCDiceIRC
             on_successfully_connected
           when :connection_error
             on_connection_error(args[0])
+          when :game_system_has_been_changed
+            on_game_system_has_been_changed(args[0])
           end
         end
 
         @logger.debug('Mediator: thread end')
       end
 
+      # 仲介スレッド終了メッセージに対する処理
+      # @return [self]
       def on_quit
         if @irc_bot_thread
           @logger.debug('Mediator: IRC bot is running. Try to quit it.')
@@ -114,32 +143,60 @@ module BCDiceIRC
 
           @irc_bot_thread = nil
         end
+
+        self
       end
 
+      # IRCボットを終了させるメッセージに対する処理
+      # @return [self]
       def on_quit_irc_bot
         @irc_bot.quit! if @irc_bot_thread
+        self
       end
 
+      # IRCボット停止メッセージに対する処理
+      # @return [self]
       def on_irc_bot_stopped
         @irc_bot_thread = nil
 
         @app.in_idle_time do
           @app.switch_to_disconnected_state
         end
+
+        self
       end
 
+      # 接続成功メッセージに対する処理
+      # @return [self]
       def on_successfully_connected
         @app.in_idle_time do
           @app.switch_to_connected_state
         end
+
+        self
       end
 
+      # 接続エラーメッセージに対する処理
       # @param [StandardError] e 発生した例外
+      # @return [self]
       def on_connection_error(e)
         @app.in_idle_time do
           @app.switch_to_disconnected_state(true)
           @app.show_connection_error_dialog(e)
         end
+
+        self
+      end
+
+      # ゲームシステムが変更された場合のメッセージに対する処理
+      # @param [String] game_system_name ゲームシステム名
+      # @return [self]
+      def on_game_system_has_been_changed(game_system_name)
+        @app.in_idle_time do
+          @app.game_system_name = game_system_name
+        end
+
+        self
       end
     end
   end

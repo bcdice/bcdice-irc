@@ -4,6 +4,7 @@ module BCDiceIRC
   class IRCBot
     PluginConfig = Struct.new(
       :bcdice,
+      :mediator,
       keyword_init: true
     )
   end

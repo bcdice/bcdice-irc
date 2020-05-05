@@ -24,6 +24,7 @@ module BCDiceIRC
           super
 
           @bcdice = config.bcdice
+          @mediator = config.mediator
         end
 
         private
@@ -43,6 +44,12 @@ module BCDiceIRC
           @bcdice.setMessage(command)
           @bcdice.setChannel(m.user.nick)
           @bcdice.recieveMessage(m.user.nick, arg || '')
+
+          if message_sink.new_game_system_name
+            @mediator.notify_game_system_has_been_changed(
+              message_sink.new_game_system_name
+            )
+          end
         end
       end
     end

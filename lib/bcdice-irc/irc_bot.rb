@@ -77,14 +77,17 @@ module BCDiceIRC
           Plugin::MasterCommand,
         ]
 
-        plugin_config = PluginConfig.new(bcdice: @bcdice)
+        plugin_config = PluginConfig.new(
+          bcdice: @bcdice,
+          mediator: @mediator
+        )
         c.plugins.options = c.plugins.plugins
                              .map { |klass| [klass, plugin_config] }
                              .to_h
       end
 
       bot.on(:connect) do
-        this.mediator.notify_successfully_connected!
+        this.mediator.notify_successfully_connected
       end
 
       bot.on(:message, '.version') do |m|
