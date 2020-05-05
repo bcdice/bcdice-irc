@@ -11,7 +11,7 @@ module BCDiceIRC
       attr_reader :irc_bot
 
       # 仲介処理を初期化する
-      # @param [App] app GUIアプリ
+      # @param [Application] app GUIアプリ
       # @param [Symbol] log_level ログレベル
       def initialize(app, log_level = :info)
         @app = app
