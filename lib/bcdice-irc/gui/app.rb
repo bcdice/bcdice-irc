@@ -16,14 +16,14 @@ require_relative 'mediator'
 module BCDiceIRC
   module GUI
     class Application
-      def initialize
+      def initialize(log_level = :info)
         @builder = Gtk::Builder.new
         @dice_bot_wrapper = nil
 
         @mutex = Mutex.new
         @state = :disconnected
 
-        @mediator = Mediator.new(self)
+        @mediator = Mediator.new(self, log_level)
       end
 
       def run!
@@ -46,126 +46,107 @@ module BCDiceIRC
       end
 
       def switch_to_connecting_state
-        GLib::Idle.add do
-          @mutex.synchronize do
-            @connect_disconnect_button.label = 'gtk-connect'
-            @connect_disconnect_button.sensitive = false
+        @mutex.synchronize do
+          @connect_disconnect_button.label = 'gtk-connect'
+          @connect_disconnect_button.sensitive = false
 
-            @hostname_entry.sensitive = false
-            @port_spin_button.sensitive = false
-            @password_check_button.sensitive = false
-            @password_entry.sensitive = false
-            @nick_entry.sensitive = false
-            @channel_entry.sensitive = false
-            @game_system_combo_box.sensitive = false
+          @hostname_entry.sensitive = false
+          @port_spin_button.sensitive = false
+          @password_check_button.sensitive = false
+          @password_entry.sensitive = false
+          @nick_entry.sensitive = false
+          @channel_entry.sensitive = false
+          @game_system_combo_box.sensitive = false
 
-            @status_bar.push(@status_bar_connection, '接続中...')
+          @status_bar.push(@status_bar_connection, '接続中...')
 
-            @state = :connecting
-          end
-
-          false
+          @state = :connecting
         end
       end
 
       def switch_to_connected_state
-        GLib::Idle.add do
-          @mutex.synchronize do
-            @hostname_entry.sensitive = false
-            @port_spin_button.sensitive = false
-            @password_check_button.sensitive = false
-            @password_entry.sensitive = false
-            @nick_entry.sensitive = false
-            @channel_entry.sensitive = false
-            @game_system_combo_box.sensitive = false
+        @mutex.synchronize do
+          @hostname_entry.sensitive = false
+          @port_spin_button.sensitive = false
+          @password_check_button.sensitive = false
+          @password_entry.sensitive = false
+          @nick_entry.sensitive = false
+          @channel_entry.sensitive = false
+          @game_system_combo_box.sensitive = false
 
-            @connect_disconnect_button.label = 'gtk-disconnect'
-            @connect_disconnect_button.sensitive = true
+          @connect_disconnect_button.label = 'gtk-disconnect'
+          @connect_disconnect_button.sensitive = true
 
-            @state = :connected
+          @state = :connected
 
-            @status_bar.push(@status_bar_connection, "#{@irc_bot_config.hostname} に接続済み")
-          end
-
-          false
+          @status_bar.push(@status_bar_connection, "#{@irc_bot_config.hostname} に接続済み")
         end
       end
 
       def switch_to_disconnecting_state
-        GLib::Idle.add do
-          @mutex.synchronize do
-            @connect_disconnect_button.label = 'gtk-disconnect'
-            @connect_disconnect_button.sensitive = false
+        @mutex.synchronize do
+          @connect_disconnect_button.label = 'gtk-disconnect'
+          @connect_disconnect_button.sensitive = false
 
-            @hostname_entry.sensitive = false
-            @port_spin_button.sensitive = false
-            @password_check_button.sensitive = false
-            @password_entry.sensitive = false
-            @nick_entry.sensitive = false
-            @channel_entry.sensitive = false
-            @game_system_combo_box.sensitive = false
+          @hostname_entry.sensitive = false
+          @port_spin_button.sensitive = false
+          @password_check_button.sensitive = false
+          @password_entry.sensitive = false
+          @nick_entry.sensitive = false
+          @channel_entry.sensitive = false
+          @game_system_combo_box.sensitive = false
 
-            @state = :disconnecting
+          @state = :disconnecting
 
-            @status_bar.push(@status_bar_connection, '接続を切断中...')
-          end
-
-          false
+          @status_bar.push(@status_bar_connection, '接続を切断中...')
         end
       end
 
-      def switch_to_disconnected_state
-        GLib::Idle.add do
-          @mutex.synchronize do
-            @hostname_entry.sensitive = true
-            @port_spin_button.sensitive = true
-            @password_check_button.sensitive = true
-            @password_check_button.active = @password_check_button.active?
-            @nick_entry.sensitive = true
-            @channel_entry.sensitive = true
-            @game_system_combo_box.sensitive = true
+      def switch_to_disconnected_state(error = false)
+        @mutex.synchronize do
+          @hostname_entry.sensitive = true
+          @port_spin_button.sensitive = true
+          @password_check_button.sensitive = true
+          @password_check_button.active = @password_check_button.active?
+          @nick_entry.sensitive = true
+          @channel_entry.sensitive = true
+          @game_system_combo_box.sensitive = true
 
-            @connect_disconnect_button.label = 'gtk-connect'
-            @connect_disconnect_button.sensitive = true
+          @connect_disconnect_button.label = 'gtk-connect'
+          @connect_disconnect_button.sensitive = true
 
-            @state = :disconnected
+          @state = :disconnected
 
-            @status_bar.push(@status_bar_connection, "#{@irc_bot_config.hostname} から切断されました")
-          end
+          status_bar_message =
+            if error
+              "#{@irc_bot_config.hostname} に接続できませんでした"
+            else
+              "#{@irc_bot_config.hostname} から切断されました"
+            end
 
-          false
+          @status_bar.push(@status_bar_connection, status_bar_message)
         end
       end
 
-      def switch_to_disconnected_state_with_error(e)
+      # @param [StandardError] e 発生した例外
+      def show_connection_error_dialog(e)
+        message_utf8 = e.message.encode('UTF-8', invalid: :replace, undef: :replace)
+        dialog = Gtk::MessageDialog.new(
+          parent: @main_window,
+          flags: :destroy_with_parent,
+          type: :error,
+          buttons: :ok,
+          message: "#{@irc_bot_config.hostname} に接続できませんでした:\n#{message_utf8}"
+        )
+        dialog.run
+        dialog.destroy
+      end
+
+      # GUIスレッドのアイドル時間に、ブロックで与えられた処理を行う
+      # @return [void]
+      def in_idle_time
         GLib::Idle.add do
-          @mutex.synchronize do
-            @hostname_entry.sensitive = true
-            @port_spin_button.sensitive = true
-            @password_check_button.sensitive = true
-            @password_check_button.active = @password_check_button.active?
-            @nick_entry.sensitive = true
-            @channel_entry.sensitive = true
-            @game_system_combo_box.sensitive = true
-
-            @connect_disconnect_button.label = 'gtk-connect'
-            @connect_disconnect_button.sensitive = true
-
-            @state = :disconnected
-
-            @status_bar.push(@status_bar_connection, "#{@irc_bot_config.hostname} に接続できませんでした")
-          end
-
-          dialog = Gtk::MessageDialog.new(
-            parent: @main_window,
-            flags: :destroy_with_parent,
-            type: :error,
-            buttons: :ok,
-            message: "#{@irc_bot_config.hostname} に接続できませんでした:\n#{e}"
-          )
-          dialog.run
-          dialog.destroy
-
+          yield
           false
         end
       end

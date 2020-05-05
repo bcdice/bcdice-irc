@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+require 'nkf'
 require 'cinch'
 
 module BCDiceIRC
   class MyCinchBot < Cinch::Bot
-    attr_accessor :last_connection_error
+    attr_accessor :last_connection_exception
 
     # Connects the bot to a server.
     #
@@ -59,24 +60,28 @@ module BCDiceIRC
     # @return [Boolean] True if the connection could be established
     def connect
       tcp_socket = nil
+      @bot.last_connection_exception = nil
 
       begin
         Timeout::timeout(@bot.config.timeouts.connect) do
           tcp_socket = TCPSocket.new(@bot.config.server, @bot.config.port, @bot.config.local_host)
         end
       rescue Timeout::Error => e
-        @bot.last_connection_error = e
+        @bot.last_connection_exception = e
         @bot.loggers.warn("Timed out while connecting")
-        return false
       rescue SocketError => e
-        @bot.last_connection_error = e
+        # エンコーディングがASCII-8BITになって文字化けする場合があるため、
+        # Encoding.default_externalに変換する
+        e.message.force_encoding(Encoding.default_external)
+
+        @bot.last_connection_exception = e
         @bot.loggers.warn("Could not connect to the IRC server. Please check your network: #{e.message}")
-        return false
       rescue => e
-        @bot.last_connection_error = e
+        @bot.last_connection_exception = e
         @bot.loggers.exception(e)
-        return false
       end
+
+      return false if @bot.last_connection_exception
 
       if @bot.config.ssl.use
         setup_ssl(tcp_socket)
@@ -88,9 +93,24 @@ module BCDiceIRC
       @socket.read_timeout = @bot.config.timeouts.read
       @queue               = Cinch::MessageQueue.new(@socket, @bot)
 
-      @bot.last_connection_error = nil
-
       return true
+    end
+  end
+end
+
+module Cinch
+  class Logger
+    def log(messages, event = :debug, level = event)
+      return unless will_log?(level)
+      @mutex.synchronize do
+        Array(messages).each do |message|
+          message = format_general(message)
+          message = format_message(message, event)
+
+          next if message.nil?
+          @output.puts message.encode("locale", invalid: :replace, undef: :replace)
+        end
+      end
     end
   end
 end

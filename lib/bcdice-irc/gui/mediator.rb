@@ -1,19 +1,20 @@
 # frozen_string_literal: true
 
-require_relative 'cinch_mod'
+require 'cinch'
 
 module BCDiceIRC
   module GUI
     class Mediator
       attr_reader :irc_bot
 
-      def initialize(app)
+      def initialize(app, log_level = :info)
         @app = app
 
         @queue = Queue.new
         @thread = nil
         @irc_bot = nil
         @irc_bot_thread = nil
+        @logger = Cinch::Logger::FormattedLogger.new($stderr, level: log_level)
       end
 
       def start!
@@ -42,22 +43,27 @@ module BCDiceIRC
       # @param [String] game_system_id ゲームシステムID
       def create_irc_bot(config, game_system_id)
         @irc_bot = IRCBot.new(config, self, game_system_id)
+        @irc_bot.bot.loggers[0] = @logger
       end
 
       def start_irc_bot!
         return false if @irc_bot_thread
 
         @irc_bot_thread = Thread.new do
+          log_exception = true
+
           begin
             success = @irc_bot.start!
             if success
               @queue.push([:irc_bot_stopped])
             else
-              raise @irc_bot.last_connection_error
+              log_exception = false
+              raise @irc_bot.last_connection_exception
             end
           rescue => e
-            puts("IRC bot start error:\n#{e.full_message(order: :top)}")
+            @logger.exception(e) if log_exception
             @queue.push([:connection_error, e])
+
             @irc_bot_thread = nil
           end
         end
@@ -76,36 +82,64 @@ module BCDiceIRC
       private
 
       def thread_proc
-        puts('MediatorThread: start')
+        @logger.debug('Mediator: thread start')
 
         loop do
           message, *args = @queue.pop
           case message
           when :quit
-            if @irc_bot_thread
-              puts('IRC bot is running. Try to quit it.')
-              @irc_bot.quit!
-              @irc_bot_thread.join
-              puts('IRC bot is stopped.')
-
-              @irc_bot_thread = nil
-            end
-
+            on_quit
             break
           when :quit_irc_bot
-            next unless @irc_bot_thread
-            @irc_bot.quit!
+            on_quit_irc_bot
           when :irc_bot_stopped
-            @irc_bot_thread = nil
-            @app.switch_to_disconnected_state
+            on_irc_bot_stopped
           when :successfully_connected
-            @app.switch_to_connected_state
+            on_successfully_connected
           when :connection_error
-            @app.switch_to_disconnected_state_with_error(*args)
+            on_connection_error(args[0])
           end
         end
 
-        puts('MediatorThread: end')
+        @logger.debug('Mediator: thread end')
+      end
+
+      def on_quit
+        if @irc_bot_thread
+          @logger.debug('Mediator: IRC bot is running. Try to quit it.')
+
+          @irc_bot.quit!
+          @irc_bot_thread.join
+          @logger.debug('Mediator: IRC bot has stopped')
+
+          @irc_bot_thread = nil
+        end
+      end
+
+      def on_quit_irc_bot
+        @irc_bot.quit! if @irc_bot_thread
+      end
+
+      def on_irc_bot_stopped
+        @irc_bot_thread = nil
+
+        @app.in_idle_time do
+          @app.switch_to_disconnected_state
+        end
+      end
+
+      def on_successfully_connected
+        @app.in_idle_time do
+          @app.switch_to_connected_state
+        end
+      end
+
+      # @param [StandardError] e 発生した例外
+      def on_connection_error(e)
+        @app.in_idle_time do
+          @app.switch_to_disconnected_state(true)
+          @app.show_connection_error_dialog(e)
+        end
       end
     end
   end

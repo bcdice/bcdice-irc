@@ -18,9 +18,15 @@ module BCDiceIRC
 
     require_relative 'irc_bot/config'
 
+    # IRCボットとGUIとの仲介
+    # @return [GUI::Mediator]
     attr_reader :mediator
 
-    def_delegators(:@bot, :last_connection_error)
+    # Cinchボット
+    # @return [Cinch::Bot]
+    attr_reader :bot
+
+    def_delegators(:@bot, :last_connection_exception)
 
     # @param [Config] config 設定
     # @param [GUI::Mediator] mediator ボットの処理とGUIの処理との仲介
@@ -76,8 +82,6 @@ module BCDiceIRC
                              .map { |klass| [klass, plugin_config] }
                              .to_h
       end
-
-      bot.loggers.level = :info
 
       bot.on(:connect) do
         this.mediator.notify_successfully_connected!
