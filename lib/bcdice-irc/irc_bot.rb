@@ -8,16 +8,14 @@ require_relative 'cinch_mod'
 require 'bcdiceCore'
 
 require_relative 'categorizable_logger'
-require_relative 'irc_bot/plugin_config'
 
 module BCDiceIRC
   class IRCBot
-    require_relative 'irc_bot/plugin/dice_command'
-    require_relative 'irc_bot/plugin/master_command'
+    require_relative 'irc_bot/plugin'
+    require_relative 'irc_bot/config'
+    require_relative 'irc_bot/plugin_config'
 
     extend Forwardable
-
-    require_relative 'irc_bot/config'
 
     # IRCボットとGUIとの仲介
     # @return [GUI::Mediator]
@@ -74,6 +72,7 @@ module BCDiceIRC
         c.channels = [@config.channel]
 
         c.plugins.plugins = [
+          Plugin::IRCChannel,
           Plugin::DiceCommand,
           Plugin::MasterCommand,
         ]
