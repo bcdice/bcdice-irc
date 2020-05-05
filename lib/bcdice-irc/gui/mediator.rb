@@ -12,15 +12,15 @@ module BCDiceIRC
 
       # 仲介処理を初期化する
       # @param [Application] app GUIアプリ
-      # @param [Symbol] log_level ログレベル
-      def initialize(app, log_level = :info)
+      # @param [Object] logger ロガー
+      def initialize(app, logger)
         @app = app
+        @logger = logger
 
         @queue = Queue.new
         @thread = nil
         @irc_bot = nil
         @irc_bot_thread = nil
-        @logger = Cinch::Logger::FormattedLogger.new($stderr, level: log_level)
       end
 
       # 仲介スレッドを起動する
@@ -160,7 +160,7 @@ module BCDiceIRC
         @irc_bot_thread = nil
 
         @app.in_idle_time do
-          @app.switch_to_disconnected_state
+          @app.change_state(:disconnected)
         end
 
         self
@@ -170,7 +170,7 @@ module BCDiceIRC
       # @return [self]
       def on_successfully_connected
         @app.in_idle_time do
-          @app.switch_to_connected_state
+          @app.change_state(:connected)
         end
 
         self
@@ -181,8 +181,7 @@ module BCDiceIRC
       # @return [self]
       def on_connection_error(e)
         @app.in_idle_time do
-          @app.switch_to_disconnected_state(true)
-          @app.show_connection_error_dialog(e)
+          @app.notify_connection_error(e)
         end
 
         self

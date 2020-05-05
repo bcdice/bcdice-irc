@@ -38,4 +38,4 @@ OptionParser.new do |opt|
   opt.parse!(ARGV)
 end
 
-BCDiceIRC::GUI::Application.new(log_level).run!
+BCDiceIRC::GUI::Application.new(log_level).start!
