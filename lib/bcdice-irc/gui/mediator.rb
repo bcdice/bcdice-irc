@@ -15,6 +15,8 @@ module BCDiceIRC
       # @param [Symbol] log_level ログレベル
       def initialize(app, log_level)
         @app = app
+        @log_level = log_level
+
         @logger = CategorizableLogger.new('Mediator', $stderr, level: log_level)
 
         @queue = Queue.new
@@ -64,7 +66,7 @@ module BCDiceIRC
       def start_irc_bot(irc_bot_config)
         return false if @irc_bot_thread
 
-        @irc_bot = IRCBot.new(irc_bot_config, self)
+        @irc_bot = IRCBot.new(irc_bot_config, self, @log_level)
         @irc_bot_thread = Thread.new do
           irc_bot_thread_proc
         end

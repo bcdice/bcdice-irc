@@ -160,7 +160,6 @@ module BCDiceIRC
           nick: @nick_entry.text,
           channel: @channel_entry.text,
           quit_message: $quitMessage || 'さようなら',
-          log_level: @log_level,
           game_system_id: @dice_bot_wrapper.id
         )
 

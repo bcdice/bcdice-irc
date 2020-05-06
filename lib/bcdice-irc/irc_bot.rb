@@ -29,10 +29,11 @@ module BCDiceIRC
 
     # @param [Config] config 設定
     # @param [GUI::Mediator] mediator ボットの処理とGUIの処理との仲介
-    # @param [String] game_system_id ゲームシステムID
-    def initialize(config, mediator)
+    # @param [Symbol] log_level ログレベル
+    def initialize(config, mediator, log_level)
       @config = config
       @mediator = mediator
+      @log_level = log_level
 
       bcdice_maker = BCDiceMaker.new
       @bcdice = bcdice_maker.newBcDice
@@ -86,7 +87,7 @@ module BCDiceIRC
                              .to_h
       end
 
-      bot.loggers[0] = CategorizableLogger.new('IRC', $stderr, level: @config.log_level)
+      bot.loggers[0] = CategorizableLogger.new('IRC', $stderr, level: @log_level)
 
       bot.on(:connect) do
         this.mediator.notify_successfully_connected
