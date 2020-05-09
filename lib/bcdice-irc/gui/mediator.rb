@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'bcdice-irc/categorizable_logger'
+require_relative '../categorizable_logger'
+require_relative '../irc_bot'
 
 module BCDiceIRC
   module GUI

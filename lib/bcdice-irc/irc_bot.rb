@@ -10,11 +10,8 @@ require 'bcdiceCore'
 require_relative 'categorizable_logger'
 
 module BCDiceIRC
+  # BCDiceのIRCボットのクラス。
   class IRCBot
-    require_relative 'irc_bot/plugin'
-    require_relative 'irc_bot/config'
-    require_relative 'irc_bot/plugin_config'
-
     extend Forwardable
 
     # IRCボットとGUIとの仲介
@@ -101,3 +98,8 @@ module BCDiceIRC
     end
   end
 end
+
+require_relative 'irc_bot/config'
+require_relative 'irc_bot/message_sink'
+require_relative 'irc_bot/plugin_config'
+require_relative 'irc_bot/plugin'
