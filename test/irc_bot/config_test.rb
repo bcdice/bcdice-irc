@@ -6,6 +6,7 @@ module BCDiceIRC
   class IRCBot
     class ConfigTest < Test::Unit::TestCase
       CONFIG_HASH = {
+        name: 'Config 1',
         hostname: 'irc.trpg.net',
         port: 6667,
         password: 'p@ssw0rd',
@@ -16,6 +17,7 @@ module BCDiceIRC
       }.freeze
 
       CONFIG_HASH_WITH_STR_KEYS = {
+        'name' => 'Config 1',
         'hostname' => 'irc.trpg.net',
         'port' => 6667,
         'password' => 'p@ssw0rd',
@@ -27,6 +29,7 @@ module BCDiceIRC
 
       setup do
         @config = Config.new(
+          name: 'Config 1',
           hostname: 'irc.trpg.net',
           port: 6667,
           password: 'p@ssw0rd',
@@ -39,6 +42,7 @@ module BCDiceIRC
 
       test '既定値が正しい' do
         expected = Config.new(
+          name: 'デフォルト',
           hostname: 'irc.trpg.net',
           port: 6667,
           password: nil,

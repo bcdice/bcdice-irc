@@ -40,8 +40,6 @@ module BCDiceIRC
         # @return [void]
         def connect_disconnect_button_on_clicked
           @app.change_state(:connecting)
-
-          @app.update_irc_bot_config
           @app.mediator.start_irc_bot(@app.irc_bot_config)
         end
       end

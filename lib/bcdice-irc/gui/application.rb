@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'gtk3'
+require 'active_support/core_ext/object/deep_dup'
+require 'active_support/core_ext/object/blank'
 
 require 'cinch/logger/formatted_logger'
 
@@ -50,13 +52,26 @@ module BCDiceIRC
         @log_level = log_level
 
         @builder = Gtk::Builder.new
-        @mutex = Mutex.new
 
-        @dice_bot_wrapper = nil
-        @irc_bot_config = nil
         @use_password = false
+        @dice_bot_wrapper = nil
+        @presets = [
+          IRCBot::Config::DEFAULT,
+          IRCBot::Config.new(
+            name: '設定1',
+            hostname: 'irc.cre.ne.jp',
+            port: 6668,
+            password: 'cre',
+            nick: 'DiceBot',
+            channel: '#irc_test',
+            quit_message: 'Bye!',
+            game_system_id: 'Cthulhu7th'
+          )
+        ]
+        @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
         @last_connection_exception = nil
 
+        @setting_up = false
         @states = {
           disconnected: State::Disconnected.new(self),
           connecting: State::Connecting.new(self),
@@ -84,13 +99,17 @@ module BCDiceIRC
       def start!
         @logger.debug('Setup start')
 
+        @setting_up = true
+
         collect_dice_bots
 
         load_glade_file
         setup_widgets
         change_state(:disconnected)
-        set_last_selected_game_system
+        set_last_selected_preset
         @main_window.show_all
+
+        @setting_up = false
 
         @logger.debug('Setup end')
 
@@ -109,6 +128,8 @@ module BCDiceIRC
       # @note ウィジェットの準備が完了してから使うこと。
       def use_password=(value)
         @use_password = value
+        @irc_bot_config.password = @use_password ? @password_entry.text : nil
+
         @password_entry.sensitive =
           @state.password_check_button_sensitive && @use_password
       end
@@ -121,10 +142,27 @@ module BCDiceIRC
 
         @help_text_view.buffer.text = @dice_bot_wrapper.help_message
         update_main_window_title
-        @status_bar.push(
-          @status_bar_change_game_system,
-          "ゲームシステムを「#{@dice_bot_wrapper.name}」に設定しました"
-        )
+
+        if @state.need_notification_on_game_system_change
+          @status_bar.push(
+            @status_bar_change_game_system,
+            "ゲームシステムを「#{@dice_bot_wrapper.name}」に設定しました"
+          )
+        end
+      end
+
+      # ゲームシステムをIDで指定して変更する
+      #
+      # ゲームシステムIDに対応するダイスボットラッパが設定される。
+      # 対応するダイスボットラッパが見つからなかった場合には何もしない。
+      #
+      # @param [String] value 新しいゲームシステムID
+      # @note ウィジェットの準備が完了してから使うこと。
+      def game_system_id=(value)
+        new_index = @id_to_dice_bot_wrapper_index[value]
+        return unless new_index
+
+        @game_system_combo_box.active = new_index
       end
 
       # ゲームシステムを名前で指定して変更する
@@ -149,18 +187,30 @@ module BCDiceIRC
         self
       end
 
-      # IRCボット設定を更新する
+      # プリセットからIRCボット設定を設定する
+      # @param [IRCBot::Config] irc_bot_config プリセットのIRCボット設定
       # @return [self]
-      def update_irc_bot_config
-        @irc_bot_config = IRCBot::Config.new(
-          hostname: @hostname_entry.text,
-          port: @port_spin_button.value.to_i,
-          password: @password_check_button.active? ? @password_entry.text : nil,
-          nick: @nick_entry.text,
-          channel: @channel_entry.text,
-          quit_message: $quitMessage || 'さようなら',
-          game_system_id: @dice_bot_wrapper.id
-        )
+      def set_irc_bot_config_from_preset(irc_bot_config)
+        # TODO: ここからバリデーションを無効にする
+
+        @hostname_entry.text = irc_bot_config.hostname
+        @port_spin_button.value = irc_bot_config.port
+
+        if irc_bot_config.password
+          @password_check_button.active = true
+          @password_entry.text = irc_bot_config.password
+        else
+          @password_check_button.active = false
+          @password_entry.text = ''
+        end
+
+        @nick_entry.text = irc_bot_config.nick
+        @channel_entry.text = irc_bot_config.channel
+
+        # TODO: バリデーション無効化ここまで。ここでバリデーションを実行する。
+
+        @irc_bot_config.quit_message = irc_bot_config.quit_message.dup
+        self.game_system_id = irc_bot_config.game_system_id
 
         self
       end
@@ -170,13 +220,17 @@ module BCDiceIRC
       # @note ウィジェットの準備が完了してから使うこと。
       def update_main_window_title
         @main_window.title = "#{@state.main_window_title} - BCDice IRC"
+        self
       end
 
       # 接続状況表示を更新する
       # @return [self]
       # @note ウィジェットの準備が完了してから使うこと。
       def update_connection_status
+        return if @setting_up
+
         @status_bar.push(@status_bar_connection, @state.connection_status)
+
         self
       end
 
@@ -236,9 +290,11 @@ module BCDiceIRC
       # @return [self]
       def collect_dice_bots
         dice_bots = [DiceBot.new] + DiceBotLoader.collectDiceBots
+        dice_bot_ids = dice_bots.map(&:id)
         dice_bot_names = dice_bots.map(&:name)
         @dice_bot_wrappers = dice_bots.map { |bot| DiceBotWrapper.wrap(bot) }
 
+        @id_to_dice_bot_wrapper_index = dice_bot_ids.each_with_index.to_h
         @name_to_dice_bot_wrapper_index = dice_bot_names.each_with_index.to_h
 
         self
@@ -259,6 +315,7 @@ module BCDiceIRC
       def setup_widgets
         setup_main_window
         setup_version_labels
+        setup_preset_combo_box
         setup_game_system_combo_box
 
         self
@@ -268,6 +325,9 @@ module BCDiceIRC
       # @return [self]
       def setup_main_window
         @main_window = @builder.get_object('main_window')
+
+        @preset_combo_box = @builder.get_object('preset_combo_box')
+        @preset_entry = @builder.get_object('preset_entry')
 
         @hostname_entry = @builder.get_object('hostname_entry')
         @port_spin_button = @builder.get_object('port_spin_button')
@@ -298,6 +358,20 @@ module BCDiceIRC
         self
       end
 
+      def setup_preset_combo_box
+        presets_store = Gtk::ListStore.new(Object, String)
+
+        @presets.each do |c|
+          row = presets_store.append
+          row[0] = c
+          row[1] = c.name
+        end
+
+        @preset_combo_box.model = presets_store
+
+        @preset_combo_box.entry_text_column = 1
+      end
+
       # ゲームシステムのコンボボックスを用意する
       # @return [self]
       def setup_game_system_combo_box
@@ -319,11 +393,15 @@ module BCDiceIRC
         self
       end
 
-      # 最後に選択されていたゲームシステムを選択する
+      # 最後に選択されていたプリセットを選択する
       # @return [self]
       # @todo 設定から読み込んで設定する
-      def set_last_selected_game_system
+      def set_last_selected_preset
+        # 無効なゲームシステムが設定されていた場合に備えて、
+        # あらかじめ最初のゲームシステムを選んでおく
         @game_system_combo_box.active = 0
+
+        @preset_combo_box.active = 0
       end
 
       # 状態に合わせてウィジェットを更新する
@@ -359,10 +437,51 @@ module BCDiceIRC
         Gtk.main_quit
       end
 
+      # プリセットコンボボックスの値が変更されたときの処理
+      def preset_combo_box_on_changed
+        if @preset_combo_box.active < 0
+          # TODO: プリセット名のバリデーションを行い、保存できるかを判定する
+        else
+          set_irc_bot_config_from_preset(@preset_combo_box.active_iter[0])
+        end
+      end
+
+      # ホスト名欄が変更されたときの処理
+      # @return [void]
+      def hostname_entry_on_changed
+        @irc_bot_config.hostname = @hostname_entry.text
+      end
+
+      # ポートの値が変更されたときの処理
+      # @return [void]
+      def port_spin_button_on_value_changed
+        @irc_bot_config.port = @port_spin_button.value.to_i
+      end
+
       # パスワードチェックボタンが切り替えられたときの処理
       # @return [void]
       def password_check_button_on_toggled
         self.use_password = @password_check_button.active?
+      end
+
+      # パスワード欄が変更されたときの処理
+      # @return [void]
+      def password_entry_on_changed
+        if @use_password
+          @irc_bot_config.password = @password_entry.text
+        end
+      end
+
+      # ニックネーム欄が変更されたときの処理
+      # @return [void]
+      def nick_entry_on_changed
+        @irc_bot_config.nick = @nick_entry.text
+      end
+
+      # チャンネル欄が変更されたときの処理
+      # @return [void]
+      def channel_entry_on_changed
+        @irc_bot_config.channel = @channel_entry.text
       end
 
       # ゲームシステムコンボボックスの値が変更されたときの処理

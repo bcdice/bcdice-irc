@@ -93,10 +93,9 @@ Author: ocha
                             <property name="hexpand">True</property>
                             <property name="has_entry">True</property>
                             <signal name="changed" handler="preset_combo_box_on_changed" swapped="no"/>
-                            <signal name="editing-done" handler="preset_combo_box_on_editing_done" swapped="no"/>
                             <child internal-child="entry">
-                              <object class="GtkEntry">
-                                <property name="can_focus">False</property>
+                              <object class="GtkEntry" id="preset_entry">
+                                <property name="can_focus">True</property>
                               </object>
                             </child>
                           </object>
@@ -218,6 +217,7 @@ Author: ocha
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="text" translatable="yes">irc.trpg.net</property>
+                                    <signal name="changed" handler="hostname_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -234,6 +234,7 @@ Author: ocha
                                     <property name="numeric">True</property>
                                     <property name="update_policy">if-valid</property>
                                     <property name="value">6667</property>
+                                    <signal name="value-changed" handler="port_spin_button_on_value_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -263,6 +264,7 @@ Author: ocha
                                     <property name="visibility">False</property>
                                     <property name="invisible_char">●</property>
                                     <property name="input_purpose">password</property>
+                                    <signal name="changed" handler="password_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -287,6 +289,7 @@ Author: ocha
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="text" translatable="yes">BCDice</property>
+                                    <signal name="changed" handler="nick_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -294,7 +297,7 @@ Author: ocha
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="nick_label1">
+                                  <object class="GtkLabel" id="channel_label">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
@@ -311,6 +314,7 @@ Author: ocha
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="text" translatable="yes">#Dice_Test</property>
+                                    <signal name="changed" handler="channel_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>

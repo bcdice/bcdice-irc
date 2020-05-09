@@ -3,6 +3,7 @@
 module BCDiceIRC
   class IRCBot
     Config = Struct.new(
+      :name,
       :hostname,
       :port,
       :password,
@@ -15,6 +16,7 @@ module BCDiceIRC
 
     class Config
       DEFAULT = new(
+        name: 'デフォルト',
         hostname: 'irc.trpg.net',
         port: 6667,
         password: nil,
@@ -26,6 +28,7 @@ module BCDiceIRC
 
       def self.from_hash(hash)
         new(
+          name: fetch(hash, :name),
           hostname: fetch(hash, :hostname),
           port: fetch(hash, :port),
           password: fetch(hash, :password),

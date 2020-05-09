@@ -11,6 +11,8 @@ gem 'gtk3'
 # IRCボットフレームワーク
 gem 'grinch'
 
+gem 'activesupport'
+
 group :development, :test do
   gem 'rake'
 end

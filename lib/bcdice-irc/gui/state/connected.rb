@@ -22,6 +22,8 @@ module BCDiceIRC
 
           @connect_disconnect_button_label = DISCONNECT_BUTTON_LABEL
           @connect_disconnect_button_sensitive = true
+
+          @need_notification_on_game_system_change = true
         end
 
         # メインウィンドウのタイトルを返す

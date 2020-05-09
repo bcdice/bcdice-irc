@@ -46,6 +46,10 @@ module BCDiceIRC
         # @return [Boolean]
         attr_reader :connect_disconnect_button_sensitive
 
+        # ゲームシステムが変更されたときに通知する必要があるか
+        # @return [Boolean]
+        attr_reader :need_notification_on_game_system_change
+
         # 状態を初期化する
         # @param [GUI::Application] app GUIアプリケーション
         # @param [String] name 状態の名前
@@ -65,6 +69,8 @@ module BCDiceIRC
 
           @connect_disconnect_button_label = CONNECT_BUTTON_LABEL
           @connect_disconnect_button_sensitive = false
+
+          @need_notification_on_game_system_change = false
         end
 
         # 接続状況を返す
