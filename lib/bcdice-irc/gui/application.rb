@@ -321,28 +321,35 @@ module BCDiceIRC
         self
       end
 
+      WIDGET_IDS = [
+        'main_window',
+
+        'preset_combo_box',
+        'preset_entry',
+
+        'hostname_entry',
+        'port_spin_button',
+        'password_check_button',
+        'password_entry',
+        'nick_entry',
+        'channel_entry',
+        'connect_disconnect_button',
+
+        'game_system_combo_box',
+        'help_text_view',
+
+        'bcdice_version_label',
+
+        'status_bar',
+      ].freeze
+
       # メインウィンドウを用意する
       # @return [self]
       def setup_main_window
-        @main_window = @builder.get_object('main_window')
+        WIDGET_IDS.each do |id|
+          instance_variable_set("@#{id}", @builder.get_object(id))
+        end
 
-        @preset_combo_box = @builder.get_object('preset_combo_box')
-        @preset_entry = @builder.get_object('preset_entry')
-
-        @hostname_entry = @builder.get_object('hostname_entry')
-        @port_spin_button = @builder.get_object('port_spin_button')
-        @password_check_button = @builder.get_object('password_check_button')
-        @password_entry = @builder.get_object('password_entry')
-        @nick_entry = @builder.get_object('nick_entry')
-        @channel_entry = @builder.get_object('channel_entry')
-        @connect_disconnect_button = @builder.get_object('connect_disconnect_button')
-
-        @game_system_combo_box = @builder.get_object('game_system_combo_box')
-        @help_text_view = @builder.get_object('help_text_view')
-
-        @bcdice_version_label = @builder.get_object('bcdice_version_label')
-
-        @status_bar = @builder.get_object('status_bar')
         @status_bar_change_game_system = @status_bar.get_context_id('change game system')
         @status_bar_connection = @status_bar.get_context_id('connection')
 
