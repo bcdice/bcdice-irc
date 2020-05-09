@@ -145,7 +145,7 @@ module BCDiceIRC
 
         if @state.need_notification_on_game_system_change
           @status_bar.push(
-            @status_bar_change_game_system,
+            @status_bar_context_ids.fetch(:game_system_change),
             "ゲームシステムを「#{@dice_bot_wrapper.name}」に設定しました"
           )
         end
@@ -229,7 +229,10 @@ module BCDiceIRC
       def update_connection_status
         return if @setting_up
 
-        @status_bar.push(@status_bar_connection, @state.connection_status)
+        @status_bar.push(
+          @status_bar_context_ids.fetch(:connection),
+          @state.connection_status
+        )
 
         self
       end
@@ -310,17 +313,6 @@ module BCDiceIRC
         self
       end
 
-      # ウィジェットを用意する
-      # @return [self]
-      def setup_widgets
-        setup_main_window
-        setup_version_labels
-        setup_preset_combo_box
-        setup_game_system_combo_box
-
-        self
-      end
-
       WIDGET_IDS = [
         'main_window',
 
@@ -343,15 +335,35 @@ module BCDiceIRC
         'status_bar',
       ].freeze
 
-      # メインウィンドウを用意する
+      # ウィジェットを用意する
       # @return [self]
-      def setup_main_window
+      def setup_widgets
+        # ウィジェットのインスタンス変数を用意する
         WIDGET_IDS.each do |id|
           instance_variable_set("@#{id}", @builder.get_object(id))
         end
 
-        @status_bar_change_game_system = @status_bar.get_context_id('change game system')
-        @status_bar_connection = @status_bar.get_context_id('connection')
+        setup_status_bar_context_ids
+        setup_version_labels
+        setup_preset_combo_box
+        setup_game_system_combo_box
+
+        self
+      end
+
+      # ステータスバーに表示する項目の種類
+      STATUS_BAR_CONTEXTS = [
+        :preset_load,
+        :game_system_change,
+        :connection,
+      ]
+
+      # ステータスバーのコンテクストIDを用意する
+      # @return [self]
+      def setup_status_bar_context_ids
+        @status_bar_context_ids = STATUS_BAR_CONTEXTS
+                                  .map { |c| [c, @status_bar.get_context_id(c.to_s)] }
+                                  .to_h
 
         self
       end
