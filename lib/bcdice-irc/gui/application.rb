@@ -212,6 +212,11 @@ module BCDiceIRC
         @irc_bot_config.quit_message = irc_bot_config.quit_message.dup
         self.game_system_id = irc_bot_config.game_system_id
 
+        @status_bar.push(
+          @status_bar_context_ids.fetch(:preset_load),
+          "プリセット「#{irc_bot_config.name}」を読み込みました"
+        )
+
         self
       end
 
@@ -313,6 +318,7 @@ module BCDiceIRC
         self
       end
 
+      # ウィジェットIDの配列
       WIDGET_IDS = [
         'main_window',
 
@@ -377,6 +383,8 @@ module BCDiceIRC
         self
       end
 
+      # プリセットのコンボボックスを用意する
+      # @return [self]
       def setup_preset_combo_box
         presets_store = Gtk::ListStore.new(Object, String)
 
@@ -387,8 +395,9 @@ module BCDiceIRC
         end
 
         @preset_combo_box.model = presets_store
-
         @preset_combo_box.entry_text_column = 1
+
+        self
       end
 
       # ゲームシステムのコンボボックスを用意する
@@ -421,6 +430,8 @@ module BCDiceIRC
         @game_system_combo_box.active = 0
 
         @preset_combo_box.active = 0
+
+        self
       end
 
       # 状態に合わせてウィジェットを更新する
@@ -459,8 +470,10 @@ module BCDiceIRC
       # プリセットコンボボックスの値が変更されたときの処理
       def preset_combo_box_on_changed
         if @preset_combo_box.active < 0
+          # 文字が入力された場合
           # TODO: プリセット名のバリデーションを行い、保存できるかを判定する
         else
+          # プリセットが選択された場合
           set_irc_bot_config_from_preset(@preset_combo_box.active_iter[0])
         end
       end
