@@ -12,5 +12,6 @@ gem 'gtk3'
 gem 'grinch'
 
 group :development do
+  gem 'rake'
   gem 'byebug'
 end
