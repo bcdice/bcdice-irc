@@ -41,6 +41,12 @@ module BCDiceIRC
           game_system_id: hash_with_sym_keys[:game_system_id]
         )
       end
+
+      # 接続先のエンドポイント（+ホスト名:ポート+）を返す
+      # @return [String]
+      def end_point
+        "#{hostname}:#{port}"
+      end
     end
   end
 end

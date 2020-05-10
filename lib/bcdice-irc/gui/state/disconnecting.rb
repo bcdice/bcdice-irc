@@ -29,7 +29,7 @@ module BCDiceIRC
         # 接続状況を返す
         # @return [String]
         def connection_status
-          "#{@app.end_point} から切断中..."
+          "#{@app.irc_bot_config.end_point} から切断中..."
         end
       end
     end

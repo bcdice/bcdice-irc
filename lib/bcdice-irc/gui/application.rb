@@ -75,16 +75,6 @@ module BCDiceIRC
         @mediator = Mediator.new(self, @log_level)
       end
 
-      # 接続先のエンドポイント（+ホスト名:ポート+）を返す
-      # @return [String]
-      def end_point
-        if @irc_bot_config
-          "#{@irc_bot_config.hostname}:#{@irc_bot_config.port}"
-        else
-          ''
-        end
-      end
-
       # アプリケーションを実行する
       # @return [self]
       def start!

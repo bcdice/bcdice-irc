@@ -64,6 +64,10 @@ module BCDiceIRC
       test '.from_hash の結果が正しい' do
         assert_equal(@config, Config.from_hash(data))
       end
+
+      test '#end_point' do
+        assert_equal('irc.trpg.net:6667', @config.end_point)
+      end
     end
   end
 end

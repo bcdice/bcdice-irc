@@ -30,9 +30,9 @@ module BCDiceIRC
         # @return [String]
         def connection_status
           if @app.last_connection_exception
-            "#{@app.end_point} に接続できませんでした"
+            "#{@app.irc_bot_config.end_point} に接続できませんでした"
           else
-            "#{@app.end_point} から切断されました"
+            "#{@app.irc_bot_config.end_point} から切断されました"
           end
         end
 
