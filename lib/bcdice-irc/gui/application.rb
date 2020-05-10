@@ -17,6 +17,7 @@ require_relative '../categorizable_logger'
 
 require_relative 'mediator'
 require_relative 'state'
+require_relative 'preset_manager'
 
 module BCDiceIRC
   module GUI
@@ -47,27 +48,17 @@ module BCDiceIRC
       attr_reader :channel_entry
 
       # アプリケーションを初期化する
+      # @param [String] presets_yaml_path プリセット集のYAMLファイルのパス
       # @param [Symbol] log_level ログレベル
-      def initialize(log_level)
+      def initialize(presets_yaml_path, log_level)
+        @presets_yaml_path = presets_yaml_path
         @log_level = log_level
 
         @builder = Gtk::Builder.new
 
         @use_password = false
         @dice_bot_wrapper = nil
-        @presets = [
-          IRCBot::Config::DEFAULT,
-          IRCBot::Config.new(
-            name: '設定1',
-            hostname: 'irc.cre.ne.jp',
-            port: 6668,
-            password: 'cre',
-            nick: 'DiceBot',
-            channel: '#irc_test',
-            quit_message: 'Bye!',
-            game_system_id: 'Cthulhu7th'
-          )
-        ]
+        @preset_manager = nil
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
         @last_connection_exception = nil
 
@@ -102,6 +93,7 @@ module BCDiceIRC
         @setting_up = true
 
         collect_dice_bots
+        setup_preset_manager
 
         load_glade_file
         setup_widgets
@@ -308,6 +300,23 @@ module BCDiceIRC
         self
       end
 
+      # プリセット集を用意する
+      # @return [self]
+      def setup_preset_manager
+        begin
+          @preset_manager = PresetManager.load_yaml_file(@presets_yaml_path)
+        rescue => e
+          @logger.warn("プリセット集を読み込めません: #{e}")
+        end
+
+        if !@preset_manager || @preset_manager.empty?
+          @preset_manager = PresetManager.default
+          @logger.warn('既定のプリセット集を使用します')
+        end
+
+        self
+      end
+
       # ウィジェット定義ファイルを読み込む
       # @return [self]
       def load_glade_file
@@ -388,7 +397,7 @@ module BCDiceIRC
       def setup_preset_combo_box
         presets_store = Gtk::ListStore.new(Object, String)
 
-        @presets.each do |c|
+        @preset_manager.each do |c|
           row = presets_store.append
           row[0] = c
           row[1] = c.name
@@ -429,7 +438,7 @@ module BCDiceIRC
         # あらかじめ最初のゲームシステムを選んでおく
         @game_system_combo_box.active = 0
 
-        @preset_combo_box.active = 0
+        @preset_combo_box.active = @preset_manager.index_last_selected
 
         self
       end
@@ -469,12 +478,14 @@ module BCDiceIRC
 
       # プリセットコンボボックスの値が変更されたときの処理
       def preset_combo_box_on_changed
-        if @preset_combo_box.active < 0
+        active_index = @preset_combo_box.active
+        if active_index < 0
           # 文字が入力された場合
           # TODO: プリセット名のバリデーションを行い、保存できるかを判定する
         else
           # プリセットが選択された場合
           set_irc_bot_config_from_preset(@preset_combo_box.active_iter[0])
+          @preset_manager.index_last_selected = active_index
         end
       end
 

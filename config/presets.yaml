@@ -1,0 +1,19 @@
+index_last_selected: 0
+
+presets:
+  - name: デフォルト
+    hostname: irc.trpg.net
+    port: 6667
+    password: null
+    nick: BCDice
+    channel: '#Dice_Test'
+    quit_message: さようなら
+    game_system_id: DiceBot
+  - name: 設定1
+    hostname: irc.cre.ne.jp
+    port: 6668
+    password: cre
+    nick: DiceBot
+    channel: '#Dice_Test_2'
+    quit_message: Bye!
+    game_system_id: Cthulhu7th

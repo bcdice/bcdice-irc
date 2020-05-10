@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'active_support/core_ext/hash/keys'
+
 module BCDiceIRC
   class IRCBot
     Config = Struct.new(
@@ -27,20 +29,17 @@ module BCDiceIRC
       ).freeze
 
       def self.from_hash(hash)
+        hash_with_sym_keys = hash.symbolize_keys
         new(
-          name: fetch(hash, :name),
-          hostname: fetch(hash, :hostname),
-          port: fetch(hash, :port),
-          password: fetch(hash, :password),
-          nick: fetch(hash, :nick),
-          channel: fetch(hash, :channel),
-          quit_message: fetch(hash, :quit_message),
-          game_system_id: fetch(hash, :game_system_id)
+          name: hash_with_sym_keys[:name],
+          hostname: hash_with_sym_keys[:hostname],
+          port: hash_with_sym_keys[:port],
+          password: hash_with_sym_keys[:password],
+          nick: hash_with_sym_keys[:nick],
+          channel: hash_with_sym_keys[:channel],
+          quit_message: hash_with_sym_keys[:quit_message],
+          game_system_id: hash_with_sym_keys[:game_system_id]
         )
-      end
-
-      private_class_method def self.fetch(hash, key)
-        hash[key] || hash[key.to_s]
       end
     end
   end

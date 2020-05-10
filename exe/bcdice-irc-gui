@@ -27,6 +27,7 @@ rescue LoadError
   # デバッグ用ライブラリがインストールされていなかったら何もしない
 end
 
+presets_yaml_path = File.expand_path('../config/presets.yaml', __dir__)
 log_level = :warn
 
 OptionParser.new do |opt|
@@ -44,4 +45,4 @@ OptionParser.new do |opt|
   opt.parse!(ARGV)
 end
 
-BCDiceIRC::GUI::Application.new(log_level).start!
+BCDiceIRC::GUI::Application.new(presets_yaml_path, log_level).start!

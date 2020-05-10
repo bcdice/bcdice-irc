@@ -7,4 +7,5 @@ end
 
 require_relative 'gui/mediator'
 require_relative 'gui/state'
+require_relative 'gui/preset_manager'
 require_relative 'gui/application'
