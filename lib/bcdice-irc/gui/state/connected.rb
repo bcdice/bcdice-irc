@@ -15,6 +15,7 @@ module BCDiceIRC
           @hostname_entry_sensitive = false
           @port_spin_button_sensitive = false
           @password_check_button_sensitive = false
+          @encoding_combo_box_sensitive = false
           @nick_entry_sensitive = false
           @channel_entry_sensitive = false
 

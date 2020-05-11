@@ -16,6 +16,7 @@ module BCDiceIRC
           hostname: 'irc.trpg.net',
           port: 6667,
           password: nil,
+          encoding: IRCBot::NAME_TO_ENCODING['UTF-8'],
           nick: 'BCDice',
           channel: '#Dice_Test',
           quit_message: 'さようなら',
@@ -24,12 +25,13 @@ module BCDiceIRC
 
         @config2 = IRCBot::Config.new(
           name: 'Config 1',
-          hostname: 'irc.cre.jp',
-          port: 6667,
+          hostname: 'irc.example.net',
+          port: 6664,
           password: 'p@ssw0rd',
-          nick: 'BCDice',
-          channel: '#Dice_Test',
-          quit_message: 'さようなら',
+          encoding: IRCBot::NAME_TO_ENCODING['ISO-2022-JP'],
+          nick: 'DiceBot',
+          channel: '#DiceTest',
+          quit_message: 'Bye',
           game_system_id: 'DiceBot'
         )
 
@@ -88,7 +90,7 @@ module BCDiceIRC
         @manager.add(@config1, @config2)
 
         c2 = @manager.fetch_by_name('Config 1')
-        assert_equal('irc.cre.jp', c2.hostname)
+        assert_equal('irc.example.net', c2.hostname)
 
         c1 = @manager.fetch_by_name('デフォルト')
         assert_equal('irc.trpg.net', c1.hostname)
@@ -102,7 +104,7 @@ module BCDiceIRC
         hash = YAML.load_file(@yaml_path)
         manager = PresetManager.from_hash(hash)
 
-        assert_equal(['デフォルト', '設定1'], manager.map(&:name))
+        assert_equal(['デフォルト', 'Config 1'], manager.map(&:name))
         assert_equal(1, manager.index_last_selected)
       end
 

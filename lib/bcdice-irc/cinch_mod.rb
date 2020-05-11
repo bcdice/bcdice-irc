@@ -124,7 +124,7 @@ module Cinch
             string.force_encoding("CP1252").encode!("UTF-8", invalid: :replace, undef: :replace)
           end
         else
-          string.force_encoding(encoding).encode!(invalid: :replace, undef: :replace)
+          string.force_encoding(encoding).encode!("UTF-8", invalid: :replace, undef: :replace)
           string = string.chars.select { |c| c.valid_encoding? }.join
         end
 

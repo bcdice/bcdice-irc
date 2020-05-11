@@ -7,36 +7,39 @@ module BCDiceIRC
     class ConfigTest < Test::Unit::TestCase
       CONFIG_HASH = {
         name: 'Config 1',
-        hostname: 'irc.trpg.net',
-        port: 6667,
+        hostname: 'irc.example.net',
+        port: 6664,
         password: 'p@ssw0rd',
-        nick: 'BCDice',
-        channel: '#Dice_Test',
-        quit_message: 'さようなら',
-        game_system_id: 'DiceBot'
+        encoding: 'ISO-2022-JP',
+        nick: 'DiceBot',
+        channel: '#DiceTest',
+        quit_message: 'Bye',
+        game_system_id: 'Cthulhu'
       }.freeze
 
       CONFIG_HASH_WITH_STR_KEYS = {
         'name' => 'Config 1',
-        'hostname' => 'irc.trpg.net',
-        'port' => 6667,
+        'hostname' => 'irc.example.net',
+        'port' => 6664,
         'password' => 'p@ssw0rd',
-        'nick' => 'BCDice',
-        'channel' => '#Dice_Test',
-        'quit_message' => 'さようなら',
-        'game_system_id' => 'DiceBot'
+        'encoding' => 'ISO-2022-JP',
+        'nick' => 'DiceBot',
+        'channel' => '#DiceTest',
+        'quit_message' => 'Bye',
+        'game_system_id' => 'Cthulhu'
       }.freeze
 
       setup do
         @config = Config.new(
           name: 'Config 1',
-          hostname: 'irc.trpg.net',
-          port: 6667,
+          hostname: 'irc.example.net',
+          port: 6664,
           password: 'p@ssw0rd',
-          nick: 'BCDice',
-          channel: '#Dice_Test',
-          quit_message: 'さようなら',
-          game_system_id: 'DiceBot'
+          encoding: NAME_TO_ENCODING['ISO-2022-JP'],
+          nick: 'DiceBot',
+          channel: '#DiceTest',
+          quit_message: 'Bye',
+          game_system_id: 'Cthulhu'
         )
       end
 
@@ -45,6 +48,7 @@ module BCDiceIRC
           name: 'デフォルト',
           hostname: 'irc.trpg.net',
           port: 6667,
+          encoding: NAME_TO_ENCODING['UTF-8'],
           password: nil,
           nick: 'BCDice',
           channel: '#Dice_Test',
@@ -66,7 +70,7 @@ module BCDiceIRC
       end
 
       test '#end_point' do
-        assert_equal('irc.trpg.net:6667', @config.end_point)
+        assert_equal('irc.example.net:6664', @config.end_point)
       end
     end
   end

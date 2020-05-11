@@ -63,7 +63,7 @@ module BCDiceIRC
         c.reconnect = false
         c.timeouts = timeouts_config
         c.password = @config.password
-        c.encoding = 'UTF-8'
+        c.encoding = @config.encoding.encoding
         c.nick = @config.nick
         c.user = 'BCDiceIRC'
         c.realname = 'BCDiceIRC'
@@ -99,6 +99,7 @@ module BCDiceIRC
   end
 end
 
+require_relative 'irc_bot/encoding'
 require_relative 'irc_bot/config'
 require_relative 'irc_bot/message_sink'
 require_relative 'irc_bot/plugin_config'

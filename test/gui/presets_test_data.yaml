@@ -5,15 +5,17 @@ presets:
     hostname: irc.trpg.net
     port: 6667
     password: null
+    encoding: UTF-8
     nick: BCDice
     channel: '#Dice_Test'
     quit_message: さようなら
     game_system_id: DiceBot
-  - name: 設定1
-    hostname: irc.cre.ne.jp
-    port: 6668
-    password: cre
+  - name: Config 1
+    hostname: irc.example.net
+    port: 6664
+    password: p@ssw0rd
+    encoding: ISO-2022-JP
     nick: DiceBot
-    channel: '#Dice_Test_2'
-    quit_message: Bye!
-    game_system_id: Cthulhu7th
+    channel: '#DiceTest'
+    quit_message: Bye
+    game_system_id: Cthulhu

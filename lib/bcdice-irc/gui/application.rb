@@ -4,8 +4,6 @@ require 'gtk3'
 require 'active_support/core_ext/object/deep_dup'
 require 'active_support/core_ext/object/blank'
 
-require 'cinch/logger/formatted_logger'
-
 require 'bcdiceCore'
 require 'diceBot/DiceBot'
 require 'diceBot/DiceBotLoader'
@@ -18,9 +16,11 @@ require_relative '../categorizable_logger'
 require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_manager'
+require_relative 'combo_box_configurator'
 
 module BCDiceIRC
   module GUI
+    # BCDice IRCのGUIアプリケーションのクラス
     class Application
       # ログレベル
       # @return [Symbol]
@@ -40,11 +40,19 @@ module BCDiceIRC
       # @return [StandardError, nil]
       attr_accessor :last_connection_exception
 
+      # @return [Gtk::Entry]
       attr_reader :hostname_entry
+      # @return [Gtk::SpinButton]
       attr_reader :port_spin_button
+      # @return [Gtk::CheckButton]
       attr_reader :password_check_button
+      # @return [Gtk::Entry]
       attr_reader :password_entry
+      # @return [Gtk::ComboBox]
+      attr_reader :encoding_combo_box
+      # @return [Gtk::Entry]
       attr_reader :nick_entry
+      # @return [Gtk::Entry]
       attr_reader :channel_entry
 
       # アプリケーションを初期化する
@@ -57,6 +65,7 @@ module BCDiceIRC
         @builder = Gtk::Builder.new
 
         @use_password = false
+        @encoding_to_index = IRCBot::AVAILABLE_ENCODINGS.each_with_index.to_h
         @dice_bot_wrapper = nil
         @preset_manager = nil
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
@@ -192,6 +201,7 @@ module BCDiceIRC
         # TODO: バリデーション無効化ここまで。ここでバリデーションを実行する。
 
         @irc_bot_config.quit_message = irc_bot_config.quit_message.dup
+        set_encoding_combo_box_active(irc_bot_config.encoding)
         self.game_system_id = irc_bot_config.game_system_id
 
         @status_bar.push(
@@ -328,6 +338,7 @@ module BCDiceIRC
         'port_spin_button',
         'password_check_button',
         'password_entry',
+        'encoding_combo_box',
         'nick_entry',
         'channel_entry',
         'connect_disconnect_button',
@@ -350,6 +361,7 @@ module BCDiceIRC
 
         setup_status_bar_context_ids
         setup_version_labels
+        setup_encoding_combo_box
         setup_preset_combo_box
         setup_game_system_combo_box
 
@@ -382,18 +394,21 @@ module BCDiceIRC
         self
       end
 
+      # 文字コードコンボボックスを用意する
+      # @return [self]
+      def setup_encoding_combo_box
+        configurator = ComboBoxConfigurator.new(@encoding_combo_box)
+        configurator.bind(IRCBot::AVAILABLE_ENCODINGS)
+        configurator.set_cell_renderer_text
+
+        self
+      end
+
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        presets_store = Gtk::ListStore.new(Object, String)
-
-        @preset_manager.each do |c|
-          row = presets_store.append
-          row[0] = c
-          row[1] = c.name
-        end
-
-        @preset_combo_box.model = presets_store
+        configurator = ComboBoxConfigurator.new(@preset_combo_box)
+        configurator.bind(@preset_manager, &:name)
         @preset_combo_box.entry_text_column = 1
 
         self
@@ -402,20 +417,9 @@ module BCDiceIRC
       # ゲームシステムのコンボボックスを用意する
       # @return [self]
       def setup_game_system_combo_box
-        game_system_list_store = Gtk::ListStore.new(Object, String)
-
-        @dice_bot_wrappers.each do |w|
-          row = game_system_list_store.append
-          row[0] = w
-          row[1] = w.name
-        end
-
-        @game_system_combo_box.model = game_system_list_store
-
-        # 各行の描画について設定する
-        game_system_cell_render = Gtk::CellRendererText.new
-        @game_system_combo_box.pack_start(game_system_cell_render, true)
-        @game_system_combo_box.add_attribute(game_system_cell_render, 'text', 1)
+        configurator = ComboBoxConfigurator.new(@game_system_combo_box)
+        configurator.bind(@dice_bot_wrappers, &:name)
+        configurator.set_cell_renderer_text
 
         self
       end
@@ -424,13 +428,24 @@ module BCDiceIRC
       # @return [self]
       # @todo 設定から読み込んで設定する
       def set_last_selected_preset
-        # 無効なゲームシステムが設定されていた場合に備えて、
-        # あらかじめ最初のゲームシステムを選んでおく
+        # コンボボックス：無効な値が設定されていた場合に備えて、
+        # あらかじめ最初の項目を選んでおく
+        @encoding_combo_box.active = 0
         @game_system_combo_box.active = 0
 
         @preset_combo_box.active = @preset_manager.index_last_selected
 
         self
+      end
+
+      # 文字コードコンボボックスの選択項目を変更する
+      # @param [EncodingInfo] encoding 文字エンコーディング情報
+      # @note ウィジェットの準備が完了してから使うこと。
+      def set_encoding_combo_box_active(encoding)
+        new_index = @encoding_to_index[encoding]
+        return unless new_index
+
+        @encoding_combo_box.active = new_index
       end
 
       # 状態に合わせてウィジェットを更新する
@@ -443,6 +458,7 @@ module BCDiceIRC
         # パスワードの入力可否を更新するために再代入する
         self.use_password = @use_password
 
+        @encoding_combo_box.sensitive = @state.encoding_combo_box_sensitive
         @nick_entry.sensitive = @state.nick_entry_sensitive
         @channel_entry.sensitive = @state.channel_entry_sensitive
 
@@ -503,6 +519,11 @@ module BCDiceIRC
         if @use_password
           @irc_bot_config.password = @password_entry.text
         end
+      end
+
+      # 文字コードコンボボックスの値が変更されたときの処理
+      def encoding_combo_box_on_changed
+        @irc_bot_config.encoding = @encoding_combo_box.active_iter[0]
       end
 
       # ニックネーム欄が変更されたときの処理
