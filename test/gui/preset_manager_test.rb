@@ -81,6 +81,14 @@ module BCDiceIRC
         end
       end
 
+      test 'include?' do
+        @manager.add(@config1, @config2)
+
+        assert(@manager.include?('デフォルト'))
+        assert(@manager.include?('Config 1'))
+        refute(@manager.include?('Config 2'))
+      end
+
       test 'fetch_by_index' do
         @manager.add(@config1, @config2)
 

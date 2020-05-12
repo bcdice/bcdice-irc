@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module BCDiceIrc
+module BCDiceIRC
   module GUI
     # GUIの状態を格納するモジュール
     module State; end

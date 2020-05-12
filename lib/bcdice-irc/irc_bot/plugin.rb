@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module BCDiceIrc
+module BCDiceIRC
   class IRCBot
     # Cinchボットのプラグインを格納するモジュール
     module Plugin; end

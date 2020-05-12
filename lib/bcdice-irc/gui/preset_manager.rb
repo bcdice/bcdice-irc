@@ -30,6 +30,14 @@ module BCDiceIRC
 
       def_delegator(:@presets, :fetch, :fetch_by_index)
 
+      def_delegators(
+        :@name_index_preset_map,
+        :has_key?,
+        :include?,
+        :key?,
+        :member?
+      )
+
       # 既定のプリセット集を返す
       # @return [PresetManager]
       def self.default

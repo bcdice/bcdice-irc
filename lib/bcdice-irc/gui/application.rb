@@ -17,6 +17,7 @@ require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_manager'
 require_relative 'combo_box_setup'
+require_relative 'preset_save_state'
 
 module BCDiceIRC
   module GUI
@@ -80,6 +81,8 @@ module BCDiceIRC
         }
         @state = nil
 
+        @preset_save_state = nil
+
         @logger = CategorizableLogger.new('Application', $stderr, level: @log_level)
         @mediator = Mediator.new(self, @log_level)
       end
@@ -112,6 +115,16 @@ module BCDiceIRC
         @logger.debug('Main loop end')
 
         self
+      end
+
+      # プリセットの保存に関する状態を変更する
+      # @param [PresetSaveState] value 新しい状態
+      # @note ウィジェットの準備が完了してから使うこと。
+      def preset_save_state=(value)
+        @preset_save_state = value
+
+        @preset_save_button.label = @preset_save_state.preset_save_button_label
+        @preset_save_button.sensitive = @preset_save_state.preset_save_button_sensitive
       end
 
       # パスワードを使うかどうかを変更する
@@ -336,6 +349,8 @@ module BCDiceIRC
 
         'preset_combo_box',
         'preset_entry',
+        'preset_save_button',
+        'preset_delete_button',
 
         'hostname_entry',
         'port_spin_button',
@@ -487,11 +502,25 @@ module BCDiceIRC
         active_index = @preset_combo_box.active
         if active_index < 0
           # 文字が入力された場合
-          # TODO: プリセット名のバリデーションを行い、保存できるかを判定する
+          self.preset_save_state = preset_save_state_by_name(@preset_entry.text)
         else
           # プリセットが選択された場合
           set_irc_bot_config_from_preset(@preset_combo_box.active_iter[0])
           @preset_manager.index_last_selected = active_index
+          self.preset_save_state = PresetSaveState::PRESET_EXISTS
+        end
+      end
+
+      # 入力されたプリセット名から、プリセットの保存に関する状態を求める
+      # @param [String] name 入力されたプリセット名
+      # @return [PresetSaveState]
+      def preset_save_state_by_name(name)
+        if @preset_manager.include?(name)
+          PresetSaveState::PRESET_EXISTS
+        elsif name.blank?
+          PresetSaveState::INVALID_NAME
+        else
+          PresetSaveState::NEW_PRESET
         end
       end
 
