@@ -15,7 +15,7 @@ require_relative '../categorizable_logger'
 
 require_relative 'mediator'
 require_relative 'state'
-require_relative 'preset_manager'
+require_relative 'preset_store'
 require_relative 'combo_box_setup'
 require_relative 'preset_save_state'
 
@@ -68,7 +68,7 @@ module BCDiceIRC
         @use_password = false
         @encoding_to_index = IRCBot::AVAILABLE_ENCODINGS.each_with_index.to_h
         @dice_bot_wrapper = nil
-        @preset_manager = nil
+        @preset_store = nil
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
         @last_connection_exception = nil
 
@@ -95,7 +95,7 @@ module BCDiceIRC
         @setting_up = true
 
         collect_dice_bots
-        setup_preset_manager
+        setup_preset_store
 
         load_glade_file
         setup_widgets
@@ -315,18 +315,18 @@ module BCDiceIRC
 
       # プリセット集を用意する
       # @return [self]
-      def setup_preset_manager
-        @preset_manager = PresetManager.new
-        @preset_manager.logger = @logger
+      def setup_preset_store
+        @preset_store = PresetStore.new
+        @preset_store.logger = @logger
 
         begin
-          @preset_manager.load_yaml_file(@presets_yaml_path)
+          @preset_store.load_yaml_file(@presets_yaml_path)
         rescue => e
           @logger.warn("プリセット集を読み込めません: #{e}")
         end
 
-        if !@preset_manager || @preset_manager.empty?
-          @preset_manager = PresetManager.default
+        if !@preset_store || @preset_store.empty?
+          @preset_store = PresetStore.default
           @logger.warn('既定のプリセット集を使用します')
         end
 
@@ -424,7 +424,7 @@ module BCDiceIRC
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        ComboBoxSetup::bind(@preset_combo_box, @preset_manager, &:name)
+        ComboBoxSetup::bind(@preset_combo_box, @preset_store, &:name)
         @preset_combo_box.entry_text_column = 1
 
         self
@@ -448,7 +448,7 @@ module BCDiceIRC
         @encoding_combo_box.active = 0
         @game_system_combo_box.active = 0
 
-        @preset_combo_box.active = @preset_manager.index_last_selected
+        @preset_combo_box.active = @preset_store.index_last_selected
 
         self
       end
@@ -506,7 +506,7 @@ module BCDiceIRC
         else
           # プリセットが選択された場合
           set_irc_bot_config_from_preset(@preset_combo_box.active_iter[0])
-          @preset_manager.index_last_selected = active_index
+          @preset_store.index_last_selected = active_index
           self.preset_save_state = PresetSaveState::PRESET_EXISTS
         end
       end
@@ -515,7 +515,7 @@ module BCDiceIRC
       # @param [String] name 入力されたプリセット名
       # @return [PresetSaveState]
       def preset_save_state_by_name(name)
-        if @preset_manager.include?(name)
+        if @preset_store.include?(name)
           PresetSaveState::PRESET_EXISTS
         elsif name.blank?
           PresetSaveState::INVALID_NAME

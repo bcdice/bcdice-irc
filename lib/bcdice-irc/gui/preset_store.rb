@@ -10,7 +10,7 @@ require_relative '../irc_bot/config'
 module BCDiceIRC
   module GUI
     # プリセットの管理を担当するクラス
-    class PresetManager
+    class PresetStore
       include Enumerable
       extend Forwardable
 
@@ -39,11 +39,11 @@ module BCDiceIRC
       )
 
       # 既定のプリセット集を返す
-      # @return [PresetManager]
+      # @return [PresetStore]
       def self.default
-        manager = new
-        manager.add(IRCBot::Config::DEFAULT)
-        manager
+        store = new
+        store.add(IRCBot::Config::DEFAULT)
+        store
       end
 
       # 初期化する
