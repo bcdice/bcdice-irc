@@ -56,6 +56,11 @@ module BCDiceIRC
   end
 
   class MyCinchIRC < Cinch::IRC
+    # ライブラリ読み込み時の外部エンコーディング
+    #
+    # SocketErrorのメッセージの文字エンコーディングを修正するために用いる。
+    EXTERNAL_ENCODING_ON_LOAD = Encoding.default_external
+
     # @api private
     # @return [Boolean] True if the connection could be established
     def connect
@@ -72,7 +77,7 @@ module BCDiceIRC
       rescue SocketError => e
         # エンコーディングがASCII-8BITになって文字化けする場合があるため、
         # Encoding.default_externalに変換する
-        e.message.force_encoding(Encoding.default_external)
+        e.message.force_encoding(EXTERNAL_ENCODING_ON_LOAD).encode!(Encoding::UTF_8)
 
         @bot.last_connection_exception = e
         @bot.loggers.warn("Could not connect to the IRC server. Please check your network: #{e.message}")
