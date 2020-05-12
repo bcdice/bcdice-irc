@@ -32,9 +32,7 @@ module BCDiceIRC
 
       def_delegators(
         :@name_index_preset_map,
-        :has_key?,
         :include?,
-        :key?,
         :member?
       )
 
@@ -42,7 +40,7 @@ module BCDiceIRC
       # @return [PresetStore]
       def self.default
         store = new
-        store.add(IRCBot::Config::DEFAULT)
+        store.push(IRCBot::Config::DEFAULT)
         store
       end
 
@@ -91,23 +89,16 @@ module BCDiceIRC
 
       # 設定を追加する
       # @param [IRCBot::Config] config IRCボット設定
-      # @return [self]
-      def add(*config)
+      # @return [Symbol] 追加された（+:appended+）か更新された（+:updated+）か
+      def push(config)
         empty_before_add = empty?
+        need_append = !include?(config.name)
 
-        config.each do |c|
-          new_index = @presets.length
-          @presets.push(c)
-          @name_index_preset_map[c.name] = [new_index, c]
+        if need_append
+          append(config, empty?)
+        else
+          update(config)
         end
-
-        if empty?
-          self.index_last_selected = nil
-        elsif empty_before_add
-          self.index_last_selected = 0
-        end
-
-        self
       end
 
       # 名前で設定を取り出す
@@ -127,7 +118,7 @@ module BCDiceIRC
         hash_with_sym_keys[:presets]&.each do |h|
           begin
             config = IRCBot::Config.from_hash(h)
-            add(config)
+            push(config)
           rescue => e
             @logger&.warn('IRCBot::Config.from_hash failed')
             @logger&.exception(e)
@@ -153,6 +144,36 @@ module BCDiceIRC
         from_hash(o)
 
         self
+      end
+
+      private
+
+      # 設定を末尾に追加する
+      # @param [IRCBot::Config] config IRCボットの設定
+      # @param [Boolean] empty_before_append 追加前に空だったか
+      # @return [Symbol] +:appended+
+      def append(config, empty_before_append)
+        new_index = @presets.length
+        @presets.push(config)
+        @name_index_preset_map[config.name] = [new_index, config]
+
+        if empty?
+          self.index_last_selected = nil
+        elsif empty_before_append
+          self.index_last_selected = 0
+        end
+
+        :appended
+      end
+
+      # 記録されている設定を更新する
+      # @param [IRCBot::Config] config IRCボットの設定
+      # @return [Symbol] +:updated+
+      def update(config)
+        _, index = @name_index_preset_map[config.name]
+        @name_index_preset_map[config.name] = [index, config]
+
+        :updated
       end
     end
   end

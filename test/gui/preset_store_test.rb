@@ -21,7 +21,7 @@ module BCDiceIRC
           channel: '#Dice_Test',
           quit_message: 'さようなら',
           game_system_id: 'DiceBot'
-        )
+        ).freeze
 
         @config2 = IRCBot::Config.new(
           name: 'Config 1',
@@ -33,13 +33,14 @@ module BCDiceIRC
           channel: '#DiceTest',
           quit_message: 'Bye',
           game_system_id: 'DiceBot'
-        )
+        ).freeze
 
         @yaml_path = File.expand_path('presets_test_data.yaml', __dir__)
       end
 
-      test 'add and length/size/count' do
-        @store.add(@config1, @config2)
+      test 'push and length/size/count' do
+        @store.push(@config1)
+        @store.push(@config2)
 
         assert_equal(2, @store.length)
         assert_equal(2, @store.size)
@@ -49,7 +50,7 @@ module BCDiceIRC
       test 'empty?' do
         assert_true(@store.empty?, '最初は true')
 
-        @store.add(@config1)
+        @store.push(@config1)
         assert_false(@store.empty?, '設定追加後は false')
       end
 
@@ -63,7 +64,8 @@ module BCDiceIRC
           @store.index_last_selected = 0
         end
 
-        @store.add(@config1, @config2)
+        @store.push(@config1)
+        @store.push(@config2)
         assert_equal(2, @store.length)
 
         @store.index_last_selected = 1
@@ -82,7 +84,8 @@ module BCDiceIRC
       end
 
       test 'include?' do
-        @store.add(@config1, @config2)
+        @store.push(@config1)
+        @store.push(@config2)
 
         assert(@store.include?('デフォルト'))
         assert(@store.include?('Config 1'))
@@ -90,7 +93,8 @@ module BCDiceIRC
       end
 
       test 'fetch_by_index' do
-        @store.add(@config1, @config2)
+        @store.push(@config1)
+        @store.push(@config2)
 
         c2 = @store.fetch_by_index(1)
         assert_equal('Config 1', c2.name)
@@ -104,7 +108,8 @@ module BCDiceIRC
       end
 
       test 'fetch_by_name' do
-        @store.add(@config1, @config2)
+        @store.push(@config1)
+        @store.push(@config2)
 
         c2 = @store.fetch_by_name('Config 1')
         assert_equal('irc.example.net', c2.hostname)
@@ -136,6 +141,30 @@ module BCDiceIRC
         store = PresetStore.default
         assert_equal(['デフォルト'], store.map(&:name))
         assert_equal(0, store.index_last_selected)
+      end
+
+      test 'save new preset' do
+        @store.push(@config1)
+        result = @store.push(@config2)
+
+        assert_equal(:appended, result)
+        assert_equal('Config 1', @store.fetch_by_index(1).name)
+        assert_equal(2, @store.length)
+        assert_equal('irc.example.net', @store.fetch_by_name('Config 1').hostname)
+      end
+
+      test 'save existing preset' do
+        @store.push(@config1)
+
+        config1_modified = @config1.dup
+        config1_modified.hostname = 'irc2.example.net'
+
+        result = @store.push(config1_modified)
+
+        assert_equal(:updated, result)
+        assert_equal('デフォルト', @store.fetch_by_index(0).name)
+        assert_equal(1, @store.length)
+        assert_equal('irc2.example.net', @store.fetch_by_name('デフォルト').hostname)
       end
     end
   end
