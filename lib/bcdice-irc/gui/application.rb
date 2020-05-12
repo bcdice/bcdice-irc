@@ -524,6 +524,15 @@ module BCDiceIRC
         end
       end
 
+
+      # プリセット保存ボタンがクリックされたときの処理
+      # @return [void]
+      def preset_save_button_on_clicked
+        @irc_bot_config.name = @preset_entry.text
+        result = @preset_store.push(@irc_bot_config.deep_dup)
+        @logger.info("Preset: #{result} #{@irc_bot_config.name.inspect}")
+      end
+
       # ホスト名欄が変更されたときの処理
       # @return [void]
       def hostname_entry_on_changed
