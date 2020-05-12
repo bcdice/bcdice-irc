@@ -303,8 +303,11 @@ module BCDiceIRC
       # プリセット集を用意する
       # @return [self]
       def setup_preset_manager
+        @preset_manager = PresetManager.new
+        @preset_manager.logger = @logger
+
         begin
-          @preset_manager = PresetManager.load_yaml_file(@presets_yaml_path)
+          @preset_manager.load_yaml_file(@presets_yaml_path)
         rescue => e
           @logger.warn("プリセット集を読み込めません: #{e}")
         end

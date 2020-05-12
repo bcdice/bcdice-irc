@@ -15,7 +15,11 @@ module BCDiceIRC
       extend Forwardable
 
       # 最後に選択されたプリセットのインデックス
+      # @return [Integer, nil]
       attr_reader :index_last_selected
+
+      # ロガー
+      attr_accessor :logger
 
       def_delegators(
         :@presets,
@@ -25,32 +29,6 @@ module BCDiceIRC
       )
 
       def_delegator(:@presets, :fetch, :fetch_by_index)
-
-      # ハッシュからプリセット集を作る
-      # @param [Hash] hash
-      # @return [PresetManager]
-      def self.from_hash(hash)
-        hash_with_sym_keys = hash.symbolize_keys
-
-        manager = new()
-
-        hash_with_sym_keys[:presets]&.each do |h|
-          config = IRCBot::Config.from_hash(h)
-          manager.add(config)
-        end
-
-        manager.index_last_selected = hash_with_sym_keys[:index_last_selected]
-
-        manager
-      end
-
-      # YAMLファイルを読み込んでプリセット集を作る
-      # @param [Hash] hash
-      # @return [PresetManager]
-      def self.load_yaml_file(yaml_path)
-        o = YAML.load_file(yaml_path)
-        from_hash(o)
-      end
 
       # 既定のプリセット集を返す
       # @return [PresetManager]
@@ -62,9 +40,8 @@ module BCDiceIRC
 
       # 初期化する
       def initialize
-        @index_last_selected = 0
-        @presets = []
-        @name_index_preset_map = {}
+        clear
+        @logger = nil
       end
 
       # 各設定に対して処理を行う
@@ -73,10 +50,29 @@ module BCDiceIRC
         @presets.each(&b)
       end
 
+      # プリセットをすべて削除する
+      # @return [self]
+      def clear
+        @index_last_selected = nil
+        @presets = []
+        @name_index_preset_map = {}
+
+        self
+      end
+
       # 最後に選択されたプリセットの番号を設定する
       # @param [Integer] value プリセット番号
       # @raise [RangeError] +value+ が負か、プリセット数以上だった場合
       def index_last_selected=(value)
+        if empty?
+          unless value.nil?
+            raise TypeError, 'index_last_selected accepts only nil when empty'
+          end
+
+          @index_last_selected = nil
+          return
+        end
+
         valid_range = 0...length
         unless valid_range.include?(value)
           raise RangeError, "index_last_selected must be in #{valid_range}"
@@ -89,10 +85,18 @@ module BCDiceIRC
       # @param [IRCBot::Config] config IRCボット設定
       # @return [self]
       def add(*config)
+        empty_before_add = empty?
+
         config.each do |c|
           new_index = @presets.length
           @presets.push(c)
           @name_index_preset_map[c.name] = [new_index, c]
+        end
+
+        if empty?
+          self.index_last_selected = nil
+        elsif empty_before_add
+          self.index_last_selected = 0
         end
 
         self
@@ -104,6 +108,43 @@ module BCDiceIRC
       def fetch_by_name(name)
         _, config = @name_index_preset_map.fetch(name)
         config
+      end
+
+      # ハッシュからプリセット集を作る
+      # @param [Hash] hash
+      # @return [self]
+      def from_hash(hash)
+        hash_with_sym_keys = hash.symbolize_keys
+
+        hash_with_sym_keys[:presets]&.each do |h|
+          begin
+            config = IRCBot::Config.from_hash(h)
+            add(config)
+          rescue => e
+            @logger&.warn('IRCBot::Config.from_hash failed')
+            @logger&.exception(e)
+          end
+        end
+
+        begin
+          self.index_last_selected = hash_with_sym_keys[:index_last_selected]
+        rescue => e
+          @index_last_selected = empty? ? nil : 0
+          @logger&.warn("index_last_selected setting failed, set #{@index_last_selected.inspect}")
+          @logger&.exception(e)
+        end
+
+        self
+      end
+
+      # YAMLファイルを読み込んでプリセット集を作る
+      # @param [Hash] hash
+      # @return [self]
+      def load_yaml_file(yaml_path)
+        o = YAML.load_file(yaml_path)
+        from_hash(o)
+
+        self
       end
     end
   end

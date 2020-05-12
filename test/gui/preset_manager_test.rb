@@ -54,6 +54,15 @@ module BCDiceIRC
       end
 
       test 'index_last_selected=' do
+        assert(@manager.empty?)
+
+        @manager.index_last_selected = nil
+        assert_nil(@manager.index_last_selected)
+
+        assert_raise(TypeError) do
+          @manager.index_last_selected = 0
+        end
+
         @manager.add(@config1, @config2)
         assert_equal(2, @manager.length)
 
@@ -100,16 +109,19 @@ module BCDiceIRC
         end
       end
 
-      test '.from_hash' do
+      test 'from_hash' do
         hash = YAML.load_file(@yaml_path)
-        manager = PresetManager.from_hash(hash)
+        @manager.from_hash(hash)
 
-        assert_equal(['デフォルト', 'Config 1'], manager.map(&:name))
-        assert_equal(1, manager.index_last_selected)
+        assert_equal(['デフォルト', 'Config 1'], @manager.map(&:name))
+        assert_equal(1, @manager.index_last_selected)
       end
 
-      test '.load_yaml_file' do
-        manager = PresetManager.load_yaml_file(@yaml_path)
+      test 'load_yaml_file' do
+        @manager.load_yaml_file(@yaml_path)
+
+        assert_equal(['デフォルト', 'Config 1'], @manager.map(&:name))
+        assert_equal(1, @manager.index_last_selected)
       end
 
       test '.default' do
