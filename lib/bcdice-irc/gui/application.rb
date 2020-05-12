@@ -16,7 +16,7 @@ require_relative '../categorizable_logger'
 require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_manager'
-require_relative 'combo_box_configurator'
+require_relative 'combo_box_setup'
 
 module BCDiceIRC
   module GUI
@@ -397,9 +397,8 @@ module BCDiceIRC
       # 文字コードコンボボックスを用意する
       # @return [self]
       def setup_encoding_combo_box
-        configurator = ComboBoxConfigurator.new(@encoding_combo_box)
-        configurator.bind(IRCBot::AVAILABLE_ENCODINGS)
-        configurator.set_cell_renderer_text
+        ComboBoxSetup::bind(@encoding_combo_box, IRCBot::AVAILABLE_ENCODINGS)
+        ComboBoxSetup::set_cell_renderer_text(@encoding_combo_box)
 
         self
       end
@@ -407,8 +406,7 @@ module BCDiceIRC
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        configurator = ComboBoxConfigurator.new(@preset_combo_box)
-        configurator.bind(@preset_manager, &:name)
+        ComboBoxSetup::bind(@preset_combo_box, @preset_manager, &:name)
         @preset_combo_box.entry_text_column = 1
 
         self
@@ -417,9 +415,8 @@ module BCDiceIRC
       # ゲームシステムのコンボボックスを用意する
       # @return [self]
       def setup_game_system_combo_box
-        configurator = ComboBoxConfigurator.new(@game_system_combo_box)
-        configurator.bind(@dice_bot_wrappers, &:name)
-        configurator.set_cell_renderer_text
+        ComboBoxSetup::bind(@game_system_combo_box, @dice_bot_wrappers, &:name)
+        ComboBoxSetup::set_cell_renderer_text(@game_system_combo_box)
 
         self
       end

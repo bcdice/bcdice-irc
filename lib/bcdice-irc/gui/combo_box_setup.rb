@@ -4,16 +4,13 @@ require 'gtk3'
 
 module BCDiceIRC
   module GUI
-    # コンボボックスの設定を担当するクラス
-    class ComboBoxConfigurator
+    # コンボボックスの設定メソッドを格納するモジュール
+    module ComboBoxSetup
       # 既定の文字列化手続き
       # @return [Proc]
       DEFAULT_STRINGIFY_PROC = :to_s.to_proc
 
-      # @param [Gtk::ComboBox] combo_box 設定対象のコンボボックス
-      def initialize(combo_box)
-        @combo_box = combo_box
-      end
+      module_function
 
       # コンボボックスに一覧を結び付ける
       #
@@ -22,12 +19,13 @@ module BCDiceIRC
       # ブロックとして要素を文字列化する手続きを与える。
       # ブロックが与えられていなければ、+#to_s+ で要素を文字列化する。
       #
+      # @param [Gtk::ComboBox] combo_box 対象のコンボボックス
       # @param [Enumerable] list 結び付けるEnumerableオブジェクト
       # @param [Proc] stringify 文字列化手続き
       # @yieldparam e [Object] 列挙される要素
       # @yieldreturn [String] 項目として表示する文字列
-      # @return [self]
-      def bind(list, &stringify)
+      # @return [Gtk::ComboBox] combo_box
+      def bind(combo_box, list, &stringify)
         stringify ||= DEFAULT_STRINGIFY_PROC
         store = Gtk::ListStore.new(Object, String)
 
@@ -37,20 +35,21 @@ module BCDiceIRC
           row[1] = stringify[e]
         end
 
-        @combo_box.model = store
+        combo_box.model = store
 
-        self
+        combo_box
       end
 
       # コンボボックスの各行の文字列描画を設定する
-      # @return [self]
+      # @param [Gtk::ComboBox] combo_box 対象のコンボボックス
+      # @return [Gtk::ComboBox] combo_box
       # @note モデルの列1に表示したい文字列を設定すること。
-      def set_cell_renderer_text
+      def set_cell_renderer_text(combo_box)
         renderer = Gtk::CellRendererText.new
-        @combo_box.pack_start(renderer, true)
-        @combo_box.add_attribute(renderer, 'text', 1)
+        combo_box.pack_start(renderer, true)
+        combo_box.add_attribute(renderer, 'text', 1)
 
-        self
+        combo_box
       end
     end
   end
