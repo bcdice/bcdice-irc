@@ -30,7 +30,7 @@ module BCDiceIRC
         # メインウィンドウのタイトルを返す
         # @return [String]
         def main_window_title
-          "#{@app.irc_bot_config.end_point} [#{@app.dice_bot_wrapper.name}]"
+          "#{@app.irc_bot_config.end_point} [#{@app.dice_bot_wrapper.value.name}]"
         end
 
         # 接続状況を返す

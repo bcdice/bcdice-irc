@@ -18,11 +18,17 @@ require_relative 'state'
 require_relative 'preset_store'
 require_relative 'combo_box_setup'
 require_relative 'preset_save_state'
+require_relative 'simple_observable'
+require_relative 'game_system_observer'
 
 module BCDiceIRC
   module GUI
     # BCDice IRCのGUIアプリケーションのクラス
     class Application
+      # アプリケーションの状態
+      # @return [State::Base]
+      attr_reader :state
+
       # IRCボットの設定
       # @return [IRCBot::Config]
       attr_accessor :irc_bot_config
@@ -48,7 +54,7 @@ module BCDiceIRC
 
         @use_password = false
         @encoding_to_index = IRCBot::AVAILABLE_ENCODINGS.each_with_index.to_h
-        @dice_bot_wrapper = nil
+        @dice_bot_wrapper = SimpleObservable.new
         @preset_store = nil
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
         @last_connection_exception = nil
@@ -80,6 +86,7 @@ module BCDiceIRC
 
         load_glade_file
         setup_widgets
+        setup_observers
         change_state(:disconnected)
         set_last_selected_preset
         @main_window.show_all
@@ -117,23 +124,6 @@ module BCDiceIRC
 
         @password_entry.sensitive =
           @state.password_check_button_sensitive && @use_password
-      end
-
-      # ダイスボットラッパを変更する
-      # @param [DiceBotWrapper] value 新しいダイスボットラッパ
-      # @note ウィジェットの準備が完了してから使うこと。
-      def dice_bot_wrapper=(value)
-        @dice_bot_wrapper = value
-
-        @help_text_view.buffer.text = @dice_bot_wrapper.help_message
-        update_main_window_title
-
-        if @state.need_notification_on_game_system_change
-          @status_bar.push(
-            @status_bar_context_ids.fetch(:game_system_change),
-            "ゲームシステムを「#{@dice_bot_wrapper.name}」に設定しました"
-          )
-        end
       end
 
       # ゲームシステムをIDで指定して変更する
@@ -422,6 +412,33 @@ module BCDiceIRC
         self
       end
 
+      # オブザーバを用意する
+      # @return [self]
+      def setup_observers
+        setup_dice_bot_wrapper_observers
+      end
+
+      # ダイスボットラッパのオブザーバを用意する
+      # @return [self]
+      def setup_dice_bot_wrapper_observers
+        observers = [
+          GameSystemObserver::irc_bot_config(@irc_bot_config),
+          GameSystemObserver::help_text_view(@help_text_view),
+          GameSystemObserver::main_window_title(self),
+          GameSystemObserver::status_bar(
+            self,
+            @status_bar,
+            @status_bar_context_ids.fetch(:game_system_change)
+          )
+        ]
+
+        observers.each do |o|
+          @dice_bot_wrapper.add_observer(o)
+        end
+
+        self
+      end
+
       # 最後に選択されていたプリセットを選択する
       # @return [self]
       # @todo 設定から読み込んで設定する
@@ -569,9 +586,7 @@ module BCDiceIRC
       # ゲームシステムコンボボックスの値が変更されたときの処理
       # @return [void]
       def game_system_combo_box_on_changed
-        dice_bot_wrapper = @game_system_combo_box.active_iter[0]
-        @irc_bot_config.game_system_id = dice_bot_wrapper.id
-        self.dice_bot_wrapper = dice_bot_wrapper
+        @dice_bot_wrapper.value = @game_system_combo_box.active_iter[0]
       end
 
       # 接続/切断ボタンがクリックされたときの処理
