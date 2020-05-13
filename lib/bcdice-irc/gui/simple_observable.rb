@@ -7,8 +7,10 @@ module BCDiceIRC
       attr_reader :value
 
       # @param [Object] last_value 直前の値
-      def initialize(initial_value = nil)
+      # @param [Boolean] compare 直前の値と比較するか
+      def initialize(initial_value: nil, compare: false)
         @value = initial_value
+        @compare = compare
         @update_procs = []
       end
 
@@ -25,7 +27,7 @@ module BCDiceIRC
       # @return [Boolean] 値が変化したか
       def value=(new_value)
         # 値が変更されていなかったら何もしない
-        return false if new_value == @value
+        return false if @compare && new_value == @value
 
         # 値が変更されていたら、変更後の値を記録し、変更を通知する
         @value = new_value
