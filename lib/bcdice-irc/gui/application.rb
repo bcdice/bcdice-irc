@@ -17,6 +17,7 @@ require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_store'
 require_relative 'combo_box_setup'
+require_relative 'combo_box_activator'
 require_relative 'preset_save_state'
 require_relative 'simple_observable'
 require_relative 'game_system_observer'
@@ -126,20 +127,6 @@ module BCDiceIRC
           @state.password_check_button_sensitive && @use_password
       end
 
-      # ゲームシステムをIDで指定して変更する
-      #
-      # ゲームシステムIDに対応するダイスボットラッパが設定される。
-      # 対応するダイスボットラッパが見つからなかった場合には何もしない。
-      #
-      # @param [String] value 新しいゲームシステムID
-      # @note ウィジェットの準備が完了してから使うこと。
-      def game_system_id=(value)
-        new_index = @id_to_dice_bot_wrapper_index[value]
-        return unless new_index
-
-        @game_system_combo_box.active = new_index
-      end
-
       # ゲームシステムを名前で指定して変更する
       #
       # ゲームシステム名に対応するダイスボットラッパが設定される。
@@ -148,10 +135,7 @@ module BCDiceIRC
       # @param [String] value 新しいゲームシステム名
       # @note ウィジェットの準備が完了してから使うこと。
       def game_system_name=(value)
-        new_index = @name_to_dice_bot_wrapper_index[value]
-        return unless new_index
-
-        @game_system_combo_box.active = new_index
+        @game_system_combo_box_activator_name.activate(value)
       end
 
       # アプリケーションの状態を変更する
@@ -187,8 +171,8 @@ module BCDiceIRC
         # TODO: バリデーション無効化ここまで。ここでバリデーションを実行する。
 
         @irc_bot_config.quit_message = irc_bot_config.quit_message.dup
-        set_encoding_combo_box_active(irc_bot_config.encoding)
-        self.game_system_id = irc_bot_config.game_system_id
+        @encoding_combo_box_activator.activate(irc_bot_config.encoding.name)
+        @game_system_combo_box_activator_id.activate(irc_bot_config.game_system_id)
 
         @status_bar.push(
           @status_bar_context_ids.fetch(:preset_load),
@@ -275,13 +259,8 @@ module BCDiceIRC
       # ダイスボットを収集し、キャッシュする
       # @return [self]
       def collect_dice_bots
-        dice_bots = [DiceBot.new] + DiceBotLoader.collectDiceBots
-        dice_bot_ids = dice_bots.map(&:id)
-        dice_bot_names = dice_bots.map(&:name)
-        @dice_bot_wrappers = dice_bots.map { |bot| DiceBotWrapper.wrap(bot) }
-
-        @id_to_dice_bot_wrapper_index = dice_bot_ids.each_with_index.to_h
-        @name_to_dice_bot_wrapper_index = dice_bot_names.each_with_index.to_h
+        @dice_bots = [DiceBot.new] + DiceBotLoader.collectDiceBots
+        @dice_bot_wrappers = @dice_bots.map { |bot| DiceBotWrapper.wrap(bot) }
 
         self
       end
@@ -391,6 +370,11 @@ module BCDiceIRC
         ComboBoxSetup::bind(@encoding_combo_box, IRCBot::AVAILABLE_ENCODINGS)
         ComboBoxSetup::set_cell_renderer_text(@encoding_combo_box)
 
+        @encoding_combo_box_activator = ComboBoxActivator.new(
+          @encoding_combo_box,
+          IRCBot::AVAILABLE_ENCODINGS.map(&:name)
+        )
+
         self
       end
 
@@ -408,6 +392,16 @@ module BCDiceIRC
       def setup_game_system_combo_box
         ComboBoxSetup::bind(@game_system_combo_box, @dice_bot_wrappers, &:name)
         ComboBoxSetup::set_cell_renderer_text(@game_system_combo_box)
+
+        @game_system_combo_box_activator_id = ComboBoxActivator.new(
+          @game_system_combo_box,
+          @dice_bots.map(&:id)
+        )
+
+        @game_system_combo_box_activator_name = ComboBoxActivator.new(
+          @game_system_combo_box,
+          @dice_bots.map(&:name)
+        )
 
         self
       end
@@ -451,16 +445,6 @@ module BCDiceIRC
         @preset_combo_box.active = @preset_store.index_last_selected
 
         self
-      end
-
-      # 文字コードコンボボックスの選択項目を変更する
-      # @param [EncodingInfo] encoding 文字エンコーディング情報
-      # @note ウィジェットの準備が完了してから使うこと。
-      def set_encoding_combo_box_active(encoding)
-        new_index = @encoding_to_index[encoding]
-        return unless new_index
-
-        @encoding_combo_box.active = new_index
       end
 
       # 状態に合わせてウィジェットを更新する
