@@ -23,10 +23,6 @@ module BCDiceIRC
   module GUI
     # BCDice IRCのGUIアプリケーションのクラス
     class Application
-      # ログレベル
-      # @return [Symbol]
-      attr_reader :log_level
-
       # IRCボットの設定
       # @return [IRCBot::Config]
       attr_accessor :irc_bot_config
@@ -40,21 +36,6 @@ module BCDiceIRC
       # 最後に発生した接続エラー
       # @return [StandardError, nil]
       attr_accessor :last_connection_exception
-
-      # @return [Gtk::Entry]
-      attr_reader :hostname_entry
-      # @return [Gtk::SpinButton]
-      attr_reader :port_spin_button
-      # @return [Gtk::CheckButton]
-      attr_reader :password_check_button
-      # @return [Gtk::Entry]
-      attr_reader :password_entry
-      # @return [Gtk::ComboBox]
-      attr_reader :encoding_combo_box
-      # @return [Gtk::Entry]
-      attr_reader :nick_entry
-      # @return [Gtk::Entry]
-      attr_reader :channel_entry
 
       # アプリケーションを初期化する
       # @param [String] presets_yaml_path プリセット集のYAMLファイルのパス
