@@ -172,6 +172,7 @@ module BCDiceIRC
         index, = @name_index_preset_map[config.name]
         @presets[index] = config
         @name_index_preset_map[config.name] = [index, config]
+        @index_last_selected = index
 
         :updated
       end
