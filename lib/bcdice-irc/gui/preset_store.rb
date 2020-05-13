@@ -91,7 +91,6 @@ module BCDiceIRC
       # @param [IRCBot::Config] config IRCボット設定
       # @return [Symbol] 追加された（+:appended+）か更新された（+:updated+）か
       def push(config)
-        empty_before_add = empty?
         need_append = !include?(config.name)
 
         if need_append
@@ -170,7 +169,8 @@ module BCDiceIRC
       # @param [IRCBot::Config] config IRCボットの設定
       # @return [Symbol] +:updated+
       def update(config)
-        _, index = @name_index_preset_map[config.name]
+        index, = @name_index_preset_map[config.name]
+        @presets[index] = config
         @name_index_preset_map[config.name] = [index, config]
 
         :updated

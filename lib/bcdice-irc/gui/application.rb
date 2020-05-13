@@ -192,9 +192,11 @@ module BCDiceIRC
       end
 
       # プリセットからIRCボット設定を設定する
-      # @param [IRCBot::Config] irc_bot_config プリセットのIRCボット設定
+      # @param [IRCBot::Config] preset_name プリセット名
       # @return [self]
-      def set_irc_bot_config_from_preset(irc_bot_config)
+      def set_irc_bot_config_by_preset_name(preset_name)
+        irc_bot_config = @preset_store.fetch_by_name(preset_name)
+
         # TODO: ここからバリデーションを無効にする
 
         @hostname_entry.text = irc_bot_config.hostname
@@ -424,7 +426,7 @@ module BCDiceIRC
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        ComboBoxSetup::bind(@preset_combo_box, @preset_store, &:name)
+        ComboBoxSetup::bind(@preset_combo_box, @preset_store.map(&:name))
         @preset_combo_box.entry_text_column = 1
 
         self
@@ -505,7 +507,7 @@ module BCDiceIRC
           self.preset_save_state = preset_save_state_by_name(@preset_entry.text)
         else
           # プリセットが選択された場合
-          set_irc_bot_config_from_preset(@preset_combo_box.active_iter[0])
+          set_irc_bot_config_by_preset_name(@preset_combo_box.active_iter[0])
           @preset_store.index_last_selected = active_index
           self.preset_save_state = PresetSaveState::PRESET_EXISTS
         end
@@ -524,13 +526,20 @@ module BCDiceIRC
         end
       end
 
-
       # プリセット保存ボタンがクリックされたときの処理
       # @return [void]
       def preset_save_button_on_clicked
         @irc_bot_config.name = @preset_entry.text
         result = @preset_store.push(@irc_bot_config.deep_dup)
         @logger.info("Preset: #{result} #{@irc_bot_config.name.inspect}")
+
+        case result
+        when :appended
+          @logger.warn("Preset: combo box update after appending not implemented")
+        when :updated
+          @logger.debug("Preset: combo box update after update")
+          @preset_combo_box.active = @preset_store.index_last_selected
+        end
       end
 
       # ホスト名欄が変更されたときの処理
@@ -579,7 +588,9 @@ module BCDiceIRC
       # ゲームシステムコンボボックスの値が変更されたときの処理
       # @return [void]
       def game_system_combo_box_on_changed
-        self.dice_bot_wrapper = @game_system_combo_box.active_iter[0]
+        dice_bot_wrapper = @game_system_combo_box.active_iter[0]
+        @irc_bot_config.game_system_id = dice_bot_wrapper.id
+        self.dice_bot_wrapper = dice_bot_wrapper
       end
 
       # 接続/切断ボタンがクリックされたときの処理
