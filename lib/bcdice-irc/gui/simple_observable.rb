@@ -16,7 +16,18 @@ module BCDiceIRC
       # @param [Proc] update_proc 値が変更されたときに実行する更新手続き
       # @return [self]
       def add_observer(update_proc)
-        @update_procs << update_proc
+        @update_procs.push(update_proc)
+        self
+      end
+
+      # 複数のオブザーバを追加する
+      # @param [Proc] update_procs 値が変更されたときに実行する更新手続き
+      # @return [self]
+      def add_observers(*update_procs)
+        update_procs.each do |update_proc|
+          add_observer(update_proc)
+        end
+
         self
       end
 

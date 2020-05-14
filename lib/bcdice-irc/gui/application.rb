@@ -423,37 +423,32 @@ module BCDiceIRC
 
         # 初期状態を設定する前は、ステータスバーのオブザーバは追加しないこと
         # （起動していきなり「切断されました」と表示されないように）
-        observers = [
+        @state.add_observers(
           StateObserver::main_window_title(self),
           StateObserver::general_widgets(widgets),
           StateObserver::widgets_for_password(@password_check_button, self),
           StateObserver::connect_disconnect_button(@connect_disconnect_button),
-          StateObserver::logger(@logger),
-        ]
-
-        observers.each do |o|
-          @state.add_observer(o)
-        end
+          StateObserver::logger(@logger)
+        )
 
         self
       end
 
       # パスワードの使用についてのオブザーバを用意する
+      # @return [self]
       def setup_password_usage_observers
-        observers = [
+        @use_password.add_observers(
           PasswordUsageObserver.irc_bot_config(@irc_bot_config, @password_entry),
-          PasswordUsageObserver.password_entry(@password_entry, self),
-        ]
+          PasswordUsageObserver.password_entry(@password_entry, self)
+        )
 
-        observers.each do |o|
-          @use_password.add_observer(o)
-        end
+        self
       end
 
       # ダイスボットラッパのオブザーバを用意する
       # @return [self]
       def setup_dice_bot_wrapper_observers
-        observers = [
+        @dice_bot_wrapper.add_observers(
           GameSystemObserver::irc_bot_config(@irc_bot_config),
           GameSystemObserver::help_text_view(@help_text_view),
           GameSystemObserver::main_window_title(self),
@@ -462,11 +457,7 @@ module BCDiceIRC
             @status_bar,
             @status_bar_context_ids.fetch(:game_system_change)
           )
-        ]
-
-        observers.each do |o|
-          @dice_bot_wrapper.add_observer(o)
-        end
+        )
 
         self
       end
