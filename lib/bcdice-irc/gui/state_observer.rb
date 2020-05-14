@@ -23,8 +23,7 @@ module BCDiceIRC
       def widgets_for_password(password_check_button, app)
         lambda do |state|
           password_check_button.sensitive = state.general_widgets_sensitive
-          # パスワードの入力可否を更新するために再代入する
-          app.use_password = @use_password
+          app.update_widgets_for_password
         end
       end
 

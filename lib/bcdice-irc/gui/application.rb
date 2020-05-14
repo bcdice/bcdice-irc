@@ -21,10 +21,12 @@ require_relative 'preset_store'
 require_relative 'combo_box_setup'
 require_relative 'combo_box_activator'
 require_relative 'preset_save_state'
+
 require_relative 'simple_observable'
 require_relative 'forwardable_to_observer'
 require_relative 'state_observer'
 require_relative 'preset_save_state_observer'
+require_relative 'password_usage_observer'
 require_relative 'game_system_observer'
 
 module BCDiceIRC
@@ -48,10 +50,16 @@ module BCDiceIRC
       #   @return [State::Base] アプリケーションの状態
       def_accessor_for_observable 'state', private_writer: true
 
-      # @!attribute [r] preset_save_state
-      #   @return [PresetSaveState] プリセットの保存に関する状態
+      # プリセットの保存に関する状態
       def_accessor_for_observable(
         'preset_save_state',
+        private_reader: true,
+        private_writer: true
+      )
+
+      # パスワードを使用するか
+      def_accessor_for_observable(
+        'use_password',
         private_reader: true,
         private_writer: true
       )
@@ -69,7 +77,7 @@ module BCDiceIRC
 
         @builder = Gtk::Builder.new
 
-        @use_password = false
+        @use_password = SimpleObservable.new
         @dice_bot_wrapper = SimpleObservable.new
         @preset_store = nil
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
@@ -124,17 +132,6 @@ module BCDiceIRC
         @logger.debug('Main loop end')
 
         self
-      end
-
-      # パスワードを使うかどうかを変更する
-      # @param [Boolean] value パスワードを使うか
-      # @note ウィジェットの準備が完了してから使うこと。
-      def use_password=(value)
-        @use_password = value
-        @irc_bot_config.password = @use_password ? @password_entry.text : nil
-
-        @password_entry.sensitive =
-          self.state.general_widgets_sensitive && @use_password
       end
 
       # ゲームシステムを名前で指定して変更する
@@ -197,6 +194,14 @@ module BCDiceIRC
       # @note ウィジェットの準備が完了してから使うこと。
       def update_main_window_title
         @main_window.title = "#{state.main_window_title} - BCDice IRC"
+        self
+      end
+
+      # パスワード関連のウィジェットを更新する
+      # @return [self]
+      # @note ウィジェットの準備が完了してから使うこと。
+      def update_widgets_for_password
+        @use_password.notify_observers
         self
       end
 
@@ -399,6 +404,7 @@ module BCDiceIRC
           PresetSaveStateObserver.preset_save_button(@preset_save_button)
         )
 
+        setup_password_usage_observers
         setup_dice_bot_wrapper_observers
       end
 
@@ -430,6 +436,18 @@ module BCDiceIRC
         end
 
         self
+      end
+
+      # パスワードの使用についてのオブザーバを用意する
+      def setup_password_usage_observers
+        observers = [
+          PasswordUsageObserver.irc_bot_config(@irc_bot_config, @password_entry),
+          PasswordUsageObserver.password_entry(@password_entry, self),
+        ]
+
+        observers.each do |o|
+          @use_password.add_observer(o)
+        end
       end
 
       # ダイスボットラッパのオブザーバを用意する
@@ -541,7 +559,7 @@ module BCDiceIRC
       # パスワード欄が変更されたときの処理
       # @return [void]
       def password_entry_on_changed
-        if @use_password
+        if use_password
           @irc_bot_config.password = @password_entry.text
         end
       end
