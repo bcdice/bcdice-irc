@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'yaml'
+require 'fileutils'
 
 require_relative '../test_helper'
 require 'bcdice-irc/gui/preset_store'
@@ -8,6 +9,9 @@ require 'bcdice-irc/gui/preset_store'
 module BCDiceIRC
   module GUI
     class PresetStoreTest < Test::Unit::TestCase
+      # YAMLファイル書き出しテストにおける出力先のパス
+      YAML_PATH_TO_WRITE = File.expand_path('write_test.yaml', __dir__)
+
       setup do
         @store = PresetStore.new
 
@@ -36,6 +40,10 @@ module BCDiceIRC
         ).freeze
 
         @yaml_path = File.expand_path('presets_test_data.yaml', __dir__)
+      end
+
+      teardown do
+        FileUtils.rm_f(YAML_PATH_TO_WRITE)
       end
 
       test 'push and length/size/count' do
@@ -130,8 +138,27 @@ module BCDiceIRC
         assert_equal(1, @store.index_last_selected)
       end
 
+      test 'to_h' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        hash2 = @store.to_h
+        preset_names = hash2[:presets].map { |h| h[:name] }
+        assert_equal(['デフォルト', 'Config 1'], preset_names)
+        assert_equal(1, hash2[:index_last_selected])
+      end
+
       test 'load_yaml_file' do
         @store.load_yaml_file(@yaml_path)
+
+        assert_equal(['デフォルト', 'Config 1'], @store.map(&:name))
+        assert_equal(1, @store.index_last_selected)
+      end
+
+      test 'write_yaml_file' do
+        @store.load_yaml_file(@yaml_path)
+        @store.write_yaml_file(YAML_PATH_TO_WRITE)
+        @store.load_yaml_file(YAML_PATH_TO_WRITE)
 
         assert_equal(['デフォルト', 'Config 1'], @store.map(&:name))
         assert_equal(1, @store.index_last_selected)

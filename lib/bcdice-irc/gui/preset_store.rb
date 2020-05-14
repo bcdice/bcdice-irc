@@ -136,12 +136,32 @@ module BCDiceIRC
         self
       end
 
+      # ハッシュに変換する
+      # @return [Hash]
+      def to_h
+        {
+          index_last_selected: @index_last_selected,
+          presets: @presets.map(&:to_h)
+        }
+      end
+
       # YAMLファイルを読み込んでプリセット集を作る
       # @param [String] yaml_path YAMLファイルのパス
       # @return [self]
       def load_yaml_file(yaml_path)
         o = YAML.load_file(yaml_path)
         from_hash(o)
+
+        self
+      end
+
+      # プリセット集をYAMLファイルに書き出す
+      # @param [String] yaml_path YAMLファイルのパス
+      # @return [self]
+      def write_yaml_file(yaml_path)
+        File.open(yaml_path, 'w') do |f|
+          YAML.dump(to_h.deep_stringify_keys, f)
+        end
 
         self
       end

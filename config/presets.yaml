@@ -1,21 +1,21 @@
+---
 index_last_selected: 0
-
 presets:
-  - name: デフォルト
-    hostname: irc.trpg.net
-    port: 6667
-    password: null
-    encoding: UTF-8
-    nick: BCDice
-    channel: '#Dice_Test'
-    quit_message: さようなら
-    game_system_id: DiceBot
-  - name: Friend Chat
-    hostname: irc.friend-chat.jp
-    port: 6664
-    password: null
-    encoding: ISO-2022-JP
-    nick: DiceBot
-    channel: '#Dice_Test_2'
-    quit_message: Bye!
-    game_system_id: Cthulhu7th
+- name: デフォルト
+  hostname: irc.trpg.net
+  port: 6667
+  password: 
+  encoding: UTF-8
+  nick: BCDice
+  channel: "#Dice_Test"
+  quit_message: さようなら
+  game_system_id: DiceBot
+- name: Friend Chat
+  hostname: irc.friend-chat.jp
+  port: 6664
+  password: 
+  encoding: ISO-2022-JP
+  nick: DiceBot
+  channel: "#Dice_Test_2"
+  quit_message: Bye!
+  game_system_id: Cthulhu7th

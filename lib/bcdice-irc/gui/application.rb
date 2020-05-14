@@ -42,6 +42,10 @@ module BCDiceIRC
       # @return [StandardError, nil]
       attr_accessor :last_connection_exception
 
+      # 起動時の準備中か
+      # @return [Boolean]
+      attr_reader :setting_up
+
       # @!attribute [r] state
       #   @return [State::Base] アプリケーションの状態
       def_accessor_for_observable 'state', private_writer: true
@@ -78,6 +82,7 @@ module BCDiceIRC
         @dice_bot_wrapper = SimpleObservable.new
         @preset_store = nil
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
+        @setting_up = true
         @last_connection_exception = nil
 
         @states = {
@@ -97,6 +102,7 @@ module BCDiceIRC
       # アプリケーションを実行する
       # @return [self]
       def start!
+        @setting_up = true
         @logger.debug('Setup start')
 
         collect_dice_bots
@@ -108,17 +114,9 @@ module BCDiceIRC
         change_state(:disconnected)
         set_last_selected_preset
 
-        # ウィジェットの準備が終わったので、アプリケーションの状態に対する
-        # ステータスバーのオブザーバを追加する
-        @state.add_observer(
-          Observers::State.status_bar(
-            @status_bar,
-            @status_bar_context_ids.fetch(:connection)
-          )
-        )
-
         @main_window.show_all
 
+        @setting_up = false
         @logger.debug('Setup end')
 
         @logger.debug('Start mediator')
@@ -327,6 +325,7 @@ module BCDiceIRC
       # ステータスバーに表示する項目の種類
       STATUS_BAR_CONTEXTS = [
         :preset_load,
+        :save_presets_file,
         :game_system_change,
         :connection,
       ]
@@ -433,7 +432,12 @@ module BCDiceIRC
           Observers::State.general_widgets(widgets),
           Observers::State.widgets_for_password(@password_check_button, self),
           Observers::State.connect_disconnect_button(@connect_disconnect_button),
-          Observers::State.logger(@logger)
+          Observers::State.logger(@logger),
+          Observers::State.status_bar(
+            self,
+            @status_bar,
+            @status_bar_context_ids.fetch(:connection)
+          )
         )
 
         self
@@ -481,6 +485,33 @@ module BCDiceIRC
         self
       end
 
+      # プリセット設定ファイルの保存を試みる
+      # @return [true] 保存に成功した場合
+      # @return [false] 保存に失敗した場合
+      def try_to_save_presets_file
+        begin
+          save_presets_file
+          return true
+        rescue => e
+          @status_bar.push(
+            @status_bar_context_ids.fetch(:save_presets_file),
+            'プリセット設定ファイルの保存に失敗しました'
+          )
+          @logger.exception(e)
+
+          return false
+        end
+      end
+
+      # プリセット設定ファイルを保存する
+      # @return [self]
+      def save_presets_file
+        @preset_store.write_yaml_file(@presets_yaml_path)
+        @logger.debug("#{@presets_yaml_path}: 保存しました")
+
+        self
+      end
+
       # メインウィンドウが閉じられたときの処理
       # @return [void]
       def main_window_on_destroy
@@ -502,6 +533,8 @@ module BCDiceIRC
           set_irc_bot_config_by_preset_name(@preset_combo_box.active_text)
           @preset_store.index_last_selected = active_index
           self.preset_save_state = PresetSaveState::PRESET_EXISTS
+
+          try_to_save_presets_file unless @setting_up
         end
       end
 
@@ -531,6 +564,7 @@ module BCDiceIRC
           @handler_ids.fetch(:preset_combo_box_on_changed)
         ) do
           @preset_combo_box.active = @preset_store.index_last_selected
+          self.preset_save_state = PresetSaveState::PRESET_EXISTS
         end
       end
 
@@ -561,6 +595,7 @@ module BCDiceIRC
       end
 
       # 文字コードコンボボックスの値が変更されたときの処理
+      # @return [void]
       def encoding_combo_box_on_changed
         @irc_bot_config.encoding = @encoding_combo_box.active_iter[0]
       end
@@ -584,10 +619,9 @@ module BCDiceIRC
       end
 
       # 接続/切断ボタンがクリックされたときの処理
-      # @return [self]
+      # @return [void]
       def connect_disconnect_button_on_clicked
         state.connect_disconnect_button_on_clicked
-        self
       end
     end
   end

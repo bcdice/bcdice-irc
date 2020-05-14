@@ -49,15 +49,18 @@ module BCDiceIRC
         end
 
         # ステータスバーのオブザーバを返す
+        # @param [Application] app
         # @param [Gtk::StatusBar] bar
         # @param [Integer] context_id
         # @return [Proc]
-        def status_bar(bar, context_id)
+        def status_bar(app, bar, context_id)
           lambda do |state|
-            bar.push(
-              context_id,
-              state.connection_status
-            )
+            unless app.setting_up
+              bar.push(
+                context_id,
+                state.connection_status
+              )
+            end
           end
         end
 
