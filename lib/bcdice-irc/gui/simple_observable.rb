@@ -7,10 +7,8 @@ module BCDiceIRC
       attr_reader :value
 
       # @param [Object] last_value 直前の値
-      # @param [Boolean] compare 直前の値と比較するか
-      def initialize(initial_value: nil, compare: false)
+      def initialize(initial_value: nil)
         @value = initial_value
-        @compare = compare
         @update_procs = []
       end
 
@@ -32,21 +30,15 @@ module BCDiceIRC
         self
       end
 
-      # 値を設定し、変化していたらオブザーバに通知する
-      # @param [Object] new_value 設定する値
-      # @return [Boolean] 値が変化したか
-      def set(new_value)
-        # 値が変更されていなかったら何もしない
-        return false if @compare && new_value == @value
-
-        # 値が変更されていたら、変更後の値を記録し、変更を通知する
-        @value = new_value
+      # 値を設定し、変更をオブザーバに通知する
+      # @param [Object] value 設定する値
+      # @return [self]
+      def value=(value)
+        @value = value
         notify_observers
 
-        true
+        self
       end
-
-      alias value= set
     end
   end
 end
