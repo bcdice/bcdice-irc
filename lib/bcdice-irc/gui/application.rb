@@ -18,9 +18,8 @@ require_relative '../categorizable_logger'
 require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_store'
-require_relative 'combo_box_setup'
-require_relative 'combo_box_activator'
 require_relative 'preset_save_state'
+require_relative 'combo_box'
 
 require_relative 'simple_observable'
 require_relative 'forwardable_to_observer'
@@ -356,10 +355,10 @@ module BCDiceIRC
       # 文字コードコンボボックスを用意する
       # @return [self]
       def setup_encoding_combo_box
-        ComboBoxSetup::bind(@encoding_combo_box, IRCBot::AVAILABLE_ENCODINGS)
-        ComboBoxSetup::set_cell_renderer_text(@encoding_combo_box)
+        ComboBox::Setup.bind(@encoding_combo_box, IRCBot::AVAILABLE_ENCODINGS)
+        ComboBox::Setup.set_cell_renderer_text(@encoding_combo_box)
 
-        @encoding_combo_box_activator = ComboBoxActivator.new(
+        @encoding_combo_box_activator = ComboBox::Activator.new(
           @encoding_combo_box,
           IRCBot::AVAILABLE_ENCODINGS.map(&:name)
         )
@@ -370,7 +369,7 @@ module BCDiceIRC
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        ComboBoxSetup::bind(@preset_combo_box, @preset_store.map(&:name))
+        ComboBox::Setup.bind(@preset_combo_box, @preset_store.map(&:name))
         @preset_combo_box.entry_text_column = 1
 
         self
@@ -379,15 +378,15 @@ module BCDiceIRC
       # ゲームシステムのコンボボックスを用意する
       # @return [self]
       def setup_game_system_combo_box
-        ComboBoxSetup::bind(@game_system_combo_box, @dice_bot_wrappers, &:name)
-        ComboBoxSetup::set_cell_renderer_text(@game_system_combo_box)
+        ComboBox::Setup.bind(@game_system_combo_box, @dice_bot_wrappers, &:name)
+        ComboBox::Setup.set_cell_renderer_text(@game_system_combo_box)
 
-        @game_system_combo_box_activator_id = ComboBoxActivator.new(
+        @game_system_combo_box_activator_id = ComboBox::Activator.new(
           @game_system_combo_box,
           @dice_bots.map(&:id)
         )
 
-        @game_system_combo_box_activator_name = ComboBoxActivator.new(
+        @game_system_combo_box_activator_name = ComboBox::Activator.new(
           @game_system_combo_box,
           @dice_bots.map(&:name)
         )

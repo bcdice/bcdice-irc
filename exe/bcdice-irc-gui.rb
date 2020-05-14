@@ -18,7 +18,7 @@ require 'bundler/setup'
 require 'optparse'
 
 require 'bcdice-irc'
-require 'bcdice-irc/gui'
+require 'bcdice-irc/gui/application'
 
 begin
   # デバッグ用にbyebugを読み込む
