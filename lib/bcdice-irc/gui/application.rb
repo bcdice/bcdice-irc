@@ -24,6 +24,7 @@ require_relative 'preset_save_state'
 require_relative 'simple_observable'
 require_relative 'forwardable_to_observer'
 require_relative 'state_observer'
+require_relative 'preset_save_state_observer'
 require_relative 'game_system_observer'
 
 module BCDiceIRC
@@ -46,6 +47,14 @@ module BCDiceIRC
       # @!attribute [r] state
       #   @return [State::Base] アプリケーションの状態
       def_accessor_for_observable 'state', private_writer: true
+
+      # @!attribute [r] preset_save_state
+      #   @return [PresetSaveState] プリセットの保存に関する状態
+      def_accessor_for_observable(
+        'preset_save_state',
+        private_reader: true,
+        private_writer: true
+      )
 
       # @!attribute [r] dice_bot_wrapper
       #   @return [DiceBotWrapper] ダイスボットラッパ
@@ -74,7 +83,7 @@ module BCDiceIRC
         }
         @state = SimpleObservable.new
 
-        @preset_save_state = nil
+        @preset_save_state = SimpleObservable.new
 
         @logger = CategorizableLogger.new('Application', $stderr, level: @log_level)
         @mediator = Mediator.new(self, @log_level)
@@ -94,6 +103,8 @@ module BCDiceIRC
         change_state(:disconnected)
         set_last_selected_preset
 
+        # ウィジェットの準備が終わったので、アプリケーションの状態に対する
+        # ステータスバーのオブザーバを追加する
         @state.add_observer(
           StateObserver::status_bar(
             @status_bar,
@@ -113,16 +124,6 @@ module BCDiceIRC
         @logger.debug('Main loop end')
 
         self
-      end
-
-      # プリセットの保存に関する状態を変更する
-      # @param [PresetSaveState] value 新しい状態
-      # @note ウィジェットの準備が完了してから使うこと。
-      def preset_save_state=(value)
-        @preset_save_state = value
-
-        @preset_save_button.label = @preset_save_state.preset_save_button_label
-        @preset_save_button.sensitive = @preset_save_state.preset_save_button_sensitive
       end
 
       # パスワードを使うかどうかを変更する
@@ -393,6 +394,11 @@ module BCDiceIRC
       # @return [self]
       def setup_observers
         setup_state_observers
+
+        @preset_save_state.add_observer(
+          PresetSaveStateObserver.preset_save_button(@preset_save_button)
+        )
+
         setup_dice_bot_wrapper_observers
       end
 
