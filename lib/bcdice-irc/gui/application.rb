@@ -428,6 +428,10 @@ module BCDiceIRC
       # @return [self]
       def setup_state_observers
         widgets = [
+          @preset_combo_box,
+          @preset_save_button,
+          @preset_delete_button,
+
           @hostname_entry,
           @port_spin_button,
           @encoding_combo_box,
