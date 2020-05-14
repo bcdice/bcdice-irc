@@ -7,12 +7,19 @@ module BCDiceIRC
       module PasswordUsage
         module_function
 
+        # IRCボット設定のオブザーバを返す
+        # @param [IRCBot::Config] config
+        # @return [Proc]
         def irc_bot_config(config, password_entry)
           lambda do |use_password|
             config.password = use_password ? password_entry.text : nil
           end
         end
 
+        # パスワードエントリのオブザーバを返す
+        # @param [Gtk::Entry] entry
+        # @param [Application] app
+        # @return [Proc]
         def password_entry(entry, app)
           lambda do |use_password|
             entry.sensitive =

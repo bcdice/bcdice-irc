@@ -18,7 +18,7 @@ module BCDiceIRC
         # モデルの列0に要素を、列1に文字列を設定する。
         #
         # ブロックとして要素を文字列化する手続きを与える。
-        # ブロックが与えられていなければ、+#to_s+ で要素を文字列化する。
+        # ブロックが与えられていなければ、`#to_s` で要素を文字列化する。
         #
         # @param [Gtk::ComboBox] combo_box 対象のコンボボックス
         # @param [Enumerable] list 結び付けるEnumerableオブジェクト

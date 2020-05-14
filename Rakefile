@@ -15,6 +15,7 @@ YARD::Rake::YardocTask.new do |t|
   t.options = [
     '--protected',
     '--private',
+    '--markup=markdown',
   ]
 end
 

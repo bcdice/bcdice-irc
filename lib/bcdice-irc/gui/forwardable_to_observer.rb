@@ -8,8 +8,8 @@ module BCDiceIRC
     module ForwardableToObserver
       # オブザーバ用のアクセサを定義する
       # @param [String] var_name 変数名
-      # @param [Boolean] private_reader 読み取り用メソッドを +private+ にするか
-      # @param [Boolean] private_writer 書き込み用メソッドを +private+ にするか
+      # @param [Boolean] private_reader 読み取り用メソッドを `private` にするか
+      # @param [Boolean] private_writer 書き込み用メソッドを `private` にするか
       # @return [self]
       def def_accessor_for_observable(
         var_name,

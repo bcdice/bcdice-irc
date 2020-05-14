@@ -40,6 +40,8 @@ module BCDiceIRC
 
     # IRCボットの設定の構造体にメソッドを追加したクラス
     class Config < ConfigStruct
+      # 既定の設定
+      # @return [Config]
       DEFAULT = new(
         name: 'デフォルト',
         hostname: 'irc.trpg.net',
@@ -53,7 +55,7 @@ module BCDiceIRC
       ).freeze
 
       # ハッシュから構造体を構築する
-      # @param [Hash] 設定の情報が格納されたハッシュ
+      # @param [Hash] hash 設定の情報が格納されたハッシュ
       # @return [Config]
       def self.from_hash(hash)
         hash_with_sym_keys = hash.symbolize_keys
@@ -79,7 +81,7 @@ module BCDiceIRC
         hash
       end
 
-      # 接続先のエンドポイント（+ホスト名:ポート+）を返す
+      # 接続先のエンドポイント（`ホスト名:ポート`）を返す
       # @return [String]
       def end_point
         "#{hostname}:#{port}"

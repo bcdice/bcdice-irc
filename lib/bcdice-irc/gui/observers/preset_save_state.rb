@@ -8,6 +8,9 @@ module BCDiceIRC
       module PresetSaveState
         module_function
 
+        # プリセット保存ボタンのオブザーバを返す
+        # @param [Gtk::Button] button
+        # @return [Proc]
         def preset_save_button(button)
           lambda do |state|
             button.label = state.preset_save_button_label

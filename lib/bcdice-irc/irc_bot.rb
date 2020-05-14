@@ -40,16 +40,22 @@ module BCDiceIRC
       @bcdice.setGameByTitle(@config.game_system_id)
     end
 
+    # IRCボットを起動する
+    # @return [Boolean] 接続に成功したか
     def start!
       @bot.start
     end
 
+    # IRCボットを終了する
+    # @return [void]
     def quit!
       @bot.quit(@config.quit_message)
     end
 
     private
 
+    # 新しいCinchボットを作成する
+    # @return [MyCinchBot]
     def new_bot
       this = self
       bot = MyCinchBot.new

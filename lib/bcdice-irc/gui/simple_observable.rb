@@ -6,7 +6,8 @@ module BCDiceIRC
     class SimpleObservable
       attr_reader :value
 
-      # @param [Object] last_value 直前の値
+      # 初期化する
+      # @param [Object] initial_value 初期値
       def initialize(initial_value: nil)
         @value = initial_value
         @update_procs = []

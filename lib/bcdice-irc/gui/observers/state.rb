@@ -7,12 +7,18 @@ module BCDiceIRC
       module State
         module_function
 
+        # メインウィンドウのタイトルのオブザーバを返す
+        # @param [Application] app
+        # @return [Proc]
         def main_window_title(app)
           lambda do |_|
             app.update_main_window_title
           end
         end
 
+        # IRCボット設定の一般的なウィジェットのオブザーバを返す
+        # @param [Array<Gtk::Widget>] widgets
+        # @return [Proc]
         def general_widgets(widgets)
           lambda do |state|
             widgets.each do |w|
@@ -21,6 +27,10 @@ module BCDiceIRC
           end
         end
 
+        # パスワード設定用ウィジェットのオブザーバを返す
+        # @param [Gtk::CheckButton] password_check_button
+        # @param [Application] app
+        # @return [Proc]
         def widgets_for_password(password_check_button, app)
           lambda do |state|
             password_check_button.sensitive = state.general_widgets_sensitive
@@ -28,6 +38,9 @@ module BCDiceIRC
           end
         end
 
+        # 接続/切断ボタンのオブザーバを返す
+        # @param [Gtk::Button] button
+        # @return [Proc]
         def connect_disconnect_button(button)
           lambda do |state|
             button.label = state.connect_disconnect_button_label
@@ -35,6 +48,10 @@ module BCDiceIRC
           end
         end
 
+        # ステータスバーのオブザーバを返す
+        # @param [Gtk::StatusBar] bar
+        # @param [Integer] context_id
+        # @return [Proc]
         def status_bar(bar, context_id)
           lambda do |state|
             bar.push(
@@ -44,6 +61,9 @@ module BCDiceIRC
           end
         end
 
+        # ロガーのオブザーバを返す
+        # @param [Cinch::Logger] l
+        # @return [Proc]
         def logger(l)
           lambda do |state|
             l.info("State -> #{state.name}")

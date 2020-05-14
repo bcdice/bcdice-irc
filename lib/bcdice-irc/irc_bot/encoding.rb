@@ -4,15 +4,15 @@ module BCDiceIRC
   class IRCBot
     # BCDice IRCで使う文字エンコーディング情報の構造体
     #
-    # +name+ は +encoding.name+ と同じだが、環境変化で変化しないように明示的に
+    # `name` は `encoding.name` と同じだが、環境変化で変化しないように明示的に
     # 設定する。
     #
-    # @!attribute encoding 文字エンコーディング
-    #   @return [Encoding]
-    # @!attribute name 文字エンコーディング名
-    #   @return [String]
-    # @!attribute language 文字エンコーディングの対象言語
-    #   @return [String]
+    # @!attribute encoding
+    #   @return [Encoding] 文字エンコーディング
+    # @!attribute name
+    #   @return [String] 文字エンコーディング名
+    # @!attribute language
+    #   @return [String] 文字エンコーディングの対象言語
     EncodingInfo = Struct.new(:encoding, :name, :language)
 
     class EncodingInfo

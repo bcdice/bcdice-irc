@@ -19,6 +19,7 @@ module BCDiceIRC
       attr_reader :index_last_selected
 
       # ロガー
+      # @return [Cinch::Logger]
       attr_accessor :logger
 
       def_delegators(
@@ -68,7 +69,7 @@ module BCDiceIRC
 
       # 最後に選択されたプリセットの番号を設定する
       # @param [Integer] value プリセット番号
-      # @raise [RangeError] +value+ が負か、プリセット数以上だった場合
+      # @raise [RangeError] `value` が負か、プリセット数以上だった場合
       def index_last_selected=(value)
         if empty?
           unless value.nil?
@@ -89,7 +90,7 @@ module BCDiceIRC
 
       # 設定を追加する
       # @param [IRCBot::Config] config IRCボット設定
-      # @return [Symbol] 追加された（+:appended+）か更新された（+:updated+）か
+      # @return [Symbol] 追加された（`:appended`）か更新された（`:updated`）か
       def push(config)
         need_append = !include?(config.name)
 
@@ -136,7 +137,7 @@ module BCDiceIRC
       end
 
       # YAMLファイルを読み込んでプリセット集を作る
-      # @param [Hash] hash
+      # @param [String] yaml_path YAMLファイルのパス
       # @return [self]
       def load_yaml_file(yaml_path)
         o = YAML.load_file(yaml_path)
@@ -150,7 +151,7 @@ module BCDiceIRC
       # 設定を末尾に追加する
       # @param [IRCBot::Config] config IRCボットの設定
       # @param [Boolean] empty_before_append 追加前に空だったか
-      # @return [Symbol] +:appended+
+      # @return [Symbol] `:appended`
       def append(config, empty_before_append)
         new_index = @presets.length
         @presets.push(config)
@@ -167,7 +168,7 @@ module BCDiceIRC
 
       # 記録されている設定を更新する
       # @param [IRCBot::Config] config IRCボットの設定
-      # @return [Symbol] +:updated+
+      # @return [Symbol] `:updated`
       def update(config)
         index, = @name_index_preset_map[config.name]
         @presets[index] = config

@@ -4,19 +4,22 @@ require 'forwardable'
 require 'diceBot/DiceBot'
 
 module BCDiceIRC
-  # 汎用ダイスボットについての情報
+  # ダイスボットについての情報を含むラッパ
   module DiceBotWrapper
     # 汎用ダイスボット（DiceBot）用のラッパ
     class General
       extend Forwardable
 
-      def_delegator(:@bot, :class, :bot_class)
+      # @!attribute id
+      #   @return [String] ゲームシステムID
       def_delegators(:@bot, :id)
 
       # ゲームシステム名
+      # @return [String]
       NAME = 'ダイスボット（指定なし）'
 
       # ダイスボットの使い方
+      # @return [String]
       HELP_MESSAGE = <<~MESSAGE_TEXT
         【ダイスボット】チャットにダイス用の文字を入力するとダイスロールが可能
         入力例）２ｄ６＋１　攻撃！
@@ -42,21 +45,31 @@ module BCDiceIRC
         @bot = bot
       end
 
+      # ゲームシステム名
+      # @return [String]
       def name
         NAME
       end
 
+      # ダイスボットの説明文
+      # @return [String]
       def help_message
         HELP_MESSAGE
       end
     end
 
+    # 特定のゲームシステム用のダイスボットのラッパ
     class GameSystemSpecified
       extend Forwardable
 
+      # ダイスボットの説明文
+      # @return [String]
       attr_reader :help_message
 
-      def_delegator(:@bot, :class, :bot_class)
+      # @!attribute [r] id
+      #   @return [String] ゲームシステムID
+      # @!attribute [r] name
+      #   @return [String] ゲームシステム名
       def_delegators(:@bot, :id, :name)
 
       # @param [DiceBot] bot ダイスボット
@@ -69,6 +82,11 @@ module BCDiceIRC
 
     module_function
 
+    # 指定されたボットを含むダイスボットラッパを返す
+    # @param [DiceBot] bot ダイスボット
+    # @return [General] 通常のダイスボットが渡された場合
+    # @return [GameSystemSpecified] 特定のゲームシステム用のダイスボットが
+    #   渡された場合
     def wrap(bot)
       if bot.class == DiceBot
         General.new(bot)
