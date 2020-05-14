@@ -10,12 +10,3 @@ presets:
   channel: "#Dice_Test"
   quit_message: さようなら
   game_system_id: DiceBot
-- name: Friend Chat
-  hostname: irc.friend-chat.jp
-  port: 6664
-  password: 
-  encoding: ISO-2022-JP
-  nick: DiceBot
-  channel: "#Dice_Test_2"
-  quit_message: Bye!
-  game_system_id: Cthulhu7th

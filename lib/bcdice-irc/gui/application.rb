@@ -264,6 +264,7 @@ module BCDiceIRC
         if !@preset_store || @preset_store.empty?
           @preset_store = PresetStore.default
           @logger.warn('既定のプリセット集を使用します')
+          try_to_save_presets_file
         end
 
         self
@@ -493,7 +494,7 @@ module BCDiceIRC
           save_presets_file
           return true
         rescue => e
-          @status_bar.push(
+          @status_bar&.push(
             @status_bar_context_ids.fetch(:save_presets_file),
             'プリセット設定ファイルの保存に失敗しました'
           )
@@ -556,7 +557,8 @@ module BCDiceIRC
       def preset_save_button_on_clicked
         @irc_bot_config.name = @preset_entry.text
 
-        if @preset_store.push(@irc_bot_config.deep_dup) == :appended
+        push_result = @preset_store.push(@irc_bot_config.deep_dup)
+        if push_result == :appended
           @preset_combo_box.append_text(@irc_bot_config.name)
         end
 
@@ -564,7 +566,16 @@ module BCDiceIRC
           @handler_ids.fetch(:preset_combo_box_on_changed)
         ) do
           @preset_combo_box.active = @preset_store.index_last_selected
-          self.preset_save_state = PresetSaveState::PRESET_EXISTS
+        end
+
+        self.preset_save_state = PresetSaveState::PRESET_EXISTS
+
+        if try_to_save_presets_file
+          action = push_result == :appended ? '保存' : '更新'
+          @status_bar.push(
+            @status_bar_context_ids.fetch(:save_presets_file),
+            "プリセット「#{@irc_bot_config.name}」を#{action}しました"
+          )
         end
       end
 
