@@ -87,7 +87,7 @@ module BCDiceIRC
 
         @use_password = SimpleObservable.new
         @dice_bot_wrapper = SimpleObservable.new
-        @preset_store = nil
+        @preset_store = PresetStore.new
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
         @setting_up = true
         @last_connection_exception = nil
@@ -104,6 +104,8 @@ module BCDiceIRC
         @preset_deletable = SimpleObservable.new
 
         @logger = CategorizableLogger.new('Application', $stderr, level: @log_level)
+        @preset_store.logger = @logger
+
         @mediator = Mediator.new(self, @log_level)
       end
 
@@ -114,7 +116,7 @@ module BCDiceIRC
         @logger.debug('Setup start')
 
         collect_dice_bots
-        setup_preset_store
+        load_presets
 
         load_glade_file
         setup_widgets
@@ -257,12 +259,9 @@ module BCDiceIRC
         self
       end
 
-      # プリセット集を用意する
+      # プリセット集を読み込む
       # @return [self]
-      def setup_preset_store
-        @preset_store = PresetStore.new
-        @preset_store.logger = @logger
-
+      def load_presets
         begin
           @preset_store.load_yaml_file(@presets_yaml_path)
         rescue => e
