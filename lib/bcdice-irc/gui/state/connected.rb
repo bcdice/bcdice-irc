@@ -12,15 +12,6 @@ module BCDiceIRC
         def initialize(app)
           super('connected', app)
 
-          @hostname_entry_sensitive = false
-          @port_spin_button_sensitive = false
-          @password_check_button_sensitive = false
-          @encoding_combo_box_sensitive = false
-          @nick_entry_sensitive = false
-          @channel_entry_sensitive = false
-
-          @game_system_combo_box_sensitive = false
-
           @connect_disconnect_button_label = DISCONNECT_BUTTON_LABEL
           @connect_disconnect_button_sensitive = true
 
@@ -30,7 +21,7 @@ module BCDiceIRC
         # メインウィンドウのタイトルを返す
         # @return [String]
         def main_window_title
-          "#{@app.irc_bot_config.end_point} [#{@app.dice_bot_wrapper.value.name}]"
+          "#{@app.irc_bot_config.end_point} [#{@app.dice_bot_wrapper.name}]"
         end
 
         # 接続状況を返す

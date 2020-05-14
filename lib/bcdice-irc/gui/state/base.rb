@@ -19,28 +19,9 @@ module BCDiceIRC
         # @return [String]
         attr_reader :main_window_title
 
-        # ホスト名を入力できるか
+        # 全体的にウィジェットが反応するか
         # @return [Boolean]
-        attr_reader :hostname_entry_sensitive
-        # ポート番号を入力できるか
-        # @return [Boolean]
-        attr_reader :port_spin_button_sensitive
-        # パスワードを入力できるか
-        # @return [Boolean]
-        attr_reader :password_check_button_sensitive
-        # 文字エンコーディングを設定できるか
-        # @return [Boolean]
-        attr_reader :encoding_combo_box_sensitive
-        # ニックネームを入力できるか
-        # @return [Boolean]
-        attr_reader :nick_entry_sensitive
-        # チャンネルを入力できるか
-        # @return [Boolean]
-        attr_reader :channel_entry_sensitive
-
-        # ゲームシステムを設定できるか
-        # @return [Boolean]
-        attr_reader :game_system_combo_box_sensitive
+        attr_reader :general_widgets_sensitive
 
         # 接続/切断ボタンのラベル
         # @return [String]
@@ -62,14 +43,7 @@ module BCDiceIRC
 
           @main_window_title = @name
 
-          @hostname_entry_sensitive = false
-          @port_spin_button_sensitive = false
-          @password_check_button_sensitive = false
-          @encoding_combo_box_sensitive = false
-          @nick_entry_sensitive = false
-          @channel_entry_sensitive = false
-
-          @game_system_combo_box_sensitive = false
+          @general_widgets_sensitive = false
 
           @connect_disconnect_button_label = CONNECT_BUTTON_LABEL
           @connect_disconnect_button_sensitive = false

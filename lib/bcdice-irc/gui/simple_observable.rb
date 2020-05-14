@@ -22,21 +22,31 @@ module BCDiceIRC
         self
       end
 
+      # 変更を通知する
+      # @return [self]
+      def notify_observers
+        @update_procs.each do |update|
+          update[@value]
+        end
+
+        self
+      end
+
       # 値を設定し、変化していたらオブザーバに通知する
       # @param [Object] new_value 設定する値
       # @return [Boolean] 値が変化したか
-      def value=(new_value)
+      def set(new_value)
         # 値が変更されていなかったら何もしない
         return false if @compare && new_value == @value
 
         # 値が変更されていたら、変更後の値を記録し、変更を通知する
         @value = new_value
-        @update_procs.each do |update|
-          update[new_value]
-        end
+        notify_observers
 
         true
       end
+
+      alias value= set
     end
   end
 end

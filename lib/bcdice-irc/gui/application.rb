@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'forwardable'
+
 require 'gtk3'
 require 'active_support/core_ext/object/deep_dup'
 require 'active_support/core_ext/object/blank'
@@ -20,22 +22,18 @@ require_relative 'combo_box_setup'
 require_relative 'combo_box_activator'
 require_relative 'preset_save_state'
 require_relative 'simple_observable'
+require_relative 'state_observer'
 require_relative 'game_system_observer'
 
 module BCDiceIRC
   module GUI
     # BCDice IRCのGUIアプリケーションのクラス
     class Application
-      # アプリケーションの状態
-      # @return [State::Base]
-      attr_reader :state
+      extend Forwardable
 
       # IRCボットの設定
       # @return [IRCBot::Config]
       attr_accessor :irc_bot_config
-      # ダイスボットラッパ
-      # @return [DiceBotWrapper]
-      attr_reader :dice_bot_wrapper
       # IRCボットとGUIとの仲介
       # @return [GUI::Mediator]
       attr_reader :mediator
@@ -43,6 +41,18 @@ module BCDiceIRC
       # 最後に発生した接続エラー
       # @return [StandardError, nil]
       attr_accessor :last_connection_exception
+
+      # @!attribute [r] state
+      #   @return [State::Base] アプリケーションの状態
+      def_delegator :@state, :value, :state
+      def_delegator :@state, :value=, :state=
+      private :state=
+
+      # @!attribute [r] dice_bot_wrapper
+      #   @return [DiceBotWrapper] ダイスボットラッパ
+      def_delegator :@dice_bot_wrapper, :value, :dice_bot_wrapper
+      def_delegator :@dice_bot_wrapper, :value=, :dice_bot_wrapper=
+      private :dice_bot_wrapper=
 
       # アプリケーションを初期化する
       # @param [String] presets_yaml_path プリセット集のYAMLファイルのパス
@@ -54,20 +64,18 @@ module BCDiceIRC
         @builder = Gtk::Builder.new
 
         @use_password = false
-        @encoding_to_index = IRCBot::AVAILABLE_ENCODINGS.each_with_index.to_h
         @dice_bot_wrapper = SimpleObservable.new
         @preset_store = nil
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
         @last_connection_exception = nil
 
-        @setting_up = false
         @states = {
           disconnected: State::Disconnected.new(self),
           connecting: State::Connecting.new(self),
           connected: State::Connected.new(self),
           disconnecting: State::Disconnecting.new(self),
         }
-        @state = nil
+        @state = SimpleObservable.new
 
         @preset_save_state = nil
 
@@ -80,8 +88,6 @@ module BCDiceIRC
       def start!
         @logger.debug('Setup start')
 
-        @setting_up = true
-
         collect_dice_bots
         setup_preset_store
 
@@ -90,9 +96,15 @@ module BCDiceIRC
         setup_observers
         change_state(:disconnected)
         set_last_selected_preset
-        @main_window.show_all
 
-        @setting_up = false
+        @state.add_observer(
+          StateObserver::status_bar(
+            @status_bar,
+            @status_bar_context_ids.fetch(:connection)
+          )
+        )
+
+        @main_window.show_all
 
         @logger.debug('Setup end')
 
@@ -124,7 +136,7 @@ module BCDiceIRC
         @irc_bot_config.password = @use_password ? @password_entry.text : nil
 
         @password_entry.sensitive =
-          @state.password_check_button_sensitive && @use_password
+          self.state.general_widgets_sensitive && @use_password
       end
 
       # ゲームシステムを名前で指定して変更する
@@ -186,21 +198,7 @@ module BCDiceIRC
       # @return [self]
       # @note ウィジェットの準備が完了してから使うこと。
       def update_main_window_title
-        @main_window.title = "#{@state.main_window_title} - BCDice IRC"
-        self
-      end
-
-      # 接続状況表示を更新する
-      # @return [self]
-      # @note ウィジェットの準備が完了してから使うこと。
-      def update_connection_status
-        return if @setting_up
-
-        @status_bar.push(
-          @status_bar_context_ids.fetch(:connection),
-          @state.connection_status
-        )
-
+        @main_window.title = "#{state.main_window_title} - BCDice IRC"
         self
       end
 
@@ -243,18 +241,6 @@ module BCDiceIRC
       end
 
       private
-
-      # アプリケーションの状態を変更する
-      # @param [GUI::State::Base] 新しい状態
-      # @note ウィジェットの準備が完了してから使うこと。
-      def state=(value)
-        @state = value
-
-        update_main_window_title
-        update_widgets
-
-        @logger.info("State -> #{@state.name}")
-      end
 
       # ダイスボットを収集し、キャッシュする
       # @return [self]
@@ -409,7 +395,38 @@ module BCDiceIRC
       # オブザーバを用意する
       # @return [self]
       def setup_observers
+        setup_state_observers
         setup_dice_bot_wrapper_observers
+      end
+
+      # アプリケーションの状態のオブザーバを用意する
+      # @return [self]
+      def setup_state_observers
+        widgets = [
+          @hostname_entry,
+          @port_spin_button,
+          @encoding_combo_box,
+          @nick_entry,
+          @channel_entry,
+
+          @game_system_combo_box,
+        ]
+
+        # 初期状態を設定する前は、ステータスバーのオブザーバは追加しないこと
+        # （起動していきなり「切断されました」と表示されないように）
+        observers = [
+          StateObserver::main_window_title(self),
+          StateObserver::general_widgets(widgets),
+          StateObserver::widgets_for_password(@password_check_button, self),
+          StateObserver::connect_disconnect_button(@connect_disconnect_button),
+          StateObserver::logger(@logger),
+        ]
+
+        observers.each do |o|
+          @state.add_observer(o)
+        end
+
+        self
       end
 
       # ダイスボットラッパのオブザーバを用意する
@@ -443,30 +460,6 @@ module BCDiceIRC
         @game_system_combo_box.active = 0
 
         @preset_combo_box.active = @preset_store.index_last_selected
-
-        self
-      end
-
-      # 状態に合わせてウィジェットを更新する
-      # @return [self]
-      def update_widgets
-        @hostname_entry.sensitive = @state.hostname_entry_sensitive
-        @port_spin_button.sensitive = @state.port_spin_button_sensitive
-
-        @password_check_button.sensitive = @state.password_check_button_sensitive
-        # パスワードの入力可否を更新するために再代入する
-        self.use_password = @use_password
-
-        @encoding_combo_box.sensitive = @state.encoding_combo_box_sensitive
-        @nick_entry.sensitive = @state.nick_entry_sensitive
-        @channel_entry.sensitive = @state.channel_entry_sensitive
-
-        @game_system_combo_box.sensitive = @state.game_system_combo_box_sensitive
-
-        @connect_disconnect_button.label = @state.connect_disconnect_button_label
-        @connect_disconnect_button.sensitive = @state.connect_disconnect_button_sensitive
-
-        update_connection_status if @irc_bot_config
 
         self
       end
@@ -570,13 +563,13 @@ module BCDiceIRC
       # ゲームシステムコンボボックスの値が変更されたときの処理
       # @return [void]
       def game_system_combo_box_on_changed
-        @dice_bot_wrapper.value = @game_system_combo_box.active_iter[0]
+        self.dice_bot_wrapper = @game_system_combo_box.active_iter[0]
       end
 
       # 接続/切断ボタンがクリックされたときの処理
       # @return [self]
       def connect_disconnect_button_on_clicked
-        @state.connect_disconnect_button_on_clicked
+        state.connect_disconnect_button_on_clicked
         self
       end
     end

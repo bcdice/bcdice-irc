@@ -14,14 +14,7 @@ module BCDiceIRC
 
           @main_window_title = '未接続'
 
-          @hostname_entry_sensitive = true
-          @port_spin_button_sensitive = true
-          @password_check_button_sensitive = true
-          @encoding_combo_box_sensitive = true
-          @nick_entry_sensitive = true
-          @channel_entry_sensitive = true
-
-          @game_system_combo_box_sensitive = true
+          @general_widgets_sensitive = true
 
           @connect_disconnect_button_label = CONNECT_BUTTON_LABEL
           @connect_disconnect_button_sensitive = true

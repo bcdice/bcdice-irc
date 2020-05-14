@@ -26,10 +26,10 @@ module BCDiceIRC
         end
       end
 
-      def status_bar(app, status_bar, context_id)
+      def status_bar(app, bar, context_id)
         lambda do |dice_bot_wrapper|
           if app.state.need_notification_on_game_system_change
-            status_bar.push(
+            bar.push(
               context_id,
               "ゲームシステムを「#{dice_bot_wrapper.name}」に設定しました"
             )
