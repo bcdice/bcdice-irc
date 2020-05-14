@@ -57,6 +57,13 @@ module BCDiceIRC
         private_writer: true
       )
 
+      # プリセットを削除できるか
+      def_accessor_for_observable(
+        'preset_deletable',
+        private_reader: true,
+        private_writer: true
+      )
+
       # パスワードを使用するか
       def_accessor_for_observable(
         'use_password',
@@ -94,6 +101,7 @@ module BCDiceIRC
         @state = SimpleObservable.new
 
         @preset_save_state = SimpleObservable.new
+        @preset_deletable = SimpleObservable.new
 
         @logger = CategorizableLogger.new('Application', $stderr, level: @log_level)
         @mediator = Mediator.new(self, @log_level)
@@ -409,6 +417,10 @@ module BCDiceIRC
           Observers::PresetSaveState.preset_save_button(@preset_save_button)
         )
 
+        @preset_deletable.add_observer(
+          Observers::PresetDeletability.preset_delete_button(@preset_delete_button)
+        )
+
         setup_password_usage_observers
         setup_dice_bot_wrapper_observers
       end
@@ -528,12 +540,16 @@ module BCDiceIRC
         active_index = @preset_combo_box.active
         if active_index < 0
           # 文字が入力された場合
-          self.preset_save_state = preset_save_state_by_name(@preset_entry.text)
+          preset_name = @preset_entry.text
+          self.preset_save_state = preset_save_state_by_name(preset_name)
+          self.preset_deletable =
+            @preset_store.have_multiple_presets? && @preset_store.include?(preset_name)
         else
           # プリセットが選択された場合
           set_irc_bot_config_by_preset_name(@preset_combo_box.active_text)
           @preset_store.index_last_selected = active_index
           self.preset_save_state = PresetSaveState::PRESET_EXISTS
+          self.preset_deletable = @preset_store.have_multiple_presets?
 
           try_to_save_presets_file unless @setting_up
         end
@@ -569,6 +585,7 @@ module BCDiceIRC
         end
 
         self.preset_save_state = PresetSaveState::PRESET_EXISTS
+        self.preset_deletable = @preset_store.have_multiple_presets?
 
         if try_to_save_presets_file
           action = push_result == :appended ? '保存' : '更新'

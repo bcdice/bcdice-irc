@@ -62,6 +62,16 @@ module BCDiceIRC
         assert_false(@store.empty?, '設定追加後は false')
       end
 
+      test 'have_multiple_presets?' do
+        assert_false(@store.have_multiple_presets?, '0個では false')
+
+        @store.push(@config1)
+        assert_false(@store.have_multiple_presets?, '1個では false')
+
+        @store.push(@config2)
+        assert_true(@store.have_multiple_presets?, '2個では true')
+      end
+
       test 'index_last_selected=' do
         assert(@store.empty?)
 

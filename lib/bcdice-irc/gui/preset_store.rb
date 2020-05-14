@@ -67,6 +67,12 @@ module BCDiceIRC
         self
       end
 
+      # 複数のプリセットがあるかを返す
+      # @return [Boolean]
+      def have_multiple_presets?
+        length > 1
+      end
+
       # 最後に選択されたプリセットの番号を設定する
       # @param [Integer] value プリセット番号
       # @raise [RangeError] `value` が負か、プリセット数以上だった場合
@@ -173,7 +179,7 @@ module BCDiceIRC
       # @param [Boolean] empty_before_append 追加前に空だったか
       # @return [Symbol] `:appended`
       def append(config, empty_before_append)
-        new_index = @presets.length
+        new_index = length
         @presets.push(config)
         @name_index_preset_map[config.name] = [new_index, config]
 
