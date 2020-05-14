@@ -23,10 +23,7 @@ require_relative 'combo_box'
 
 require_relative 'simple_observable'
 require_relative 'forwardable_to_observer'
-require_relative 'state_observer'
-require_relative 'preset_save_state_observer'
-require_relative 'password_usage_observer'
-require_relative 'game_system_observer'
+require_relative 'observers'
 
 module BCDiceIRC
   module GUI
@@ -113,7 +110,7 @@ module BCDiceIRC
         # ウィジェットの準備が終わったので、アプリケーションの状態に対する
         # ステータスバーのオブザーバを追加する
         @state.add_observer(
-          StateObserver::status_bar(
+          Observers::State.status_bar(
             @status_bar,
             @status_bar_context_ids.fetch(:connection)
           )
@@ -400,7 +397,7 @@ module BCDiceIRC
         setup_state_observers
 
         @preset_save_state.add_observer(
-          PresetSaveStateObserver.preset_save_button(@preset_save_button)
+          Observers::PresetSaveState.preset_save_button(@preset_save_button)
         )
 
         setup_password_usage_observers
@@ -423,11 +420,11 @@ module BCDiceIRC
         # 初期状態を設定する前は、ステータスバーのオブザーバは追加しないこと
         # （起動していきなり「切断されました」と表示されないように）
         @state.add_observers(
-          StateObserver::main_window_title(self),
-          StateObserver::general_widgets(widgets),
-          StateObserver::widgets_for_password(@password_check_button, self),
-          StateObserver::connect_disconnect_button(@connect_disconnect_button),
-          StateObserver::logger(@logger)
+          Observers::State.main_window_title(self),
+          Observers::State.general_widgets(widgets),
+          Observers::State.widgets_for_password(@password_check_button, self),
+          Observers::State.connect_disconnect_button(@connect_disconnect_button),
+          Observers::State.logger(@logger)
         )
 
         self
@@ -437,8 +434,8 @@ module BCDiceIRC
       # @return [self]
       def setup_password_usage_observers
         @use_password.add_observers(
-          PasswordUsageObserver.irc_bot_config(@irc_bot_config, @password_entry),
-          PasswordUsageObserver.password_entry(@password_entry, self)
+          Observers::PasswordUsage.irc_bot_config(@irc_bot_config, @password_entry),
+          Observers::PasswordUsage.password_entry(@password_entry, self)
         )
 
         self
@@ -448,10 +445,10 @@ module BCDiceIRC
       # @return [self]
       def setup_dice_bot_wrapper_observers
         @dice_bot_wrapper.add_observers(
-          GameSystemObserver::irc_bot_config(@irc_bot_config),
-          GameSystemObserver::help_text_view(@help_text_view),
-          GameSystemObserver::main_window_title(self),
-          GameSystemObserver::status_bar(
+          Observers::GameSystem.irc_bot_config(@irc_bot_config),
+          Observers::GameSystem.help_text_view(@help_text_view),
+          Observers::GameSystem.main_window_title(self),
+          Observers::GameSystem.status_bar(
             self,
             @status_bar,
             @status_bar_context_ids.fetch(:game_system_change)
