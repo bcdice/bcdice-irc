@@ -97,20 +97,19 @@ Author: ocha
                         <property name="can_focus">False</property>
                         <property name="spacing">6</property>
                         <child>
-                          <object class="GtkComboBox" id="preset_combo_box">
+                          <object class="GtkComboBoxText" id="preset_combo_box">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="hexpand">True</property>
                             <property name="has_entry">True</property>
-                            <signal name="changed" handler="preset_combo_box_on_changed" swapped="no"/>
                             <child internal-child="entry">
                               <object class="GtkEntry" id="preset_entry">
+                                <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                               </object>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
+                            <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">0</property>
                           </packing>

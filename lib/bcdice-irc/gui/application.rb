@@ -72,6 +72,7 @@ module BCDiceIRC
         @log_level = log_level
 
         @builder = Gtk::Builder.new
+        @handler_ids = {}
 
         @use_password = SimpleObservable.new
         @dice_bot_wrapper = SimpleObservable.new
@@ -366,8 +367,16 @@ module BCDiceIRC
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        ComboBox::Setup.bind(@preset_combo_box, @preset_store.map(&:name))
-        @preset_combo_box.entry_text_column = 1
+        @preset_store
+          .map(&:name)
+          .each do |preset_name|
+            @preset_combo_box.append_text(preset_name)
+          end
+
+        @handler_ids[:preset_combo_box_on_changed] =
+          @preset_combo_box.signal_connect(:changed) do
+            preset_combo_box_on_changed
+          end
 
         self
       end
@@ -490,7 +499,7 @@ module BCDiceIRC
           self.preset_save_state = preset_save_state_by_name(@preset_entry.text)
         else
           # プリセットが選択された場合
-          set_irc_bot_config_by_preset_name(@preset_combo_box.active_iter[0])
+          set_irc_bot_config_by_preset_name(@preset_combo_box.active_text)
           @preset_store.index_last_selected = active_index
           self.preset_save_state = PresetSaveState::PRESET_EXISTS
         end
