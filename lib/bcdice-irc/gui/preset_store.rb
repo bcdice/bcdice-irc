@@ -157,11 +157,7 @@ module BCDiceIRC
         @presets.push(config)
         @name_index_preset_map[config.name] = [new_index, config]
 
-        if empty?
-          self.index_last_selected = nil
-        elsif empty_before_append
-          self.index_last_selected = 0
-        end
+        self.index_last_selected = new_index
 
         :appended
       end
@@ -173,7 +169,7 @@ module BCDiceIRC
         index, = @name_index_preset_map[config.name]
         @presets[index] = config
         @name_index_preset_map[config.name] = [index, config]
-        @index_last_selected = index
+        self.index_last_selected = index
 
         :updated
       end

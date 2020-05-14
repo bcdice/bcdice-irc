@@ -522,18 +522,15 @@ module BCDiceIRC
       # @return [void]
       def preset_save_button_on_clicked
         @irc_bot_config.name = @preset_entry.text
-        result = @preset_store.push(@irc_bot_config.deep_dup)
-        @logger.info("Preset: #{result} #{@irc_bot_config.name.inspect}")
 
-        case result
-        when :appended
-          @logger.warn("Preset: combo box update after appending not implemented")
-        when :updated
-          @preset_combo_box.signal_handler_block(
-            @handler_ids.fetch(:preset_combo_box_on_changed)
-          ) do
-            @preset_combo_box.active = @preset_store.index_last_selected
-          end
+        if @preset_store.push(@irc_bot_config.deep_dup) == :appended
+          @preset_combo_box.append_text(@irc_bot_config.name)
+        end
+
+        @preset_combo_box.signal_handler_block(
+          @handler_ids.fetch(:preset_combo_box_on_changed)
+        ) do
+          @preset_combo_box.active = @preset_store.index_last_selected
         end
       end
 
