@@ -529,8 +529,11 @@ module BCDiceIRC
         when :appended
           @logger.warn("Preset: combo box update after appending not implemented")
         when :updated
-          @logger.debug("Preset: combo box update after update")
-          @preset_combo_box.active = @preset_store.index_last_selected
+          @preset_combo_box.signal_handler_block(
+            @handler_ids.fetch(:preset_combo_box_on_changed)
+          ) do
+            @preset_combo_box.active = @preset_store.index_last_selected
+          end
         end
       end
 
