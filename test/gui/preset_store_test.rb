@@ -55,6 +55,25 @@ module BCDiceIRC
         assert_equal(2, @store.count)
       end
 
+      test 'delete' do
+        @store.push(@config1)
+        @store.push(@config2)
+        assert_equal(2, @store.length)
+
+        delete_result = @store.delete('Config 1')
+        assert_equal(1, delete_result, '消した項目のインデックスが返る')
+        assert_equal(1, @store.length, '個数が1個減る')
+        assert_equal(-1, @store.index_last_selected, 'プリセット未選択状態になる')
+
+        delete_result = @store.delete('Config 1')
+        assert_equal(-1, delete_result, '項目が見つからない')
+        assert_equal(1, @store.length, '個数が変わらない')
+
+        delete_result = @store.delete('デフォルト')
+        assert_equal(-1, delete_result, '最後の1個は消すことができない')
+        assert_equal(1, @store.length, '個数が変わらない')
+      end
+
       test 'empty?' do
         assert_true(@store.empty?, '最初は true')
 
@@ -75,10 +94,10 @@ module BCDiceIRC
       test 'index_last_selected=' do
         assert(@store.empty?)
 
-        @store.index_last_selected = nil
-        assert_nil(@store.index_last_selected)
+        @store.index_last_selected = -1
+        assert_equal(-1, @store.index_last_selected)
 
-        assert_raise(TypeError) do
+        assert_raise(RangeError) do
           @store.index_last_selected = 0
         end
 
@@ -92,8 +111,11 @@ module BCDiceIRC
         @store.index_last_selected = 0
         assert_equal(0, @store.index_last_selected)
 
+        @store.index_last_selected = -1
+        assert_equal(-1, @store.index_last_selected)
+
         assert_raise(RangeError) do
-          @store.index_last_selected = -1
+          @store.index_last_selected = -2
         end
 
         assert_raise(RangeError) do

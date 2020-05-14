@@ -333,7 +333,7 @@ module BCDiceIRC
       # ステータスバーに表示する項目の種類
       STATUS_BAR_CONTEXTS = [
         :preset_load,
-        :save_presets_file,
+        :save_presets,
         :game_system_change,
         :connection,
       ]
@@ -485,14 +485,18 @@ module BCDiceIRC
 
       # 最後に選択されていたプリセットを選択する
       # @return [self]
-      # @todo 設定から読み込んで設定する
       def set_last_selected_preset
         # コンボボックス：無効な値が設定されていた場合に備えて、
         # あらかじめ最初の項目を選んでおく
         @encoding_combo_box.active = 0
         @game_system_combo_box.active = 0
 
-        @preset_combo_box.active = @preset_store.index_last_selected
+        @preset_combo_box.active =
+          if @preset_store.index_last_selected < 0
+            0
+          else
+            @preset_store.index_last_selected
+          end
 
         self
       end
@@ -506,7 +510,7 @@ module BCDiceIRC
           return true
         rescue => e
           @status_bar&.push(
-            @status_bar_context_ids.fetch(:save_presets_file),
+            @status_bar_context_ids.fetch(:save_presets),
             'プリセット設定ファイルの保存に失敗しました'
           )
           @logger.exception(e)
@@ -589,8 +593,31 @@ module BCDiceIRC
         if try_to_save_presets_file
           action = push_result == :appended ? '保存' : '更新'
           @status_bar.push(
-            @status_bar_context_ids.fetch(:save_presets_file),
+            @status_bar_context_ids.fetch(:save_presets),
             "プリセット「#{@irc_bot_config.name}」を#{action}しました"
+          )
+        end
+      end
+
+      # プリセット削除ボタンがクリックされたときの処理
+      # @return [void]
+      def preset_delete_button_on_clicked
+        return unless preset_deletable
+
+        preset_name = @preset_entry.text
+        index = @preset_store.delete(preset_name)
+        # 返ってきたインデックスが-1ならば削除失敗
+        return if index < 0
+
+        # コンボボックスから該当項目を削除する
+        # @preset_combo_box.active は自動的に-1になる
+        @preset_combo_box.remove(index)
+        @preset_entry.text = ''
+
+        if try_to_save_presets_file
+          @status_bar.push(
+            @status_bar_context_ids.fetch(:save_presets),
+            "プリセット「#{preset_name}」を削除しました"
           )
         end
       end

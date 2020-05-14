@@ -15,7 +15,10 @@ module BCDiceIRC
       extend Forwardable
 
       # 最後に選択されたプリセットのインデックス
-      # @return [Integer, nil]
+      #
+      # `-1` の場合、プリセット未選択状態を表す。
+      #
+      # @return [Integer]
       attr_reader :index_last_selected
 
       # ロガー
@@ -29,6 +32,11 @@ module BCDiceIRC
         :empty?
       )
 
+      # 番号からプリセットを取得する
+      # @!method fetch(index)
+      #   @param [Integer] index プリセット番号（0-indexed）
+      #   @return [IRCBot::Config]
+      #   @raise [IndexError] 指定された番号の要素が存在しなかった場合
       def_delegator(:@presets, :fetch, :fetch_by_index)
 
       def_delegators(
@@ -51,8 +59,8 @@ module BCDiceIRC
         @logger = nil
       end
 
-      # 各設定に対して処理を行う
-      # @yieldparam [IRCBot::Config] config 各設定
+      # 各プリセットに対して処理を行う
+      # @yieldparam [IRCBot::Config] config 各プリセット
       def each(&b)
         @presets.each(&b)
       end
@@ -74,19 +82,13 @@ module BCDiceIRC
       end
 
       # 最後に選択されたプリセットの番号を設定する
+      #
+      # `value` に `-1` を設定すると、未選択状態を表す。
+      #
       # @param [Integer] value プリセット番号
-      # @raise [RangeError] `value` が負か、プリセット数以上だった場合
+      # @raise [RangeError] `value` が `-2` 以下か、プリセット数以上だった場合
       def index_last_selected=(value)
-        if empty?
-          unless value.nil?
-            raise TypeError, 'index_last_selected accepts only nil when empty'
-          end
-
-          @index_last_selected = nil
-          return
-        end
-
-        valid_range = 0...length
+        valid_range = -1...length
         unless valid_range.include?(value)
           raise RangeError, "index_last_selected must be in #{valid_range}"
         end
@@ -94,7 +96,7 @@ module BCDiceIRC
         @index_last_selected = value
       end
 
-      # 設定を追加する
+      # プリセットを追加する
       # @param [IRCBot::Config] config IRCボット設定
       # @return [Symbol] 追加された（`:appended`）か更新された（`:updated`）か
       def push(config)
@@ -107,8 +109,26 @@ module BCDiceIRC
         end
       end
 
-      # 名前で設定を取り出す
-      # @param [String] name 設定名
+      # プリセットを削除する
+      # @param [String] name 削除するプリセットの名前
+      # @return [Integer] 削除したプリセットの番号（見つからなかった場合は `-1`）
+      # @note 最後の1個は消すことができない（`-1` を返す）。
+      def delete(name)
+        return -1 unless have_multiple_presets?
+
+        index, = @name_index_preset_map[name]
+        return -1 unless index
+
+        @presets.delete_at(index)
+        @name_index_preset_map.delete(name)
+
+        self.index_last_selected = -1
+
+        index
+      end
+
+      # 名前でプリセットを取り出す
+      # @param [String] name プリセット名
       # @return [IRCBot::Config]
       def fetch_by_name(name)
         _, config = @name_index_preset_map.fetch(name)
@@ -176,7 +196,7 @@ module BCDiceIRC
 
       private
 
-      # 設定を末尾に追加する
+      # プリセットを末尾に追加する
       # @param [IRCBot::Config] config IRCボットの設定
       # @param [Boolean] empty_before_append 追加前に空だったか
       # @return [Symbol] `:appended`
@@ -190,7 +210,7 @@ module BCDiceIRC
         :appended
       end
 
-      # 記録されている設定を更新する
+      # 記録されているプリセットを更新する
       # @param [IRCBot::Config] config IRCボットの設定
       # @return [Symbol] `:updated`
       def update(config)
