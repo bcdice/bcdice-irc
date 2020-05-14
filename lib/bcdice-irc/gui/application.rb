@@ -22,6 +22,7 @@ require_relative 'combo_box_setup'
 require_relative 'combo_box_activator'
 require_relative 'preset_save_state'
 require_relative 'simple_observable'
+require_relative 'forwardable_to_observer'
 require_relative 'state_observer'
 require_relative 'game_system_observer'
 
@@ -29,7 +30,7 @@ module BCDiceIRC
   module GUI
     # BCDice IRCのGUIアプリケーションのクラス
     class Application
-      extend Forwardable
+      extend ForwardableToObserver
 
       # IRCボットの設定
       # @return [IRCBot::Config]
@@ -44,15 +45,11 @@ module BCDiceIRC
 
       # @!attribute [r] state
       #   @return [State::Base] アプリケーションの状態
-      def_delegator :@state, :value, :state
-      def_delegator :@state, :value=, :state=
-      private :state=
+      def_accessor_for_observable 'state', private_writer: true
 
       # @!attribute [r] dice_bot_wrapper
       #   @return [DiceBotWrapper] ダイスボットラッパ
-      def_delegator :@dice_bot_wrapper, :value, :dice_bot_wrapper
-      def_delegator :@dice_bot_wrapper, :value=, :dice_bot_wrapper=
-      private :dice_bot_wrapper=
+      def_accessor_for_observable 'dice_bot_wrapper', private_writer: true
 
       # アプリケーションを初期化する
       # @param [String] presets_yaml_path プリセット集のYAMLファイルのパス
