@@ -119,6 +119,8 @@ module BCDiceIRC
       # @param [Hash] hash
       # @return [self]
       def from_hash(hash)
+        clear
+
         hash_with_sym_keys = hash.symbolize_keys
 
         hash_with_sym_keys[:presets]&.each do |h|
