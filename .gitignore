@@ -5,3 +5,6 @@
 vendor/bundle
 Gemfile.lock
 .byebug_history
+
+.yardoc/
+doc/
