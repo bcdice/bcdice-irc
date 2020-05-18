@@ -8,6 +8,7 @@ module BCDiceIRC
 end
 
 require_relative 'observers/state'
+require_relative 'observers/preset_load'
 require_relative 'observers/preset_save_state'
 require_relative 'observers/preset_deletability'
 require_relative 'observers/password_usage'

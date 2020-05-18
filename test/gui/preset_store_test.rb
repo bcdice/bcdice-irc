@@ -225,6 +225,87 @@ module BCDiceIRC
         assert_equal(1, @store.length)
         assert_equal('irc2.example.net', @store.fetch_by_name('デフォルト').hostname)
       end
+
+      test 'load_by_index should set index_last_selected as specified' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        result = @store.load_by_index(0)
+
+        assert_equal(0, @store.index_last_selected)
+        assert_same(@store, result)
+      end
+
+      test 'load_by_index should call the registered on_load handler' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        preset_index = nil
+        preset_name = nil
+
+        @store.add_preset_load_handlers(
+          lambda do |config, index|
+            preset_index = index
+            preset_name = config.name
+          end
+        )
+
+        @store.load_by_index(0)
+
+        assert_equal(0, preset_index)
+        assert_equal('デフォルト', preset_name)
+      end
+
+      test 'load_by_index(-1) should do nothing' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        preset_index = nil
+        preset_name = nil
+
+        @store.add_preset_load_handlers(
+          lambda do |config, index|
+            preset_index = index
+            preset_name = config.name
+          end
+        )
+
+        @store.load_by_index(-1)
+
+        assert_equal(1, @store.index_last_selected)
+        assert_nil(preset_index)
+        assert_nil(preset_name)
+      end
+
+      test 'load_by_name should set index_last_selected to the index of the specified preset' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        result = @store.load_by_name('デフォルト')
+
+        assert_equal(0, @store.index_last_selected)
+        assert_same(@store, result)
+      end
+
+      test 'load_by_name should call the registered on_load handler' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        preset_index = nil
+        preset_name = nil
+
+        @store.add_preset_load_handlers(
+          lambda do |config, index|
+            preset_index = index
+            preset_name = config.name
+          end
+        )
+
+        @store.load_by_name('デフォルト')
+
+        assert_equal(0, preset_index)
+        assert_equal('デフォルト', preset_name)
+      end
     end
   end
 end

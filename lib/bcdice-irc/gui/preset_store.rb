@@ -57,6 +57,8 @@ module BCDiceIRC
       def initialize
         clear
         @logger = nil
+
+        @preset_load_handlers = []
       end
 
       # 各プリセットに対して処理を行う
@@ -133,6 +135,50 @@ module BCDiceIRC
       def fetch_by_name(name)
         _, config = @name_index_preset_map.fetch(name)
         config
+      end
+
+      # 番号で指定したプリセットを読み込む
+      #
+      # 読み込み完了後、`add_preset_load_handlers` で登録した手続きを実行する。
+      #
+      # @param [Integer] index プリセット番号
+      # @return [self]
+      def load_by_index(index)
+        return self if index < 0
+
+        config = fetch_by_index(index)
+        self.index_last_selected = index
+
+        @preset_load_handlers.each do |handler|
+          handler[config, index]
+        end
+
+        self
+      end
+
+      # 名前で指定したプリセットを読み込む
+      #
+      # 読み込み完了後、`add_preset_load_handlers` で登録した手続きを実行する。
+      #
+      # @param [String] name プリセット名
+      # @return [self]
+      def load_by_name(name)
+        index, config = @name_index_preset_map.fetch(name)
+        self.index_last_selected = index
+
+        @preset_load_handlers.each do |handler|
+          handler[config, index]
+        end
+
+        self
+      end
+
+      # プリセットを読み込んだときに実行する手続きを登録する
+      # @param [Array<Proc>] handlers 登録する手続き
+      # @return [self]
+      def add_preset_load_handlers(*handlers)
+        @preset_load_handlers.push(*handlers)
+        self
       end
 
       # ハッシュからプリセット集を作る

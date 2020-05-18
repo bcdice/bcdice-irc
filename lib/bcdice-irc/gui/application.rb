@@ -158,42 +158,6 @@ module BCDiceIRC
         self
       end
 
-      # プリセットからIRCボット設定を設定する
-      # @param [IRCBot::Config] preset_name プリセット名
-      # @return [self]
-      def set_irc_bot_config_by_preset_name(preset_name)
-        irc_bot_config = @preset_store.fetch_by_name(preset_name)
-
-        # TODO: ここからバリデーションを無効にする
-
-        @hostname_entry.text = irc_bot_config.hostname
-        @port_spin_button.value = irc_bot_config.port
-
-        if irc_bot_config.password
-          @password_check_button.active = true
-          @password_entry.text = irc_bot_config.password
-        else
-          @password_check_button.active = false
-          @password_entry.text = ''
-        end
-
-        @nick_entry.text = irc_bot_config.nick
-        @channel_entry.text = irc_bot_config.channel
-
-        # TODO: バリデーション無効化ここまで。ここでバリデーションを実行する。
-
-        @irc_bot_config.quit_message = irc_bot_config.quit_message.dup
-        @encoding_combo_box_activator.activate(irc_bot_config.encoding.name)
-        @game_system_combo_box_activator_id.activate(irc_bot_config.game_system_id)
-
-        @status_bar.push(
-          @status_bar_context_ids.fetch(:preset_load),
-          "プリセット「#{irc_bot_config.name}」を読み込みました"
-        )
-
-        self
-      end
-
       # メインウィンドウのタイトルを更新する
       # @return [self]
       # @note ウィジェットの準備が完了してから使うこと。
@@ -412,6 +376,8 @@ module BCDiceIRC
       def setup_observers
         setup_state_observers
 
+        setup_preset_load_observers
+
         @preset_save_state.add_observer(
           Observers::PresetSaveState.preset_save_button(@preset_save_button)
         )
@@ -441,8 +407,6 @@ module BCDiceIRC
           @game_system_combo_box,
         ]
 
-        # 初期状態を設定する前は、ステータスバーのオブザーバは追加しないこと
-        # （起動していきなり「切断されました」と表示されないように）
         @state.add_observers(
           Observers::State.main_window_title(self),
           Observers::State.general_widgets(widgets),
@@ -453,6 +417,27 @@ module BCDiceIRC
             self,
             @status_bar,
             @status_bar_context_ids.fetch(:connection)
+          )
+        )
+
+        self
+      end
+
+      # プリセット読み込みのオブザーバを用意する
+      # @return [self]
+      def setup_preset_load_observers
+        @preset_store.add_preset_load_handlers(
+          Observers::PresetLoad.hostname_entry(@hostname_entry),
+          Observers::PresetLoad.port_spin_button(@port_spin_button),
+          Observers::PresetLoad.widgets_for_password(@password_check_button, @password_entry),
+          Observers::PresetLoad.nick_entry(@nick_entry),
+          Observers::PresetLoad.channel_entry(@channel_entry),
+          Observers::PresetLoad.encoding_combo_box(@encoding_combo_box_activator),
+          Observers::PresetLoad.game_system_combo_box(@game_system_combo_box_activator_id),
+          Observers::PresetLoad.irc_bot_config(@irc_bot_config),
+          Observers::PresetLoad.status_bar(
+            @status_bar,
+            @status_bar_context_ids.fetch(:preset_load)
           )
         )
 
@@ -553,8 +538,7 @@ module BCDiceIRC
             @preset_store.have_multiple_presets? && @preset_store.include?(preset_name)
         else
           # プリセットが選択された場合
-          set_irc_bot_config_by_preset_name(@preset_combo_box.active_text)
-          @preset_store.index_last_selected = active_index
+          @preset_store.load_by_index(active_index)
           self.preset_save_state = PresetSaveState::PRESET_EXISTS
           self.preset_deletable = @preset_store.have_multiple_presets?
 
