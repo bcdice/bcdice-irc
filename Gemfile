@@ -9,7 +9,7 @@ ruby '>= 2.5.0'
 gem 'gtk3'
 
 # IRCボットフレームワーク
-gem 'grinch'
+gem 'mcinch', '>= 2.4'
 
 gem 'activesupport'
 

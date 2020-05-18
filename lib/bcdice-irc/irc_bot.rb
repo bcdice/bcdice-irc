@@ -3,8 +3,6 @@
 require 'forwardable'
 
 require 'cinch'
-require_relative 'cinch_mod'
-
 require 'bcdiceCore'
 
 require_relative 'categorizable_logger'
@@ -55,10 +53,10 @@ module BCDiceIRC
     private
 
     # 新しいCinchボットを作成する
-    # @return [MyCinchBot]
+    # @return [Cinch::Bot]
     def new_bot
       this = self
-      bot = MyCinchBot.new
+      bot = Cinch::Bot.new
 
       timeouts_config = Cinch::Configuration::Timeouts.new
       timeouts_config.connect = 3

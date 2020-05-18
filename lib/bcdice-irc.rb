@@ -5,6 +5,5 @@ module BCDiceIRC; end
 
 require_relative 'bcdice-irc/version'
 require_relative 'bcdice-irc/categorizable_logger'
-require_relative 'bcdice-irc/cinch_mod'
 require_relative 'bcdice-irc/dice_bot_wrapper'
 require_relative 'bcdice-irc/irc_bot'
