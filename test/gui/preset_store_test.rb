@@ -210,10 +210,12 @@ module BCDiceIRC
         assert_equal('Config 1', @store.fetch_by_index(1).name)
         assert_equal(2, @store.length)
         assert_equal('irc.example.net', @store.fetch_by_name('Config 1').hostname)
+        assert_equal(1, @store.index_last_selected)
       end
 
       test 'save existing preset' do
         @store.push(@config1)
+        @store.push(@config2)
 
         config1_modified = @config1.dup
         config1_modified.hostname = 'irc2.example.net'
@@ -222,8 +224,9 @@ module BCDiceIRC
 
         assert_equal(:updated, result)
         assert_equal('デフォルト', @store.fetch_by_index(0).name)
-        assert_equal(1, @store.length)
+        assert_equal(2, @store.length)
         assert_equal('irc2.example.net', @store.fetch_by_name('デフォルト').hostname)
+        assert_equal(0, @store.index_last_selected)
       end
 
       test 'load_by_index should set index_last_selected as specified' do
