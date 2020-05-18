@@ -59,6 +59,8 @@ module BCDiceIRC
         @logger = nil
 
         @preset_load_handlers = []
+        @preset_append_handlers = []
+        @preset_update_handlers = []
       end
 
       # 各プリセットに対して処理を行う
@@ -105,10 +107,26 @@ module BCDiceIRC
         need_append = !include?(config.name)
 
         if need_append
-          append(config, empty?)
+          append(config)
         else
           update(config)
         end
+      end
+
+      # プリセットを追加したときに実行する手続きを登録する
+      # @param [Array<Proc>] handlers 登録する手続き
+      # @return [self]
+      def add_preset_append_handlers(*handlers)
+        @preset_append_handlers.push(*handlers)
+        self
+      end
+
+      # プリセットを更新したときに実行する手続きを登録する
+      # @param [Array<Proc>] handlers 登録する手続き
+      # @return [self]
+      def add_preset_update_handlers(*handlers)
+        @preset_update_handlers.push(*handlers)
+        self
       end
 
       # プリセットを削除する
@@ -244,14 +262,17 @@ module BCDiceIRC
 
       # プリセットを末尾に追加する
       # @param [IRCBot::Config] config IRCボットの設定
-      # @param [Boolean] empty_before_append 追加前に空だったか
       # @return [Symbol] `:appended`
-      def append(config, empty_before_append)
+      def append(config)
         new_index = length
         @presets.push(config)
         @name_index_preset_map[config.name] = [new_index, config]
 
         self.index_last_selected = new_index
+
+        @preset_append_handlers.each do |handler|
+          handler[config, new_index]
+        end
 
         :appended
       end
@@ -264,6 +285,10 @@ module BCDiceIRC
         @presets[index] = config
         @name_index_preset_map[config.name] = [index, config]
         self.index_last_selected = index
+
+        @preset_update_handlers.each do |handler|
+          handler[config, index]
+        end
 
         :updated
       end

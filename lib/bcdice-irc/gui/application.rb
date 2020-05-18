@@ -377,6 +377,7 @@ module BCDiceIRC
         setup_state_observers
 
         setup_preset_load_observers
+        setup_preset_save_observers
 
         @preset_save_state.add_observer(
           Observers::PresetSaveState.preset_save_button(@preset_save_button)
@@ -442,6 +443,24 @@ module BCDiceIRC
         )
 
         self
+      end
+
+      # プリセット追加/更新のオブザーバを用意する
+      # @return [self]
+      def setup_preset_save_observers
+        preset_combo_box_active_observer = Observers::PresetSave.preset_combo_box_active(
+          @preset_combo_box,
+          @handler_ids.fetch(:preset_combo_box_on_changed)
+        )
+
+        @preset_store.add_preset_append_handlers(
+          Observers::PresetSave.preset_combo_box_append_item(@preset_combo_box),
+          preset_combo_box_active_observer
+        )
+
+        @preset_store.add_preset_update_handlers(
+          preset_combo_box_active_observer
+        )
       end
 
       # パスワードの使用についてのオブザーバを用意する
@@ -565,16 +584,6 @@ module BCDiceIRC
         @irc_bot_config.name = @preset_entry.text
 
         push_result = @preset_store.push(@irc_bot_config.deep_dup)
-        if push_result == :appended
-          @preset_combo_box.append_text(@irc_bot_config.name)
-        end
-
-        @preset_combo_box.signal_handler_block(
-          @handler_ids.fetch(:preset_combo_box_on_changed)
-        ) do
-          @preset_combo_box.active = @preset_store.index_last_selected
-        end
-
         self.preset_save_state = PresetSaveState::PRESET_EXISTS
         self.preset_deletable = @preset_store.have_multiple_presets?
 

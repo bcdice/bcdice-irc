@@ -229,6 +229,48 @@ module BCDiceIRC
         assert_equal(0, @store.index_last_selected)
       end
 
+      test 'registered preset_append handlers should be called after saving new preset' do
+        @store.push(@config1)
+
+        preset_index = nil
+        preset_name = nil
+
+        @store.add_preset_append_handlers(
+          lambda do |config, index|
+            preset_index = index
+            preset_name = config.name
+          end
+        )
+
+        @store.push(@config2)
+
+        assert_equal(1, preset_index)
+        assert_equal('Config 1', preset_name)
+      end
+
+      test 'registered preset_update handlers should be called after saving existing preset' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        preset_index = nil
+        preset_name = nil
+
+        @store.add_preset_update_handlers(
+          lambda do |config, index|
+            preset_index = index
+            preset_name = config.name
+          end
+        )
+
+        config1_modified = @config1.dup
+        config1_modified.hostname = 'irc2.example.net'
+
+        result = @store.push(config1_modified)
+
+        assert_equal(0, preset_index)
+        assert_equal('デフォルト', preset_name)
+      end
+
       test 'load_by_index should set index_last_selected as specified' do
         @store.push(@config1)
         @store.push(@config2)
@@ -239,7 +281,7 @@ module BCDiceIRC
         assert_same(@store, result)
       end
 
-      test 'load_by_index should call the registered on_load handler' do
+      test 'load_by_index should call registered preset_load handlers' do
         @store.push(@config1)
         @store.push(@config2)
 
@@ -290,7 +332,7 @@ module BCDiceIRC
         assert_same(@store, result)
       end
 
-      test 'load_by_name should call the registered on_load handler' do
+      test 'load_by_name should call registered preset_load handlers' do
         @store.push(@config1)
         @store.push(@config2)
 
