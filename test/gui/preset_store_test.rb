@@ -247,6 +247,8 @@ module BCDiceIRC
         assert_equal(2, @store.length)
         assert_equal('irc.example.net', @store.fetch_by_name('Config 1').hostname)
         assert_equal(1, @store.index_last_selected)
+        assert_equal(:update, @store.preset_save_action)
+        assert_equal(true, @store.can_delete_preset?)
       end
 
       test 'save existing preset' do
@@ -263,6 +265,8 @@ module BCDiceIRC
         assert_equal(2, @store.length)
         assert_equal('irc2.example.net', @store.fetch_by_name('デフォルト').hostname)
         assert_equal(0, @store.index_last_selected)
+        assert_equal(:update, @store.preset_save_action)
+        assert_equal(true, @store.can_delete_preset?)
       end
 
       test 'registered preset_append handlers should be called after saving new preset' do
@@ -313,6 +317,16 @@ module BCDiceIRC
         assert_same(@store, result)
       end
 
+      test 'load_by_index should set temporary_preset_name to the name of the specified preset' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        result = @store.load_by_index(0)
+
+        assert_equal('デフォルト', @store.temporary_preset_name)
+        assert_same(@store, result)
+      end
+
       test 'load_by_index should call registered preset_load handlers' do
         @store.push(@config1)
         @store.push(@config2)
@@ -360,6 +374,16 @@ module BCDiceIRC
         assert_same(@store, result)
       end
 
+      test 'load_by_name should set temporary_preset_name to the name of the specified preset' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        result = @store.load_by_name('デフォルト')
+
+        assert_equal('デフォルト', @store.temporary_preset_name)
+        assert_same(@store, result)
+      end
+
       test 'load_by_name should call registered preset_load handlers' do
         @store.push(@config1)
         @store.push(@config2)
@@ -376,6 +400,98 @@ module BCDiceIRC
 
         assert_equal(0, preset_index)
         assert_equal('デフォルト', preset_name)
+      end
+
+      data('空文字列', ['', :none])
+      data('空白のみ', [' 　', :none])
+      data('既存1', ['デフォルト', :update])
+      data('既存2', ['Config 1', :update])
+      data('新規', ['Config 2', :append])
+      test 'temporary_preset_name and preset_save_action' do |data|
+        temporary_preset_name, expected_action = data
+
+        @store.push(@config1)
+        @store.push(@config2)
+
+        @store.temporary_preset_name = temporary_preset_name
+
+        assert_equal(expected_action, @store.preset_save_action)
+      end
+
+      data('空文字列', '')
+      data('空白のみ', ' 　')
+      data('既存1', 'デフォルト')
+      data('新規', 'Config 2')
+      test 'temporary_preset_name and can_delete_preset? (single preset)' do |data|
+        temporary_preset_name = data
+
+        @store.push(@config1)
+
+        @store.temporary_preset_name = temporary_preset_name
+
+        assert_equal(false, @store.can_delete_preset?)
+      end
+
+      data('空文字列', ['', false])
+      data('空白のみ', [' 　', false])
+      data('既存1', ['デフォルト', true])
+      data('既存2', ['Config 1', true])
+      data('新規', ['Config 2', false])
+      test 'temporary_preset_name and can_delete_preset? (multiple presets)' do |data|
+        temporary_preset_name, expected = data
+
+        @store.push(@config1)
+        @store.push(@config2)
+
+        @store.temporary_preset_name = temporary_preset_name
+
+        assert_equal(expected, @store.can_delete_preset?)
+      end
+
+      data('空文字列', ['', false, 'Save'])
+      data('空白のみ', [' 　', false, 'Save'])
+      data('既存1', ['デフォルト', true, 'Update'])
+      data('新規', ['Config 2', true, 'Save'])
+      test 'preset_save_action_updated handlers should be called after setting temporary_preset_name' do |data|
+        temporary_preset_name, expected_sensitive, expected_label = data
+        @store.push(@config1)
+
+        preset_save_button_sensitive = nil
+        preset_save_button_label = nil
+
+        @store.add_preset_save_action_updated_handlers(
+          ->action { preset_save_button_sensitive = action != :none },
+          lambda do |action|
+            preset_save_button_label = action == :update ? 'Update' : 'Save'
+          end
+        )
+
+        @store.temporary_preset_name = temporary_preset_name
+
+        assert_equal(expected_sensitive, preset_save_button_sensitive)
+        assert_equal(expected_label, preset_save_button_label)
+      end
+
+      data('空文字列', ['', false])
+      data('空白のみ', [' 　', false])
+      data('既存1', ['デフォルト', true])
+      data('既存2', ['Config 1', true])
+      data('新規', ['Config 2', false])
+      test 'preset_deletability_updated handlers should be called after setting temporary_preset_name' do |data|
+        temporary_preset_name, expected_sensitive = data
+
+        @store.push(@config1)
+        @store.push(@config2)
+
+        preset_delete_button_sensitive = nil
+
+        @store.add_preset_deletability_updated_handlers(
+          ->can_delete_preset { preset_delete_button_sensitive = can_delete_preset }
+        )
+
+        @store.temporary_preset_name = temporary_preset_name
+
+        assert_equal(expected_sensitive, preset_delete_button_sensitive)
       end
     end
   end

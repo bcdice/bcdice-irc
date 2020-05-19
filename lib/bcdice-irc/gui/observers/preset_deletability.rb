@@ -11,8 +11,8 @@ module BCDiceIRC
         # @param [Gtk::Button] button
         # @return [Proc]
         def preset_delete_button(button)
-          lambda do |preset_deletable|
-            button.sensitive = preset_deletable
+          lambda do |can_delete_preset|
+            button.sensitive = can_delete_preset
           end
         end
       end

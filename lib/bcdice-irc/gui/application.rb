@@ -18,7 +18,6 @@ require_relative '../categorizable_logger'
 require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_store'
-require_relative 'preset_save_state'
 require_relative 'combo_box'
 
 require_relative 'simple_observable'
@@ -49,20 +48,6 @@ module BCDiceIRC
       # @!attribute [r] state
       #   @return [State::Base] アプリケーションの状態
       def_accessor_for_observable 'state', private_writer: true
-
-      # プリセットの保存に関する状態
-      def_accessor_for_observable(
-        'preset_save_state',
-        private_reader: true,
-        private_writer: true
-      )
-
-      # プリセットを削除できるか
-      def_accessor_for_observable(
-        'preset_deletable',
-        private_reader: true,
-        private_writer: true
-      )
 
       # パスワードを使用するか
       def_accessor_for_observable(
@@ -99,9 +84,6 @@ module BCDiceIRC
           disconnecting: State::Disconnecting.new(self),
         }
         @state = SimpleObservable.new
-
-        @preset_save_state = SimpleObservable.new
-        @preset_deletable = SimpleObservable.new
 
         @logger = CategorizableLogger.new('Application', $stderr, level: @log_level)
         @preset_store.logger = @logger
@@ -380,11 +362,11 @@ module BCDiceIRC
         setup_preset_save_observers
         setup_preset_delete_observers
 
-        @preset_save_state.add_observer(
-          Observers::PresetSaveState.preset_save_button(@preset_save_button)
+        @preset_store.add_preset_save_action_updated_handlers(
+          Observers::PresetSaveAction.preset_save_button(@preset_save_button)
         )
 
-        @preset_deletable.add_observer(
+        @preset_store.add_preset_deletability_updated_handlers(
           Observers::PresetDeletability.preset_delete_button(@preset_delete_button)
         )
 
@@ -565,30 +547,12 @@ module BCDiceIRC
         active_index = @preset_combo_box.active
         if active_index < 0
           # 文字が入力された場合
-          preset_name = @preset_entry.text
-          self.preset_save_state = preset_save_state_by_name(preset_name)
-          self.preset_deletable =
-            @preset_store.have_multiple_presets? && @preset_store.include?(preset_name)
+          @preset_store.temporary_preset_name = @preset_combo_box.active_text
         else
           # プリセットが選択された場合
           @preset_store.load_by_index(active_index)
-          self.preset_save_state = PresetSaveState::PRESET_EXISTS
-          self.preset_deletable = @preset_store.have_multiple_presets?
 
           try_to_save_presets_file unless @setting_up
-        end
-      end
-
-      # 入力されたプリセット名から、プリセットの保存に関する状態を求める
-      # @param [String] name 入力されたプリセット名
-      # @return [PresetSaveState]
-      def preset_save_state_by_name(name)
-        if @preset_store.include?(name)
-          PresetSaveState::PRESET_EXISTS
-        elsif name.blank?
-          PresetSaveState::INVALID_NAME
-        else
-          PresetSaveState::NEW_PRESET
         end
       end
 
@@ -598,8 +562,6 @@ module BCDiceIRC
         @irc_bot_config.name = @preset_entry.text
 
         push_result = @preset_store.push(@irc_bot_config.deep_dup)
-        self.preset_save_state = PresetSaveState::PRESET_EXISTS
-        self.preset_deletable = @preset_store.have_multiple_presets?
 
         if try_to_save_presets_file
           action = push_result == :appended ? '保存' : '更新'
@@ -613,8 +575,6 @@ module BCDiceIRC
       # プリセット削除ボタンがクリックされたときの処理
       # @return [void]
       def preset_delete_button_on_clicked
-        return unless preset_deletable
-
         preset_name = @preset_entry.text
         index = @preset_store.delete(preset_name)
         # 返ってきたインデックスが-1ならば削除失敗
