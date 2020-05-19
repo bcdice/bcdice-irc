@@ -9,7 +9,20 @@ require_relative '../irc_bot/config'
 
 module BCDiceIRC
   module GUI
-    # プリセットの管理を担当するクラス
+    # プリセットの管理を担当するクラス。
+    #
+    # このクラスは、プリセット集および選択されているプリセットの管理を行う。
+    #
+    # プリセット集の管理については、プリセットの追加（起動時の設定ファイルから
+    # の読み込みも含む）、保存（追加）、更新、削除を行える。
+    # GUIの更新のために、プリセットの保存（追加）、更新、削除が行われた後、
+    # それぞれに対応するハンドラ（preset_append、preset_update、preset_delete）
+    # を実行できるようにしている。
+    #
+    # 選択されているプリセットの管理については、現在の状態に合わせてコンボ
+    # ボックスのアクティブ項目を変更することを想定して、プリセットの追加、
+    # 保存、更新、削除といった操作に応じて、選択されているプリセット番号が適切
+    # に動くようにしている。
     class PresetStore
       include Enumerable
       extend Forwardable
@@ -61,6 +74,7 @@ module BCDiceIRC
         @preset_load_handlers = []
         @preset_append_handlers = []
         @preset_update_handlers = []
+        @preset_delete_handlers = []
       end
 
       # 各プリセットに対して処理を行う
@@ -139,12 +153,24 @@ module BCDiceIRC
         index, = @name_index_preset_map[name]
         return -1 unless index
 
-        @presets.delete_at(index)
+        config = @presets.delete_at(index)
         @name_index_preset_map.delete(name)
 
         self.index_last_selected = -1
 
+        @preset_delete_handlers.each do |handler|
+          handler[config, index]
+        end
+
         index
+      end
+
+      # プリセットを削除したときに実行する手続きを登録する
+      # @param [Array<Proc>] handlers 登録する手続き
+      # @return [self]
+      def add_preset_delete_handlers(*handlers)
+        @preset_delete_handlers.push(*handlers)
+        self
       end
 
       # 名前でプリセットを取り出す

@@ -378,6 +378,7 @@ module BCDiceIRC
 
         setup_preset_load_observers
         setup_preset_save_observers
+        setup_preset_delete_observers
 
         @preset_save_state.add_observer(
           Observers::PresetSaveState.preset_save_button(@preset_save_button)
@@ -461,6 +462,19 @@ module BCDiceIRC
         @preset_store.add_preset_update_handlers(
           preset_combo_box_active_observer
         )
+
+        self
+      end
+
+      # プリセット削除のオブザーバを用意する
+      # @return [self]
+      def setup_preset_delete_observers
+        @preset_store.add_preset_delete_handlers(
+          Observers::PresetDelete.preset_combo_box_remove_item(@preset_combo_box),
+          Observers::PresetDelete.preset_entry_clear(@preset_entry)
+        )
+
+        self
       end
 
       # パスワードの使用についてのオブザーバを用意する
@@ -605,11 +619,6 @@ module BCDiceIRC
         index = @preset_store.delete(preset_name)
         # 返ってきたインデックスが-1ならば削除失敗
         return if index < 0
-
-        # コンボボックスから該当項目を削除する
-        # @preset_combo_box.active は自動的に-1になる
-        @preset_combo_box.remove(index)
-        @preset_entry.text = ''
 
         if try_to_save_presets_file
           @status_bar.push(

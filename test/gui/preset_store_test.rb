@@ -74,6 +74,42 @@ module BCDiceIRC
         assert_equal(1, @store.length, '個数が変わらない')
       end
 
+      test 'registered preset_delete handlers should be called after deleting preset' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        preset_index = nil
+        preset_name = nil
+
+        @store.add_preset_delete_handlers(
+          ->(_config, index) { preset_index = index },
+          ->(config, _index) { preset_name = config.name }
+        )
+
+        @store.delete('Config 1')
+
+        assert_equal(1, preset_index)
+        assert_equal('Config 1', preset_name)
+      end
+
+      test 'registered preset_delete handlers should not be called after trying to delete non-existing preset' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        preset_index = nil
+        preset_name = nil
+
+        @store.add_preset_delete_handlers(
+          ->(_config, index) { preset_index = index },
+          ->(config, _index) { preset_name = config.name }
+        )
+
+        @store.delete('Config 2')
+
+        assert_nil(preset_index)
+        assert_nil(preset_name)
+      end
+
       test 'empty?' do
         assert_true(@store.empty?, '最初は true')
 
@@ -236,10 +272,8 @@ module BCDiceIRC
         preset_name = nil
 
         @store.add_preset_append_handlers(
-          lambda do |config, index|
-            preset_index = index
-            preset_name = config.name
-          end
+          ->(_config, index) { preset_index = index },
+          ->(config, _index) { preset_name = config.name }
         )
 
         @store.push(@config2)
@@ -256,10 +290,8 @@ module BCDiceIRC
         preset_name = nil
 
         @store.add_preset_update_handlers(
-          lambda do |config, index|
-            preset_index = index
-            preset_name = config.name
-          end
+          ->(_config, index) { preset_index = index },
+          ->(config, _index) { preset_name = config.name }
         )
 
         config1_modified = @config1.dup
@@ -289,10 +321,8 @@ module BCDiceIRC
         preset_name = nil
 
         @store.add_preset_load_handlers(
-          lambda do |config, index|
-            preset_index = index
-            preset_name = config.name
-          end
+          ->(_config, index) { preset_index = index },
+          ->(config, _index) { preset_name = config.name }
         )
 
         @store.load_by_index(0)
@@ -309,10 +339,8 @@ module BCDiceIRC
         preset_name = nil
 
         @store.add_preset_load_handlers(
-          lambda do |config, index|
-            preset_index = index
-            preset_name = config.name
-          end
+          ->(_config, index) { preset_index = index },
+          ->(config, _index) { preset_name = config.name }
         )
 
         @store.load_by_index(-1)
@@ -340,10 +368,8 @@ module BCDiceIRC
         preset_name = nil
 
         @store.add_preset_load_handlers(
-          lambda do |config, index|
-            preset_index = index
-            preset_name = config.name
-          end
+          ->(_config, index) { preset_index = index },
+          ->(config, _index) { preset_name = config.name }
         )
 
         @store.load_by_name('デフォルト')
