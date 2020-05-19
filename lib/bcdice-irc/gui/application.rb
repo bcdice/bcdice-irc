@@ -571,6 +571,10 @@ module BCDiceIRC
       # @return [void]
       def preset_delete_button_on_clicked
         preset_name = @preset_entry.text
+
+        response = show_confirm_deleting_preset_dialog(preset_name)
+        return unless response == :ok
+
         index = @preset_store.delete(preset_name)
         # 返ってきたインデックスが-1ならば削除失敗
         return if index < 0
@@ -581,6 +585,26 @@ module BCDiceIRC
             "プリセット「#{preset_name}」を削除しました"
           )
         end
+      end
+
+      # プリセットを削除するか確認するダイアログを表示する
+      # @param [String] preset_name プリセット名
+      # @return [:ok] OKボタンが押された場合
+      # @return [:cancel] キャンセルボタンが押された場合
+      def show_confirm_deleting_preset_dialog(preset_name)
+        dialog = Gtk::MessageDialog.new(
+          parent: @main_window,
+          flags: :destroy_with_parent,
+          type: :warning,
+          buttons: :ok_cancel,
+          message: "プリセット「#{preset_name}」を本当に削除しますか?"
+        )
+        dialog.secondary_text = 'この操作は元に戻せません。'
+
+        response = dialog.run
+        dialog.destroy
+
+        response
       end
 
       # ホスト名欄が変更されたときの処理
