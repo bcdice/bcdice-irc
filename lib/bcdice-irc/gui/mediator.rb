@@ -101,20 +101,25 @@ module BCDiceIRC
 
         loop do
           message, *args = @queue.pop
-          case message
-          when :quit
-            on_quit
-            break
-          when :quit_irc_bot
-            on_quit_irc_bot
-          when :irc_bot_stopped
-            on_irc_bot_stopped
-          when :successfully_connected
-            on_successfully_connected
-          when :connection_error
-            on_connection_error(args[0])
-          when :game_system_has_been_changed
-            on_game_system_has_been_changed(args[0])
+
+          begin
+            case message
+            when :quit
+              on_quit
+              break
+            when :quit_irc_bot
+              on_quit_irc_bot
+            when :irc_bot_stopped
+              on_irc_bot_stopped
+            when :successfully_connected
+              on_successfully_connected
+            when :connection_error
+              on_connection_error(args[0])
+            when :game_system_has_been_changed
+              on_game_system_has_been_changed(args[0])
+            end
+          rescue => e
+            @logger.exception(e)
           end
         end
 
