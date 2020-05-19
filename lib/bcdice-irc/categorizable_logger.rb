@@ -45,7 +45,7 @@ module BCDiceIRC
         timestamp,
         @colorized_debug_symbol,
         @formatted_category,
-        message
+        message,
       ]
 
       join_parts(parts)
@@ -56,7 +56,7 @@ module BCDiceIRC
         timestamp,
         INFO_SYMBOL,
         @formatted_category,
-        message
+        message,
       ]
 
       join_parts(parts)
@@ -66,7 +66,7 @@ module BCDiceIRC
       pre, msg = message.split(PRE_MSG_SEPARATOR, 2)
       pre_parts = pre.split(SPACE)
 
-      return pre_parts, msg
+      [pre_parts, msg]
     end
 
     def format_irc_message(message)
@@ -88,7 +88,7 @@ module BCDiceIRC
         @colorized_incoming_symbol,
         @formatted_category,
         pre_parts,
-        format_irc_message(msg)
+        format_irc_message(msg),
       ]
 
       join_parts(parts)
@@ -104,7 +104,7 @@ module BCDiceIRC
         @colorized_outgoing_symbol,
         @formatted_category,
         pre_parts,
-        format_irc_message(msg)
+        format_irc_message(msg),
       ]
 
       join_parts(parts)
@@ -115,7 +115,7 @@ module BCDiceIRC
         timestamp,
         @colorized_exception_symbol,
         @formatted_category,
-        message
+        message,
       ]
 
       join_parts(parts)

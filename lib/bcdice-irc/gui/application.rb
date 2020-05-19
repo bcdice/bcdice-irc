@@ -282,7 +282,7 @@ module BCDiceIRC
         :save_presets,
         :game_system_change,
         :connection,
-      ]
+      ].freeze
 
       # ステータスバーのコンテクストIDを用意する
       # @return [self]
@@ -307,7 +307,7 @@ module BCDiceIRC
       # @return [self]
       def setup_encoding_combo_box
         ComboBox::Setup.bind(@encoding_combo_box, IRCBot::AVAILABLE_ENCODINGS)
-        ComboBox::Setup.set_cell_renderer_text(@encoding_combo_box)
+        ComboBox::Setup.pack_cell_renderer_text(@encoding_combo_box)
 
         @encoding_combo_box_activator = ComboBox::Activator.new(
           @encoding_combo_box,
@@ -338,7 +338,7 @@ module BCDiceIRC
       # @return [self]
       def setup_game_system_combo_box
         ComboBox::Setup.bind(@game_system_combo_box, @dice_bot_wrappers, &:name)
-        ComboBox::Setup.set_cell_renderer_text(@game_system_combo_box)
+        ComboBox::Setup.pack_cell_renderer_text(@game_system_combo_box)
 
         @game_system_combo_box_activator_id = ComboBox::Activator.new(
           @game_system_combo_box,
@@ -495,12 +495,9 @@ module BCDiceIRC
         @encoding_combo_box.active = 0
         @game_system_combo_box.active = 0
 
+        # activeが必ず0以上になるようにする
         @preset_combo_box.active =
-          if @preset_store.index_last_selected < 0
-            0
-          else
-            @preset_store.index_last_selected
-          end
+          [0, @preset_store.index_last_selected].max
 
         self
       end
@@ -509,18 +506,16 @@ module BCDiceIRC
       # @return [true] 保存に成功した場合
       # @return [false] 保存に失敗した場合
       def try_to_save_presets_file
-        begin
-          save_presets_file
-          return true
-        rescue => e
-          @status_bar&.push(
-            @status_bar_context_ids.fetch(:save_presets),
-            'プリセット設定ファイルの保存に失敗しました'
-          )
-          @logger.exception(e)
+        save_presets_file
+        true
+      rescue => e
+        @status_bar&.push(
+          @status_bar_context_ids.fetch(:save_presets),
+          'プリセット設定ファイルの保存に失敗しました'
+        )
+        @logger.exception(e)
 
-          return false
-        end
+        false
       end
 
       # プリセット設定ファイルを保存する

@@ -54,20 +54,34 @@ module BCDiceIRC
       # @return [Cinch::Logger]
       attr_accessor :logger
 
+      # @!method each
+      #   各プリセットに対して処理を行う
+      #   @yieldparam [IRCBot::Config] config 各プリセット
+      # @!method length
+      #   格納しているプリセットの数を返す
+      #   @return [Integer]
+      # @!method empty?
+      #   格納しているプリセットが存在しないかを返す
+      #   @return [Boolean]
       def_delegators(
         :@presets,
+        :each,
         :length,
         :size,
         :empty?
       )
 
-      # 番号からプリセットを取得する
       # @!method fetch(index)
+      #   番号からプリセットを取得する
       #   @param [Integer] index プリセット番号（0-indexed）
       #   @return [IRCBot::Config]
       #   @raise [IndexError] 指定された番号の要素が存在しなかった場合
       def_delegator(:@presets, :fetch, :fetch_by_index)
 
+      # @!method include?(name)
+      #   指定した名前のプリセットが存在するかを返す
+      #   @param [String] name プリセット名
+      #   @return [Boolean]
       def_delegators(
         :@name_index_preset_map,
         :include?,
@@ -96,12 +110,6 @@ module BCDiceIRC
         @preset_deletability_updated_handlers = []
       end
 
-      # 各プリセットに対して処理を行う
-      # @yieldparam [IRCBot::Config] config 各プリセット
-      def each(&b)
-        @presets.each(&b)
-      end
-
       # プリセットをすべて削除する
       # @return [self]
       def clear
@@ -121,7 +129,7 @@ module BCDiceIRC
 
       # 複数のプリセットがあるかを返す
       # @return [Boolean]
-      def have_multiple_presets?
+      def multiple_presets?
         length > 1
       end
 
@@ -150,7 +158,7 @@ module BCDiceIRC
       #
       # 設定後、その名前でプリセットを保存/更新可能か、および削除可能かを更新する。
       #
-      #@param [String] value 一時的なプリセット名
+      # @param [String] value 一時的なプリセット名
       def temporary_preset_name=(value)
         @temporary_preset_name = value
 
@@ -209,7 +217,7 @@ module BCDiceIRC
       # @return [Integer] 削除したプリセットの番号（見つからなかった場合は `-1`）
       # @note 最後の1個は消すことができない（`-1` を返す）。
       def delete(name)
-        return -1 unless have_multiple_presets?
+        return -1 unless multiple_presets?
 
         index, = @name_index_preset_map[name]
         return -1 unless index
@@ -283,13 +291,11 @@ module BCDiceIRC
         hash_with_sym_keys = hash.symbolize_keys
 
         hash_with_sym_keys[:presets]&.each do |h|
-          begin
-            config = IRCBot::Config.from_hash(h)
-            push(config)
-          rescue => e
-            @logger&.warn('IRCBot::Config.from_hash failed')
-            @logger&.exception(e)
-          end
+          config = IRCBot::Config.from_hash(h)
+          push(config)
+        rescue => e
+          @logger&.warn('IRCBot::Config.from_hash failed')
+          @logger&.exception(e)
         end
 
         begin
@@ -308,7 +314,7 @@ module BCDiceIRC
       def to_h
         {
           index_last_selected: @index_last_selected,
-          presets: @presets.map(&:to_h)
+          presets: @presets.map(&:to_h),
         }
       end
 
@@ -358,7 +364,7 @@ module BCDiceIRC
       # @return [self]
       def update_preset_deletability
         @can_delete_preset =
-          have_multiple_presets? && include?(@temporary_preset_name)
+          multiple_presets? && include?(@temporary_preset_name)
 
         @preset_deletability_updated_handlers.each do |handler|
           handler[@can_delete_preset]

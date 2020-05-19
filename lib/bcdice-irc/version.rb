@@ -8,14 +8,12 @@ module BCDiceIRC
 
   # コミットID
   COMMIT_ID = Dir.chdir(__dir__) do
-    begin
-      Dir.chdir(__dir__) do
-        Open3.popen3('git log -1 --format=%h') do |_, stdout, _, _|
-          stdout.gets&.strip
-        end
+    Dir.chdir(__dir__) do
+      Open3.popen3('git log -1 --format=%h') do |_, stdout, _, _|
+        stdout.gets&.strip
       end
-    rescue
-      nil
     end
+  rescue
+    nil
   end
 end

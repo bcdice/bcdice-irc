@@ -45,7 +45,7 @@ module BCDiceIRC
         # @param [Gtk::ComboBox] combo_box 対象のコンボボックス
         # @return [Gtk::ComboBox] combo_box
         # @note モデルの列1に表示したい文字列を設定すること。
-        def set_cell_renderer_text(combo_box)
+        def pack_cell_renderer_text(combo_box)
           renderer = Gtk::CellRendererText.new
           combo_box.pack_start(renderer, true)
           combo_box.add_attribute(renderer, 'text', 1)

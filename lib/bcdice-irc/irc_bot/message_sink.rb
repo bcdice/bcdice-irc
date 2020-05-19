@@ -60,7 +60,7 @@ module BCDiceIRC
 
       def update_new_game_system_name(message)
         m = message.match(GAME_SYSTEM_HAS_BEEN_CHANGED_RE)
-        @new_game_system_name = (m.to_a)[1]
+        @new_game_system_name = m.to_a[1]
       end
     end
   end

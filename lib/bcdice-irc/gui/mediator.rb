@@ -38,7 +38,7 @@ module BCDiceIRC
           thread_proc
         end
 
-        return true
+        true
       end
 
       # 仲介スレッドを終了させる
@@ -55,7 +55,7 @@ module BCDiceIRC
 
         @thread = nil
 
-        return true
+        true
       end
 
       # IRCボットを起動する
@@ -72,7 +72,7 @@ module BCDiceIRC
           irc_bot_thread_proc
         end
 
-        return true
+        true
       end
 
       # IRCボットを終了させる

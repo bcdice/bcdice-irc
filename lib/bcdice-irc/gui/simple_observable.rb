@@ -44,12 +44,9 @@ module BCDiceIRC
 
       # 値を設定し、変更をオブザーバに通知する
       # @param [Object] value 設定する値
-      # @return [self]
       def value=(value)
         @value = value
         notify_observers
-
-        self
       end
     end
   end

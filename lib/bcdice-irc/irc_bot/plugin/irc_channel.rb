@@ -24,8 +24,8 @@ module BCDiceIRC
         private
 
         # JOINしたときの処理
-        def on_join(m)
         # @return [void]
+        def on_join(m)
           if m.user == bot
             warn("#{m.channel} に参加しました")
           end
