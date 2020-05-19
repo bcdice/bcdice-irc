@@ -18,7 +18,6 @@ module BCDiceIRC
 
         # ポート番号スピンボタンのオブザーバを返す
         # @param [Gtk::SpinButton] spin_button
-        # @param [Application] app
         # @return [Proc]
         def port_spin_button(spin_button)
           lambda do |config, _index|
