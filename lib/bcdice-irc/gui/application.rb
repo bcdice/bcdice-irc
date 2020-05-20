@@ -39,7 +39,7 @@ module BCDiceIRC
 
       # 最後に発生した接続エラー
       # @return [StandardError, nil]
-      attr_accessor :last_connection_exception
+      attr_accessor :last_connection_error
 
       # 起動時の準備中か
       # @return [Boolean]
@@ -75,7 +75,7 @@ module BCDiceIRC
         @preset_store = PresetStore.new
         @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
         @setting_up = true
-        @last_connection_exception = nil
+        @last_connection_error = nil
 
         @states = {
           disconnected: State::Disconnected.new(self),
@@ -160,7 +160,7 @@ module BCDiceIRC
       # @param [StandardError] e 接続時に発生した例外
       # @return [self]
       def notify_connection_error(e)
-        @last_connection_exception = e
+        @last_connection_error = e
         change_state(:disconnected)
         show_connection_error_dialog(e)
 

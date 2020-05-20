@@ -206,7 +206,7 @@ module BCDiceIRC
             @queue.push([:irc_bot_stopped])
           else
             log_exception = false
-            raise @irc_bot.last_connection_exception
+            raise @irc_bot.last_connection_error
           end
         rescue => e
           @irc_bot_thread = nil

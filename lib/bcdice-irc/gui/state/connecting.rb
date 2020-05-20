@@ -27,7 +27,7 @@ module BCDiceIRC
         # 状態に入ったときの処理
         # @return [void]
         def on_enter
-          @app.last_connection_exception = nil
+          @app.last_connection_error = nil
         end
 
         # 接続/切断ボタンがクリックされたときの処理

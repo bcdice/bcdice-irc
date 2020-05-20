@@ -20,7 +20,7 @@ module BCDiceIRC
     # @return [Cinch::Bot]
     attr_reader :bot
 
-    def_delegators(:@bot, :last_connection_exception)
+    def_delegators(:@bot, :last_connection_error)
 
     # @param [Config] config 設定
     # @param [GUI::Mediator] mediator ボットの処理とGUIの処理との仲介

@@ -23,7 +23,7 @@ module BCDiceIRC
         # 接続状況を返す
         # @return [String]
         def connection_status
-          if @app.last_connection_exception
+          if @app.last_connection_error
             "#{@app.irc_bot_config.end_point} に接続できませんでした"
           else
             "#{@app.irc_bot_config.end_point} から切断されました"
