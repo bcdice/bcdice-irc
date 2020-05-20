@@ -233,39 +233,41 @@ module BCDiceIRC
         self
       end
 
-      # ウィジェットIDの配列
-      WIDGET_IDS = [
-        'main_window',
+      # ビルダーからウィジェットを取得する
+      # @param [String] object_id オブジェクトID
+      # @return [Gtk::Widget]
+      def w(object_id)
+        widget = @builder.get_object(object_id)
+        raise "widget #{object_id.inspect} not found" unless widget
 
-        'preset_combo_box',
-        'preset_entry',
-        'preset_save_button',
-        'preset_delete_button',
-
-        'hostname_entry',
-        'port_spin_button',
-        'password_check_button',
-        'password_entry',
-        'encoding_combo_box',
-        'nick_entry',
-        'channel_entry',
-        'connect_disconnect_button',
-
-        'game_system_combo_box',
-        'help_text_view',
-
-        'bcdice_version_label',
-
-        'status_bar',
-      ].freeze
+        widget
+      end
 
       # ウィジェットを用意する
       # @return [self]
       def setup_widgets
-        # ウィジェットのインスタンス変数を用意する
-        WIDGET_IDS.each do |id|
-          instance_variable_set("@#{id}", @builder.get_object(id))
-        end
+        @main_window = w('main_window')
+
+        @preset_combo_box = w('preset_combo_box')
+        @preset_entry = w('preset_entry')
+        @preset_save_button = w('preset_save_button')
+        @preset_delete_button = w('preset_delete_button')
+
+        @hostname_entry = w('hostname_entry')
+        @port_spin_button = w('port_spin_button')
+        @password_check_button = w('password_check_button')
+        @password_entry = w('password_entry')
+        @encoding_combo_box = w('encoding_combo_box')
+        @nick_entry = w('nick_entry')
+        @channel_entry = w('channel_entry')
+        @connect_disconnect_button = w('connect_disconnect_button')
+
+        @game_system_combo_box = w('game_system_combo_box')
+        @help_text_view = w('help_text_view')
+
+        @bcdice_version_label = w('bcdice_version_label')
+
+        @status_bar = w('status_bar')
 
         setup_status_bar_context_ids
         setup_version_labels
