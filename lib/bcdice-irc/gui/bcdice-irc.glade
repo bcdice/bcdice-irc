@@ -60,7 +60,6 @@ Author: ocha
     <property name="window_position">center</property>
     <property name="default_width">800</property>
     <property name="default_height">640</property>
-    <signal name="destroy" handler="main_window_on_destroy" swapped="no"/>
     <child>
       <placeholder/>
     </child>
@@ -122,7 +121,6 @@ Author: ocha
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="image">save-preset-button-image</property>
-                            <signal name="clicked" handler="preset_save_button_on_clicked" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -138,7 +136,6 @@ Author: ocha
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="image">delete-preset-button-image</property>
-                            <signal name="clicked" handler="preset_delete_button_on_clicked" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -203,7 +200,6 @@ Author: ocha
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="text" translatable="yes">irc.trpg.net</property>
-                                    <signal name="changed" handler="hostname_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -220,7 +216,6 @@ Author: ocha
                                     <property name="numeric">True</property>
                                     <property name="update_policy">if-valid</property>
                                     <property name="value">6667</property>
-                                    <signal name="value-changed" handler="port_spin_button_on_value_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -235,7 +230,6 @@ Author: ocha
                                     <property name="visibility">False</property>
                                     <property name="invisible_char">●</property>
                                     <property name="input_purpose">password</property>
-                                    <signal name="changed" handler="password_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -247,7 +241,6 @@ Author: ocha
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="text" translatable="yes">BCDice</property>
-                                    <signal name="changed" handler="nick_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -259,7 +252,6 @@ Author: ocha
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="text" translatable="yes">#Dice_Test</property>
-                                    <signal name="changed" handler="channel_entry_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -299,7 +291,6 @@ Author: ocha
                                     <property name="receives_default">False</property>
                                     <property name="halign">end</property>
                                     <property name="draw_indicator">True</property>
-                                    <signal name="toggled" handler="password_check_button_on_toggled" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
@@ -349,7 +340,6 @@ Author: ocha
                                   <object class="GtkComboBox" id="encoding_combo_box">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <signal name="changed" handler="encoding_combo_box_on_changed" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -371,7 +361,6 @@ Author: ocha
                                 <property name="receives_default">True</property>
                                 <property name="halign">end</property>
                                 <property name="use_stock">True</property>
-                                <signal name="clicked" handler="connect_disconnect_button_on_clicked" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -422,7 +411,6 @@ Author: ocha
                               <object class="GtkComboBox" id="game_system_combo_box">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <signal name="changed" handler="game_system_combo_box_on_changed" swapped="no"/>
                               </object>
                             </child>
                           </object>

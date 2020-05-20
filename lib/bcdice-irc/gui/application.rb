@@ -20,6 +20,7 @@ require_relative 'state'
 require_relative 'preset_store'
 require_relative 'combo_box'
 
+require_relative 'signal_handlers'
 require_relative 'simple_observable'
 require_relative 'forwardable_to_observer'
 require_relative 'observers'
@@ -32,10 +33,16 @@ module BCDiceIRC
 
       # IRCボットの設定
       # @return [IRCBot::Config]
-      attr_accessor :irc_bot_config
+      attr_reader :irc_bot_config
+      # プリセット集
+      # @return [PresetStore]
+      attr_reader :preset_store
       # IRCボットとGUIとの仲介
       # @return [GUI::Mediator]
       attr_reader :mediator
+      # ロガー
+      # @return [CategorizableLogger]
+      attr_reader :logger
 
       # 最後に発生した接続エラー
       # @return [StandardError, nil]
@@ -49,16 +56,13 @@ module BCDiceIRC
       #   @return [State::Base] アプリケーションの状態
       def_accessor_for_observable 'state', private_writer: true
 
-      # パスワードを使用するか
-      def_accessor_for_observable(
-        'use_password',
-        private_reader: true,
-        private_writer: true
-      )
+      # @!attribute [rw] use_password
+      #   @return [Boolean] パスワードを使用するか
+      def_accessor_for_observable 'use_password'
 
       # @!attribute [r] dice_bot_wrapper
       #   @return [DiceBotWrapper] ダイスボットラッパ
-      def_accessor_for_observable 'dice_bot_wrapper', private_writer: true
+      def_accessor_for_observable 'dice_bot_wrapper'
 
       # アプリケーションを初期化する
       # @param [String] presets_yaml_path プリセット集のYAMLファイルのパス
@@ -185,6 +189,42 @@ module BCDiceIRC
         self
       end
 
+      # プリセットを削除するか確認するダイアログを表示する
+      # @param [String] preset_name プリセット名
+      # @return [:ok] OKボタンが押された場合
+      # @return [:cancel] キャンセルボタンが押された場合
+      def show_confirm_deleting_preset_dialog(preset_name)
+        dialog = Gtk::MessageDialog.new(
+          parent: @main_window,
+          flags: :destroy_with_parent,
+          type: :warning,
+          buttons: :ok_cancel,
+          message: "プリセット「#{preset_name}」を本当に削除しますか?"
+        )
+        dialog.secondary_text = 'この操作は元に戻せません。'
+
+        response = dialog.run
+        dialog.destroy
+
+        response
+      end
+
+      # プリセット設定ファイルの保存を試みる
+      # @return [true] 保存に成功した場合
+      # @return [false] 保存に失敗した場合
+      def try_to_save_presets_file
+        save_presets_file
+        true
+      rescue => e
+        @status_bar&.push(
+          @status_bar_context_ids.fetch(:save_presets),
+          'プリセット設定ファイルの保存に失敗しました'
+        )
+        @logger.exception(e)
+
+        false
+      end
+
       # GUIスレッドのアイドル時間に、ブロックで与えられた処理を行う
       # @return [void]
       def in_idle_time
@@ -270,12 +310,76 @@ module BCDiceIRC
         @status_bar = w('status_bar')
 
         setup_status_bar_context_ids
+        connect_signals
         setup_version_labels
         setup_encoding_combo_box
         setup_preset_combo_box
         setup_game_system_combo_box
 
         self
+      end
+
+      # シグナルにハンドラを割り当てる
+      # @return [self]
+      def connect_signals
+        ids = @handler_ids
+        h = SignalHandlers
+
+        ids[:main_window_on_destroy] = @main_window.signal_connect(
+          :destroy, &h.main_window_on_destroy(self)
+        )
+
+        ids[:preset_combo_box_on_changed] = @preset_combo_box.signal_connect(
+          :changed, &h.preset_combo_box_on_changed(self)
+        )
+        ids[:preset_save_button_on_clicked] = @preset_save_button.signal_connect(
+          :clicked,
+          &h.preset_save_button_on_clicked(
+            self,
+            @preset_entry,
+            @status_bar,
+            @status_bar_context_ids.fetch(:save_presets)
+          )
+        )
+        ids[:preset_delete_button_on_clicked] = @preset_delete_button.signal_connect(
+          :clicked,
+          &h.preset_delete_button_on_clicked(
+            self,
+            @preset_entry,
+            @status_bar,
+            @status_bar_context_ids.fetch(:save_presets)
+          )
+        )
+
+        ids[:hostname_entry_on_changed] = @hostname_entry.signal_connect(
+          :changed, &h.hostname_entry_on_changed(@irc_bot_config)
+        )
+        ids[:port_spin_button_on_value_changed] = @port_spin_button.signal_connect(
+          :value_changed, &h.port_spin_button_on_value_changed(@irc_bot_config)
+        )
+        ids[:password_check_button_on_toggled] = @password_check_button.signal_connect(
+          :toggled, &h.password_check_button_on_toggled(self)
+        )
+        ids[:password_entry_on_changed] = @password_entry.signal_connect(
+          :changed, &h.password_entry_on_changed(self)
+        )
+        ids[:encoding_combo_box_on_changed] = @encoding_combo_box.signal_connect(
+          :changed, &h.encoding_combo_box_on_changed(@irc_bot_config)
+        )
+        ids[:nick_entry_on_changed] = @nick_entry.signal_connect(
+          :changed, &h.nick_entry_on_changed(@irc_bot_config)
+        )
+        ids[:channel_entry_on_changed] = @channel_entry.signal_connect(
+          :changed, &h.channel_entry_on_changed(@irc_bot_config)
+        )
+
+        ids[:game_system_combo_box_on_changed] = @game_system_combo_box.signal_connect(
+          :changed, &h.game_system_combo_box_on_changed(self)
+        )
+
+        ids[:connect_disconnect_button_on_clicked] = @connect_disconnect_button.signal_connect(
+          :clicked, &h.connect_disconnect_button_on_clicked(self)
+        )
       end
 
       # ステータスバーに表示する項目の種類
@@ -326,11 +430,6 @@ module BCDiceIRC
           .map(&:name)
           .each do |preset_name|
             @preset_combo_box.append_text(preset_name)
-          end
-
-        @handler_ids[:preset_combo_box_on_changed] =
-          @preset_combo_box.signal_connect(:changed) do
-            preset_combo_box_on_changed
           end
 
         self
@@ -504,22 +603,6 @@ module BCDiceIRC
         self
       end
 
-      # プリセット設定ファイルの保存を試みる
-      # @return [true] 保存に成功した場合
-      # @return [false] 保存に失敗した場合
-      def try_to_save_presets_file
-        save_presets_file
-        true
-      rescue => e
-        @status_bar&.push(
-          @status_bar_context_ids.fetch(:save_presets),
-          'プリセット設定ファイルの保存に失敗しました'
-        )
-        @logger.exception(e)
-
-        false
-      end
-
       # プリセット設定ファイルを保存する
       # @return [self]
       def save_presets_file
@@ -527,142 +610,6 @@ module BCDiceIRC
         @logger.debug("#{@presets_yaml_path}: 保存しました")
 
         self
-      end
-
-      # メインウィンドウが閉じられたときの処理
-      # @return [void]
-      def main_window_on_destroy
-        @logger.debug('Stop mediator')
-        @mediator.quit!
-        @logger.debug('Mediator has stopped')
-
-        Gtk.main_quit
-      end
-
-      # プリセットコンボボックスの値が変更されたときの処理
-      def preset_combo_box_on_changed
-        active_index = @preset_combo_box.active
-        if active_index < 0
-          # 文字が入力された場合
-          @preset_store.temporary_preset_name = @preset_combo_box.active_text
-        else
-          # プリセットが選択された場合
-          @preset_store.load_by_index(active_index)
-
-          try_to_save_presets_file unless @setting_up
-        end
-      end
-
-      # プリセット保存ボタンがクリックされたときの処理
-      # @return [void]
-      def preset_save_button_on_clicked
-        @irc_bot_config.name = @preset_entry.text
-
-        push_result = @preset_store.push(@irc_bot_config.deep_dup)
-
-        if try_to_save_presets_file
-          action = push_result == :appended ? '保存' : '更新'
-          @status_bar.push(
-            @status_bar_context_ids.fetch(:save_presets),
-            "プリセット「#{@irc_bot_config.name}」を#{action}しました"
-          )
-        end
-      end
-
-      # プリセット削除ボタンがクリックされたときの処理
-      # @return [void]
-      def preset_delete_button_on_clicked
-        preset_name = @preset_entry.text
-
-        response = show_confirm_deleting_preset_dialog(preset_name)
-        return unless response == :ok
-
-        index = @preset_store.delete(preset_name)
-        # 返ってきたインデックスが-1ならば削除失敗
-        return if index < 0
-
-        if try_to_save_presets_file
-          @status_bar.push(
-            @status_bar_context_ids.fetch(:save_presets),
-            "プリセット「#{preset_name}」を削除しました"
-          )
-        end
-      end
-
-      # プリセットを削除するか確認するダイアログを表示する
-      # @param [String] preset_name プリセット名
-      # @return [:ok] OKボタンが押された場合
-      # @return [:cancel] キャンセルボタンが押された場合
-      def show_confirm_deleting_preset_dialog(preset_name)
-        dialog = Gtk::MessageDialog.new(
-          parent: @main_window,
-          flags: :destroy_with_parent,
-          type: :warning,
-          buttons: :ok_cancel,
-          message: "プリセット「#{preset_name}」を本当に削除しますか?"
-        )
-        dialog.secondary_text = 'この操作は元に戻せません。'
-
-        response = dialog.run
-        dialog.destroy
-
-        response
-      end
-
-      # ホスト名欄が変更されたときの処理
-      # @return [void]
-      def hostname_entry_on_changed
-        @irc_bot_config.hostname = @hostname_entry.text
-      end
-
-      # ポートの値が変更されたときの処理
-      # @return [void]
-      def port_spin_button_on_value_changed
-        @irc_bot_config.port = @port_spin_button.value.to_i
-      end
-
-      # パスワードチェックボタンが切り替えられたときの処理
-      # @return [void]
-      def password_check_button_on_toggled
-        self.use_password = @password_check_button.active?
-      end
-
-      # パスワード欄が変更されたときの処理
-      # @return [void]
-      def password_entry_on_changed
-        if use_password
-          @irc_bot_config.password = @password_entry.text
-        end
-      end
-
-      # 文字コードコンボボックスの値が変更されたときの処理
-      # @return [void]
-      def encoding_combo_box_on_changed
-        @irc_bot_config.encoding = @encoding_combo_box.active_iter[0]
-      end
-
-      # ニックネーム欄が変更されたときの処理
-      # @return [void]
-      def nick_entry_on_changed
-        @irc_bot_config.nick = @nick_entry.text
-      end
-
-      # チャンネル欄が変更されたときの処理
-      # @return [void]
-      def channel_entry_on_changed
-        @irc_bot_config.channel = @channel_entry.text
-      end
-
-      # ゲームシステムコンボボックスの値が変更されたときの処理
-      # @return [void]
-      def game_system_combo_box_on_changed
-        self.dice_bot_wrapper = @game_system_combo_box.active_iter[0]
-      end
-
-      # 接続/切断ボタンがクリックされたときの処理
-      # @return [void]
-      def connect_disconnect_button_on_clicked
-        state.connect_disconnect_button_on_clicked
       end
     end
   end

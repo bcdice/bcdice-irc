@@ -21,7 +21,7 @@ Lint/StructNewOverride:
   Enabled: true
 
 Metrics/MethodLength:
-  Max: 40
+  Max: 50
 
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
 # AllowedNames: io, id, to, by, on, in, at, ip, db, os, pp
