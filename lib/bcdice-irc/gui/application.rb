@@ -403,9 +403,7 @@ module BCDiceIRC
       # バージョン情報のラベルを用意する
       # @return [self]
       def setup_version_labels
-        @bcdice_version_label.text =
-          @bcdice_version_label.text % [BCDiceIRC::VERSION, BCDice::VERSION]
-
+        @bcdice_version_label.text %= [BCDiceIRC::VERSION, BCDice::VERSION]
         self
       end
 
@@ -426,11 +424,10 @@ module BCDiceIRC
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        @preset_store
-          .map(&:name)
-          .each do |preset_name|
-            @preset_combo_box.append_text(preset_name)
-          end
+        @preset_store.map(&:name)
+                     .each do |preset_name|
+                       @preset_combo_box.append_text(preset_name)
+                     end
 
         self
       end
