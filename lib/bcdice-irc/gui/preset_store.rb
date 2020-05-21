@@ -301,7 +301,7 @@ module BCDiceIRC
         begin
           self.index_last_selected = hash_with_sym_keys[:index_last_selected]
         rescue => e
-          @index_last_selected = empty? ? nil : 0
+          @index_last_selected = empty? ? -1 : 0
           @logger&.warn("index_last_selected setting failed, set #{@index_last_selected.inspect}")
           @logger&.exception(e)
         end
