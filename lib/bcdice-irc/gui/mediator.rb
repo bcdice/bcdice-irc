@@ -62,7 +62,7 @@ module BCDiceIRC
       #
       # 既にIRCボットが起動している場合は何もしない。
       #
-      # @param [IRCBot::Config] irc_bot_config IRCボットの設定
+      # @param [IRCBotConfig] irc_bot_config IRCボットの設定
       # @return [Boolean] IRCボットの起動を試したか
       def start_irc_bot(irc_bot_config)
         return false if @irc_bot_thread

@@ -6,7 +6,7 @@ require 'yaml'
 require 'active_support/core_ext/hash/keys'
 require 'active_support/core_ext/object/blank'
 
-require_relative '../irc_bot/config'
+require_relative '../irc_bot_config'
 
 module BCDiceIRC
   module GUI
@@ -56,7 +56,7 @@ module BCDiceIRC
 
       # @!method each
       #   各プリセットに対して処理を行う
-      #   @yieldparam [IRCBot::Config] config 各プリセット
+      #   @yieldparam [IRCBotConfig] config 各プリセット
       # @!method length
       #   格納しているプリセットの数を返す
       #   @return [Integer]
@@ -74,7 +74,7 @@ module BCDiceIRC
       # @!method fetch(index)
       #   番号からプリセットを取得する
       #   @param [Integer] index プリセット番号（0-indexed）
-      #   @return [IRCBot::Config]
+      #   @return [IRCBotConfig]
       #   @raise [IndexError] 指定された番号の要素が存在しなかった場合
       def_delegator(:@presets, :fetch, :fetch_by_index)
 
@@ -92,7 +92,7 @@ module BCDiceIRC
       # @return [PresetStore]
       def self.default
         store = new
-        store.push(IRCBot::Config::DEFAULT)
+        store.push(IRCBotConfig::DEFAULT)
         store
       end
 
@@ -184,7 +184,7 @@ module BCDiceIRC
       end
 
       # プリセットを追加する
-      # @param [IRCBot::Config] config IRCボット設定
+      # @param [IRCBotConfig] config IRCボット設定
       # @return [Symbol] 追加された（`:appended`）か更新された（`:updated`）か
       def push(config)
         need_append = !include?(config.name)
@@ -244,7 +244,7 @@ module BCDiceIRC
 
       # 名前でプリセットを取り出す
       # @param [String] name プリセット名
-      # @return [IRCBot::Config]
+      # @return [IRCBotConfig]
       def fetch_by_name(name)
         _, config = @name_index_preset_map.fetch(name)
         config
@@ -291,10 +291,10 @@ module BCDiceIRC
         hash_with_sym_keys = hash.symbolize_keys
 
         hash_with_sym_keys[:presets]&.each do |h|
-          config = IRCBot::Config.from_hash(h)
+          config = IRCBotConfig.from_hash(h)
           push(config)
         rescue => e
-          @logger&.warn('IRCBot::Config.from_hash failed')
+          @logger&.warn('IRCBotConfig.from_hash failed')
           @logger&.exception(e)
         end
 
@@ -374,7 +374,7 @@ module BCDiceIRC
       end
 
       # プリセットを末尾に追加する
-      # @param [IRCBot::Config] config IRCボットの設定
+      # @param [IRCBotConfig] config IRCボットの設定
       # @return [Symbol] `:appended`
       def append(config)
         new_index = length
@@ -393,7 +393,7 @@ module BCDiceIRC
       end
 
       # 記録されているプリセットを更新する
-      # @param [IRCBot::Config] config IRCボットの設定
+      # @param [IRCBotConfig] config IRCボットの設定
       # @return [Symbol] `:updated`
       def update(config)
         index, = @name_index_preset_map[config.name]
@@ -414,7 +414,7 @@ module BCDiceIRC
       #
       # 読み込み完了後、`add_preset_load_handlers` で登録した手続きを実行する。
       #
-      # @param [IRCBot::Config] config IRCボット設定
+      # @param [IRCBotConfig] config IRCボット設定
       # @param [Integer] index プリセット番号
       # @return [self]
       def load_preset(config, index)

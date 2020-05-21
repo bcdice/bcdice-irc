@@ -12,6 +12,7 @@ require 'diceBot/DiceBotLoader'
 
 require_relative '../version'
 require_relative '../dice_bot_wrapper'
+require_relative '../irc_bot_config'
 require_relative '../irc_bot'
 require_relative '../categorizable_logger'
 
@@ -32,7 +33,7 @@ module BCDiceIRC
       extend ForwardableToObserver
 
       # IRCボットの設定
-      # @return [IRCBot::Config]
+      # @return [IRCBotConfig]
       attr_reader :irc_bot_config
       # プリセット集
       # @return [PresetStore]
@@ -77,7 +78,7 @@ module BCDiceIRC
         @use_password = SimpleObservable.new
         @dice_bot_wrapper = SimpleObservable.new
         @preset_store = PresetStore.new
-        @irc_bot_config = IRCBot::Config::DEFAULT.deep_dup
+        @irc_bot_config = IRCBotConfig::DEFAULT.deep_dup
         @setting_up = true
         @last_connection_error = nil
 
@@ -410,12 +411,12 @@ module BCDiceIRC
       # 文字コードコンボボックスを用意する
       # @return [self]
       def setup_encoding_combo_box
-        ComboBox::Setup.bind(@encoding_combo_box, IRCBot::AVAILABLE_ENCODINGS)
+        ComboBox::Setup.bind(@encoding_combo_box, AVAILABLE_ENCODINGS)
         ComboBox::Setup.pack_cell_renderer_text(@encoding_combo_box)
 
         @encoding_combo_box_activator = ComboBox::Activator.new(
           @encoding_combo_box,
-          IRCBot::AVAILABLE_ENCODINGS.map(&:name)
+          AVAILABLE_ENCODINGS.map(&:name)
         )
 
         self

@@ -15,24 +15,24 @@ module BCDiceIRC
       setup do
         @store = PresetStore.new
 
-        @config1 = IRCBot::Config.new(
+        @config1 = IRCBotConfig.new(
           name: 'デフォルト',
           hostname: 'irc.trpg.net',
           port: 6667,
           password: nil,
-          encoding: IRCBot::NAME_TO_ENCODING['UTF-8'],
+          encoding: NAME_TO_ENCODING['UTF-8'],
           nick: 'BCDice',
           channel: '#Dice_Test',
           quit_message: 'さようなら',
           game_system_id: 'DiceBot'
         ).freeze
 
-        @config2 = IRCBot::Config.new(
+        @config2 = IRCBotConfig.new(
           name: 'Config 1',
           hostname: 'irc.example.net',
           port: 6664,
           password: 'p@ssw0rd',
-          encoding: IRCBot::NAME_TO_ENCODING['ISO-2022-JP'],
+          encoding: NAME_TO_ENCODING['ISO-2022-JP'],
           nick: 'DiceBot',
           channel: '#DiceTest',
           quit_message: 'Bye',

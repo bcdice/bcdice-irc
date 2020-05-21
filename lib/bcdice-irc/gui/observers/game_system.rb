@@ -10,7 +10,7 @@ module BCDiceIRC
         module_function
 
         # IRCボット設定のオブザーバを返す
-        # @param [IRCBot::Config] config
+        # @param [IRCBotConfig] config
         # @return [Proc]
         def irc_bot_config(config)
           lambda do |dice_bot_wrapper|

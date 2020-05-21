@@ -78,7 +78,7 @@ module BCDiceIRC
         end
 
         # IRCボット設定のオブザーバを返す
-        # @param [IRCBot::Config] config_in_app
+        # @param [IRCBotConfig] config_in_app
         # @return [Proc]
         def irc_bot_config(config_in_app)
           lambda do |preset, _index|

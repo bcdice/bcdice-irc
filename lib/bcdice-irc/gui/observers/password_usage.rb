@@ -8,7 +8,7 @@ module BCDiceIRC
         module_function
 
         # IRCボット設定のオブザーバを返す
-        # @param [IRCBot::Config] config
+        # @param [IRCBotConfig] config
         # @return [Proc]
         def irc_bot_config(config, password_entry)
           lambda do |use_password|

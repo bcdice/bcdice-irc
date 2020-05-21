@@ -22,7 +22,7 @@ module BCDiceIRC
 
     def_delegators(:@bot, :last_connection_error)
 
-    # @param [Config] config 設定
+    # @param [IRCBotConfig] config 設定
     # @param [GUI::Mediator] mediator ボットの処理とGUIの処理との仲介
     # @param [Symbol] log_level ログレベル
     def initialize(config, mediator, log_level)
@@ -103,8 +103,6 @@ module BCDiceIRC
   end
 end
 
-require_relative 'irc_bot/encoding'
-require_relative 'irc_bot/config'
 require_relative 'irc_bot/message_sink'
 require_relative 'irc_bot/plugin_config'
 require_relative 'irc_bot/plugin'

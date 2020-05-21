@@ -83,14 +83,14 @@ module BCDiceIRC
       end
 
       # ホスト名欄が変更されたときの処理
-      # @param [IRCBot::Config] config
+      # @param [IRCBotConfig] config
       # @return [Proc]
       def hostname_entry_on_changed(config)
         ->(entry) { config.hostname = entry.text }
       end
 
       # ポートの値が変更されたときの処理
-      # @param [IRCBot::Config] config
+      # @param [IRCBotConfig] config
       # @return [Proc]
       def port_spin_button_on_value_changed(config)
         ->(spin_button) { config.port = spin_button.value.to_i }
@@ -111,21 +111,21 @@ module BCDiceIRC
       end
 
       # 文字コードコンボボックスの値が変更されたときの処理
-      # @param [IRCBot::Config] config
+      # @param [IRCBotConfig] config
       # @return [Proc]
       def encoding_combo_box_on_changed(config)
         ->(combo_box) { config.encoding = combo_box.active_iter[0] }
       end
 
       # ニックネーム欄が変更されたときの処理
-      # @param [IRCBot::Config] config
+      # @param [IRCBotConfig] config
       # @return [Proc]
       def nick_entry_on_changed(config)
         ->(entry) { config.nick = entry.text }
       end
 
       # チャンネル欄が変更されたときの処理
-      # @param [IRCBot::Config] config
+      # @param [IRCBotConfig] config
       # @return [Proc]
       def channel_entry_on_changed(config)
         ->(entry) { config.channel = entry.text }
