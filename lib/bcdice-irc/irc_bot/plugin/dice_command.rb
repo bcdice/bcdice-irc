@@ -4,7 +4,7 @@ require 'cinch'
 
 require 'bcdiceCore'
 
-require_relative '../message_sink'
+require_relative '../../irc_message_sink'
 
 module BCDiceIRC
   class IRCBot
@@ -35,7 +35,7 @@ module BCDiceIRC
           # ボットに直接送られたメッセージは設定用と見なす
           return if !m.channel || m.target == m.user
 
-          message_sink = MessageSink.new(bot, m.user)
+          message_sink = IRCMessageSink.new(bot, m.user)
           @bcdice.setIrcClient(message_sink)
 
           @bcdice.setMessage(m.message)

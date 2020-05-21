@@ -4,8 +4,6 @@ require 'cinch'
 
 require 'bcdiceCore'
 
-require_relative '../message_sink'
-
 module BCDiceIRC
   class IRCBot
     module Plugin

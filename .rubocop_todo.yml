@@ -28,4 +28,4 @@ Metrics/CyclomaticComplexity:
 # BCDice本体からの呼び出しによる制約。
 Naming/MethodName:
   Exclude:
-    - 'lib/bcdice-irc/irc_bot/message_sink.rb'
+    - 'lib/bcdice-irc/irc_message_sink.rb'

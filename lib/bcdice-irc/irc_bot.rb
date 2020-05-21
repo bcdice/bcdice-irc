@@ -103,6 +103,5 @@ module BCDiceIRC
   end
 end
 
-require_relative 'irc_bot/message_sink'
 require_relative 'irc_bot/plugin_config'
 require_relative 'irc_bot/plugin'
