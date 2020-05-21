@@ -6,6 +6,8 @@ require 'cinch'
 require 'bcdiceCore'
 
 require_relative 'categorizable_logger'
+require_relative 'irc_bot_plugin_config'
+require_relative 'irc_bot_plugin'
 
 module BCDiceIRC
   # BCDiceのIRCボットのクラス。
@@ -74,12 +76,12 @@ module BCDiceIRC
         c.channels = [@config.channel]
 
         c.plugins.plugins = [
-          Plugin::IRCChannel,
-          Plugin::DiceCommand,
-          Plugin::MasterCommand,
+          IRCBotPlugin::IRCChannel,
+          IRCBotPlugin::DiceCommand,
+          IRCBotPlugin::MasterCommand,
         ]
 
-        plugin_config = PluginConfig.new(
+        plugin_config = IRCBotPluginConfig.new(
           bcdice: @bcdice,
           mediator: @mediator
         )
@@ -102,6 +104,3 @@ module BCDiceIRC
     end
   end
 end
-
-require_relative 'irc_bot/plugin_config'
-require_relative 'irc_bot/plugin'
