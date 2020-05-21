@@ -28,6 +28,9 @@ module BCDiceIRC
         self
       end
 
+      # extendされたときの処理
+      # @param [Object] object
+      # @return [void]
       def self.extended(object)
         object.extend(Forwardable)
       end

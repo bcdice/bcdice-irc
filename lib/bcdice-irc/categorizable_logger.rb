@@ -5,12 +5,18 @@ require 'cinch/logger/formatted_logger'
 module BCDiceIRC
   # カテゴリ分けが可能なロガー
   class CategorizableLogger < Cinch::Logger::FormattedLogger
+    # 空白
     SPACE = ' '
+    # メッセージの区切り
     PRE_MSG_SEPARATOR = ' :'
 
+    # デバッグメッセージの記号
     DEBUG_SYMBOL = '!!'
+    # 情報メッセージの記号
     INFO_SYMBOL = 'II'
+    # 受信したメッセージの記号
     INCOMING_SYMBOL = '>>'
+    # 送信したメッセージの記号
     OUTGOING_SYMBOL = '<<'
 
     # ログのカテゴリ
@@ -36,10 +42,16 @@ module BCDiceIRC
 
     private
 
+    # メッセージのパーツを空白で結合する
+    # @param [Array<String>] parts メッセージのパーツ
+    # @return [String]
     def join_parts(parts)
       parts.flatten.join(SPACE)
     end
 
+    # デバッグメッセージを整形する
+    # @param [String] message メッセージ
+    # @return [String]
     def format_debug(message)
       parts = [
         timestamp,
@@ -51,6 +63,9 @@ module BCDiceIRC
       join_parts(parts)
     end
 
+    # 情報メッセージを整形する
+    # @param [String] message メッセージ
+    # @return [String]
     def format_info(message)
       parts = [
         timestamp,
@@ -62,6 +77,9 @@ module BCDiceIRC
       join_parts(parts)
     end
 
+    # メッセージを前半部分と本体とに分ける
+    # @param [String] message メッセージ
+    # @return [(String, String)]
     def split_to_pre_parts_and_msg(message)
       pre, msg = message.split(PRE_MSG_SEPARATOR, 2)
       pre_parts = pre.split(SPACE)
@@ -69,10 +87,16 @@ module BCDiceIRC
       [pre_parts, msg]
     end
 
+    # IRCメッセージを整形する
+    # @param [String] message メッセージ
+    # @return [String, nil]
     def format_irc_message(message)
       message ? colorize(":#{message}", :yellow) : nil
     end
 
+    # 受信したメッセージを整形する
+    # @param [String] message メッセージ
+    # @return [String]
     def format_incoming(message)
       pre_parts, msg = split_to_pre_parts_and_msg(message)
 
@@ -94,6 +118,9 @@ module BCDiceIRC
       join_parts(parts)
     end
 
+    # 送信したメッセージを整形する
+    # @param [String] message メッセージ
+    # @return [String]
     def format_outgoing(message)
       pre_parts, msg = split_to_pre_parts_and_msg(message)
 
@@ -110,6 +137,9 @@ module BCDiceIRC
       join_parts(parts)
     end
 
+    # 例外を整形する
+    # @param [String] message メッセージ
+    # @return [String]
     def format_exception(message)
       parts = [
         timestamp,
