@@ -185,7 +185,7 @@ module BCDiceIRC
         return DID_NOT_DELETE unless index
 
         config = @presets.delete_at(index)
-        @name_index_preset_map.delete(name)
+        rebuild_name_index_preset_map
 
         self.index_last_selected = -1
 
@@ -293,6 +293,18 @@ module BCDiceIRC
         @name_index_preset_map[config.name] = [index, config]
 
         PushResult.new(action: :updated, index: index, config: config)
+      end
+
+      # プリセット名→番号および設定のHashを再構築する
+      # @return [self]
+      def rebuild_name_index_preset_map
+        @name_index_preset_map =
+          @presets
+          .each_with_index
+          .map { |config, index| [config.name, [index, config]] }
+          .to_h
+
+        self
       end
     end
   end

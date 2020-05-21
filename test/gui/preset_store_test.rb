@@ -90,6 +90,22 @@ module BCDiceIRC
         assert_equal(1, @store.length, '個数が変わらない')
       end
 
+      test '#delete should return correct index whenever deleting non-last preset' do
+        @store.push(@config1)
+        @store.push(@config2)
+
+        config3 = @config2.deep_dup
+        config3.name = 'Config 2'
+        @store.push(config3)
+
+        @store.delete('デフォルト')
+
+        result = @store.delete('Config 2')
+
+        assert_equal(1, result.index)
+        assert_equal('Config 2', result.config.name)
+      end
+
       test '#empty?' do
         assert_true(@store.empty?, '最初は true')
 
