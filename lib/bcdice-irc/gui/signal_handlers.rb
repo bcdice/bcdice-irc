@@ -27,10 +27,10 @@ module BCDiceIRC
           active_index = combo_box.active
           if active_index < 0
             # 文字が入力された場合
-            app.preset_store.temporary_preset_name = combo_box.active_text
+            app.preset_store_vm.temporary_preset_name = combo_box.active_text
           else
             # プリセットが選択された場合
-            app.preset_store.load_by_index(active_index)
+            app.preset_store_vm.load_by_index(active_index)
 
             app.try_to_save_presets_file unless app.setting_up
           end
@@ -47,13 +47,13 @@ module BCDiceIRC
         lambda do |_|
           app.irc_bot_config.name = preset_entry.text
 
-          push_result = app.preset_store.push(app.irc_bot_config.deep_dup)
+          result = app.preset_store_vm.save(app.irc_bot_config.deep_dup)
 
           if app.try_to_save_presets_file
-            action = push_result == :appended ? '保存' : '更新'
+            action = result.action == :appended ? '保存' : '更新'
             status_bar.push(
               context_id,
-              "プリセット「#{app.irc_bot_config.name}」を#{action}しました"
+              "プリセット「#{result.config.name}」を#{action}しました"
             )
           end
         end
@@ -72,12 +72,11 @@ module BCDiceIRC
           response = app.show_confirm_deleting_preset_dialog(preset_name)
           return unless response == :ok
 
-          index = app.preset_store.delete(preset_name)
-          # 返ってきたインデックスが-1ならば削除失敗
-          return if index < 0
+          result = app.preset_store_vm.delete(preset_name)
+          return unless result.deleted
 
           if app.try_to_save_presets_file
-            status_bar.push(context_id, "プリセット「#{preset_name}」を削除しました")
+            status_bar.push(context_id, "プリセット「#{result.config.name}」を削除しました")
           end
         end
       end

@@ -19,6 +19,7 @@ require_relative '../categorizable_logger'
 require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_store'
+require_relative 'preset_store_view_model'
 require_relative 'combo_box'
 
 require_relative 'signal_handlers'
@@ -35,9 +36,9 @@ module BCDiceIRC
       # IRCボットの設定
       # @return [IRCBotConfig]
       attr_reader :irc_bot_config
-      # プリセット集
-      # @return [PresetStore]
-      attr_reader :preset_store
+      # プリセット集のビューモデル
+      # @return [PresetStoreViewModel]
+      attr_reader :preset_store_vm
       # IRCボットとGUIとの仲介
       # @return [GUI::Mediator]
       attr_reader :mediator
@@ -78,6 +79,7 @@ module BCDiceIRC
         @use_password = SimpleObservable.new
         @dice_bot_wrapper = SimpleObservable.new
         @preset_store = PresetStore.new
+        @preset_store_vm = PresetStoreViewModel.new(@preset_store)
         @irc_bot_config = IRCBotConfig::DEFAULT.deep_dup
         @setting_up = true
         @last_connection_error = nil
@@ -255,8 +257,8 @@ module BCDiceIRC
           @logger.warn("プリセット集を読み込めません: #{e}")
         end
 
-        if !@preset_store || @preset_store.empty?
-          @preset_store = PresetStore.default
+        if @preset_store.empty?
+          @preset_store.load_default
           @logger.warn('既定のプリセット集を使用します')
           try_to_save_presets_file
         end
@@ -425,10 +427,11 @@ module BCDiceIRC
       # プリセットのコンボボックスを用意する
       # @return [self]
       def setup_preset_combo_box
-        @preset_store.map(&:name)
-                     .each do |preset_name|
-                       @preset_combo_box.append_text(preset_name)
-                     end
+        @preset_store_vm
+          .preset_names
+          .each do |preset_name|
+            @preset_combo_box.append_text(preset_name)
+          end
 
         self
       end
@@ -461,11 +464,11 @@ module BCDiceIRC
         setup_preset_save_observers
         setup_preset_delete_observers
 
-        @preset_store.add_preset_save_action_updated_handlers(
+        @preset_store_vm.add_preset_save_action_updated_handlers(
           Observers::PresetSaveAction.preset_save_button(@preset_save_button)
         )
 
-        @preset_store.add_preset_deletability_updated_handlers(
+        @preset_store_vm.add_preset_deletability_updated_handlers(
           Observers::PresetDeletability.preset_delete_button(@preset_delete_button)
         )
 
@@ -509,7 +512,7 @@ module BCDiceIRC
       # プリセット読み込みのオブザーバを用意する
       # @return [self]
       def setup_preset_load_observers
-        @preset_store.add_preset_load_handlers(
+        @preset_store_vm.add_preset_load_handlers(
           Observers::PresetLoad.hostname_entry(@hostname_entry),
           Observers::PresetLoad.port_spin_button(@port_spin_button),
           Observers::PresetLoad.widgets_for_password(@password_check_button, @password_entry),
@@ -535,12 +538,12 @@ module BCDiceIRC
           @handler_ids.fetch(:preset_combo_box_on_changed)
         )
 
-        @preset_store.add_preset_append_handlers(
+        @preset_store_vm.add_preset_append_handlers(
           Observers::PresetSave.preset_combo_box_append_item(@preset_combo_box),
           preset_combo_box_active_observer
         )
 
-        @preset_store.add_preset_update_handlers(
+        @preset_store_vm.add_preset_update_handlers(
           preset_combo_box_active_observer
         )
 
@@ -550,7 +553,7 @@ module BCDiceIRC
       # プリセット削除のオブザーバを用意する
       # @return [self]
       def setup_preset_delete_observers
-        @preset_store.add_preset_delete_handlers(
+        @preset_store_vm.add_preset_delete_handlers(
           Observers::PresetDelete.preset_combo_box_remove_item(@preset_combo_box),
           Observers::PresetDelete.preset_entry_clear(@preset_entry)
         )
@@ -596,7 +599,7 @@ module BCDiceIRC
 
         # activeが必ず0以上になるようにする
         @preset_combo_box.active =
-          [0, @preset_store.index_last_selected].max
+          [0, @preset_store_vm.index_last_selected].max
 
         self
       end

@@ -12,20 +12,11 @@ module BCDiceIRC
   module GUI
     # プリセットの管理を担当するクラス。
     #
-    # このクラスは、プリセット集および選択されているプリセットの管理を行う。
-    #
+    # プリセット集および最後に選択されていたプリセットの番号の管理を行う。
     # プリセット集の管理については、プリセットの追加（起動時の設定ファイルから
-    # の読み込みも含む）、保存（追加）、更新、削除を行える。
-    # GUIの更新のために、プリセットの保存（追加）、更新、削除が行われた後、
-    # それぞれに対応するハンドラ（preset_append、preset_update、preset_delete）
-    # を実行できるようにしている。
-    # また、一時的なプリセット名を設定することができ、その名前でプリセットを
-    # 保存/更新可能か、および削除可能かを判断する。
-    #
-    # 選択されているプリセットの管理については、現在の状態に合わせてコンボ
-    # ボックスのアクティブ項目を変更することを想定して、プリセットの追加、
-    # 保存、更新、削除といった操作に応じて、選択されているプリセット番号が適切
-    # に動くようにしている。
+    # の読み込みも含む）、保存（追加）、更新、削除が行える。
+    # 最後に選択されていたプリセットの番号は、次回起動時にその設定を自動的に
+    # 読み込むために使う。
     class PresetStore
       include Enumerable
       extend Forwardable
@@ -36,19 +27,6 @@ module BCDiceIRC
       #
       # @return [Integer]
       attr_reader :index_last_selected
-
-      # 一時的なプリセット名
-      #
-      # この名前でのプリセットの保存/更新、および削除が可能かを判断する。
-      #
-      # @return [String]
-      attr_reader :temporary_preset_name
-
-      # プリセットの保存について実行可能なアクション
-      # @return [:none] プリセットの保存が不可能な場合
-      # @return [:append] プリセットの追加が可能な場合
-      # @return [:update] プリセットの更新が可能な場合
-      attr_reader :preset_save_action
 
       # ロガー
       # @return [Cinch::Logger]
@@ -88,41 +66,18 @@ module BCDiceIRC
         :member?
       )
 
-      # 既定のプリセット集を返す
-      # @return [PresetStore]
-      def self.default
-        store = new
-        store.push(IRCBotConfig::DEFAULT)
-        store
-      end
-
-      # 初期化する
       def initialize
         clear
 
         @logger = nil
-
-        @preset_load_handlers = []
-        @preset_append_handlers = []
-        @preset_update_handlers = []
-        @preset_delete_handlers = []
-        @preset_save_action_updated_handlers = []
-        @preset_deletability_updated_handlers = []
       end
 
       # プリセットをすべて削除する
       # @return [self]
       def clear
-        @index_last_selected = nil
-        @temporary_preset_name = ''
+        @index_last_selected = -1
         @presets = []
         @name_index_preset_map = {}
-
-        # プリセットの保存について実行可能なアクション
-        # :none、:append、:update のいずれか
-        @preset_save_action = :none
-
-        @can_delete_preset = false
 
         self
       end
@@ -133,10 +88,26 @@ module BCDiceIRC
         length > 1
       end
 
-      # プリセットの削除が可能かを返す
+      # 指定された名前のプリセットの保存について、実行可能なアクションを返す
+      # @param [String] preset_name プリセット名
+      # @return [:none] プリセットの保存が不可能な場合
+      # @return [:append] プリセットの追加が可能な場合
+      # @return [:update] プリセットの更新が可能な場合
+      def preset_save_action(preset_name)
+        if include?(preset_name)
+          :update
+        elsif preset_name.blank?
+          :none
+        else
+          :append
+        end
+      end
+
+      # 指定された名前のプリセットの削除が可能かを返す
+      # @param [String] preset_name プリセット名
       # @return [Boolean]
-      def can_delete_preset?
-        @can_delete_preset
+      def can_delete_preset?(preset_name)
+        multiple_presets? && include?(preset_name)
       end
 
       # 最後に選択されたプリセットの番号を設定する
@@ -154,38 +125,24 @@ module BCDiceIRC
         @index_last_selected = value
       end
 
-      # 一時的なプリセット名を設定する
-      #
-      # 設定後、その名前でプリセットを保存/更新可能か、および削除可能かを更新する。
-      #
-      # @param [String] value 一時的なプリセット名
-      def temporary_preset_name=(value)
-        @temporary_preset_name = value
-
-        update_preset_save_action
-        update_preset_deletability
-      end
-
-      # プリセットの保存について実行可能なアクションが更新されたときに実行する
-      # 手続きを登録する
-      # @param [Array<Proc>] handlers 登録する手続き
-      # @return [self]
-      def add_preset_save_action_updated_handlers(*handlers)
-        @preset_save_action_updated_handlers.push(*handlers)
-        self
-      end
-
-      # プリセットの削除が可能かが更新されたときに実行する手続きを登録する
-      # @param [Array<Proc>] handlers 登録する手続き
-      # @return [self]
-      def add_preset_deletability_updated_handlers(*handlers)
-        @preset_deletability_updated_handlers.push(*handlers)
-        self
-      end
+      # プリセットの追加結果の構造体
+      # @!attribute action
+      #   @return [:appended] プリセットを追加した場合
+      #   @return [:updated] プリセットを更新した場合
+      # @!attribute index
+      #   @return [Integer] 追加/更新したプリセットの番号
+      # @!attribute config
+      #   @return [IRCBotConfig] 追加/更新したIRCボット設定
+      PushResult = Struct.new(
+        :action,
+        :index,
+        :config,
+        keyword_init: true
+      )
 
       # プリセットを追加する
       # @param [IRCBotConfig] config IRCボット設定
-      # @return [Symbol] 追加された（`:appended`）か更新された（`:updated`）か
+      # @return [PushResult]
       def push(config)
         need_append = !include?(config.name)
 
@@ -196,50 +153,47 @@ module BCDiceIRC
         end
       end
 
-      # プリセットを追加したときに実行する手続きを登録する
-      # @param [Array<Proc>] handlers 登録する手続き
-      # @return [self]
-      def add_preset_append_handlers(*handlers)
-        @preset_append_handlers.push(*handlers)
-        self
-      end
+      # プリセットの削除結果の構造体
+      # @!attribute deleted
+      #   @return [Boolean] プリセットを削除したか
+      # @!attribute index
+      #   @return [Integer] 削除したプリセットの番号
+      # @!attribute config
+      #   @return [IRCBotConfig] 削除したIRCボット設定
+      DeleteResult = Struct.new(
+        :deleted,
+        :index,
+        :config,
+        keyword_init: true
+      )
 
-      # プリセットを更新したときに実行する手続きを登録する
-      # @param [Array<Proc>] handlers 登録する手続き
-      # @return [self]
-      def add_preset_update_handlers(*handlers)
-        @preset_update_handlers.push(*handlers)
-        self
-      end
+      # 削除しなかったことを示す結果
+      DID_NOT_DELETE = DeleteResult.new(
+        deleted: false,
+        index: -1,
+        config: nil
+      ).freeze
 
       # プリセットを削除する
       # @param [String] name 削除するプリセットの名前
       # @return [Integer] 削除したプリセットの番号（見つからなかった場合は `-1`）
       # @note 最後の1個は消すことができない（`-1` を返す）。
       def delete(name)
-        return -1 unless multiple_presets?
+        return DID_NOT_DELETE unless multiple_presets?
 
         index, = @name_index_preset_map[name]
-        return -1 unless index
+        return DID_NOT_DELETE unless index
 
         config = @presets.delete_at(index)
         @name_index_preset_map.delete(name)
 
         self.index_last_selected = -1
 
-        @preset_delete_handlers.each do |handler|
-          handler[config, index]
-        end
-
-        index
-      end
-
-      # プリセットを削除したときに実行する手続きを登録する
-      # @param [Array<Proc>] handlers 登録する手続き
-      # @return [self]
-      def add_preset_delete_handlers(*handlers)
-        @preset_delete_handlers.push(*handlers)
-        self
+        DeleteResult.new(
+          deleted: true,
+          index: index,
+          config: config
+        )
       end
 
       # 名前でプリセットを取り出す
@@ -248,38 +202,6 @@ module BCDiceIRC
       def fetch_by_name(name)
         _, config = @name_index_preset_map.fetch(name)
         config
-      end
-
-      # 番号で指定したプリセットを読み込む
-      #
-      # 読み込み完了後、`add_preset_load_handlers` で登録した手続きを実行する。
-      #
-      # @param [Integer] index プリセット番号
-      # @return [self]
-      def load_by_index(index)
-        return self if index < 0
-
-        config = fetch_by_index(index)
-        load_preset(config, index)
-      end
-
-      # 名前で指定したプリセットを読み込む
-      #
-      # 読み込み完了後、`add_preset_load_handlers` で登録した手続きを実行する。
-      #
-      # @param [String] name プリセット名
-      # @return [self]
-      def load_by_name(name)
-        index, config = @name_index_preset_map.fetch(name)
-        load_preset(config, index)
-      end
-
-      # プリセットを読み込んだときに実行する手続きを登録する
-      # @param [Array<Proc>] handlers 登録する手続き
-      # @return [self]
-      def add_preset_load_handlers(*handlers)
-        @preset_load_handlers.push(*handlers)
-        self
       end
 
       # ハッシュからプリセット集を作る
@@ -318,6 +240,16 @@ module BCDiceIRC
         }
       end
 
+      # 既定のプリセット集を読み込む
+      # @return [PresetStore]
+      def load_default
+        clear
+        push(IRCBotConfig::DEFAULT)
+        self.index_last_selected = 0
+
+        self
+      end
+
       # YAMLファイルを読み込んでプリセット集を作る
       # @param [String] yaml_path YAMLファイルのパス
       # @return [self]
@@ -341,38 +273,6 @@ module BCDiceIRC
 
       private
 
-      # プリセットの保存について実行可能なアクションを更新する
-      # @return [self]
-      def update_preset_save_action
-        @preset_save_action =
-          if include?(@temporary_preset_name)
-            :update
-          elsif @temporary_preset_name.blank?
-            :none
-          else
-            :append
-          end
-
-        @preset_save_action_updated_handlers.each do |handler|
-          handler[@preset_save_action]
-        end
-
-        self
-      end
-
-      # プリセットの削除が可能かを更新する
-      # @return [self]
-      def update_preset_deletability
-        @can_delete_preset =
-          multiple_presets? && include?(@temporary_preset_name)
-
-        @preset_deletability_updated_handlers.each do |handler|
-          handler[@can_delete_preset]
-        end
-
-        self
-      end
-
       # プリセットを末尾に追加する
       # @param [IRCBotConfig] config IRCボットの設定
       # @return [Symbol] `:appended`
@@ -381,15 +281,7 @@ module BCDiceIRC
         @presets.push(config)
         @name_index_preset_map[config.name] = [new_index, config]
 
-        self.index_last_selected = new_index
-
-        @preset_append_handlers.each do |handler|
-          handler[config, new_index]
-        end
-
-        self.temporary_preset_name = config.name
-
-        :appended
+        PushResult.new(action: :appended, index: new_index, config: config)
       end
 
       # 記録されているプリセットを更新する
@@ -399,33 +291,8 @@ module BCDiceIRC
         index, = @name_index_preset_map[config.name]
         @presets[index] = config
         @name_index_preset_map[config.name] = [index, config]
-        self.index_last_selected = index
 
-        @preset_update_handlers.each do |handler|
-          handler[config, index]
-        end
-
-        self.temporary_preset_name = config.name
-
-        :updated
-      end
-
-      # 指定したプリセットを読み込む（共通処理）
-      #
-      # 読み込み完了後、`add_preset_load_handlers` で登録した手続きを実行する。
-      #
-      # @param [IRCBotConfig] config IRCボット設定
-      # @param [Integer] index プリセット番号
-      # @return [self]
-      def load_preset(config, index)
-        self.index_last_selected = index
-        self.temporary_preset_name = config.name
-
-        @preset_load_handlers.each do |handler|
-          handler[config, index]
-        end
-
-        self
+        PushResult.new(action: :updated, index: index, config: config)
       end
     end
   end
