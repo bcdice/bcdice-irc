@@ -3,7 +3,6 @@
 .bundle
 .ruby-version
 vendor/bundle
-Gemfile.lock
 .byebug_history
 
 .yardoc/
