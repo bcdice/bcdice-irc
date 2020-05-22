@@ -40,7 +40,7 @@ module BCDiceIRC
       def on_kick(m)
         target = User(m.params[1])
         if target == bot
-          warn("#{m.user} によって #{m.channel} から退室させられました")
+          warn("#{m.user} によって #{m.channel} から追い出されました")
         end
       end
     end
