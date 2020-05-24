@@ -174,7 +174,7 @@ Author: ocha
                 <property name="vexpand">True</property>
                 <property name="spacing">18</property>
                 <child>
-                  <object class="GtkFrame" id="irc_server_frame">
+                  <object class="GtkFrame" id="connection_settings_frame">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="valign">start</property>
@@ -380,10 +380,10 @@ Author: ocha
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="irc_server_label">
+                      <object class="GtkLabel" id="connection_settings_label">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">IRC サーバ</property>
+                        <property name="label" translatable="yes">接続設定</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
