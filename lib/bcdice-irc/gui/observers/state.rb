@@ -17,9 +17,23 @@ module BCDiceIRC
         end
 
         # IRCボット設定の一般的なウィジェットのオブザーバを返す
-        # @param [Array<Gtk::Widget>] widgets
+        # @param [WidgetSet] w
         # @return [Proc]
-        def general_widgets(widgets)
+        def general_widgets(widget_set)
+          widgets = [
+            widget_set.preset_combo_box,
+            widget_set.preset_save_button,
+            widget_set.preset_delete_button,
+
+            widget_set.hostname_entry,
+            widget_set.port_spin_button,
+            widget_set.encoding_combo_box,
+            widget_set.nick_entry,
+            widget_set.channel_entry,
+
+            widget_set.game_system_combo_box,
+          ]
+
           lambda do |state|
             widgets.each do |w|
               w.sensitive = state.general_widgets_sensitive

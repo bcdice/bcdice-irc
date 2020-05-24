@@ -7,55 +7,24 @@ module BCDiceIRC
       module PresetLoad
         module_function
 
-        # ホスト名エントリのオブザーバを返す
-        # @param [Gtk::Entry] entry
+        # 接続設定用ウィジェットのオブザーバを返す
+        # @param [WidgetSet] w ウィジェット集
         # @return [Proc]
-        def hostname_entry(entry)
+        def connection_settings_form(w)
           lambda do |config, _index|
-            entry.text = config.hostname
-          end
-        end
+            w.hostname_entry.text = config.hostname
+            w.port_spin_button.value = config.port
 
-        # ポート番号スピンボタンのオブザーバを返す
-        # @param [Gtk::SpinButton] spin_button
-        # @return [Proc]
-        def port_spin_button(spin_button)
-          lambda do |config, _index|
-            spin_button.value = config.port
-          end
-        end
-
-        # パスワード設定用ウィジェットのオブザーバを返す
-        # @param [Gtk::CheckButton] password_check_button
-        # @param [Gtk::Entry] password_entry
-        # @return [Proc]
-        def widgets_for_password(password_check_button, password_entry)
-          lambda do |config, _index|
             if config.password
-              password_check_button.active = true
-              password_entry.text = config.password
+              w.password_check_button.active = true
+              w.password_entry.text = config.password
             else
-              password_check_button.active = false
-              password_entry.text = ''
+              w.password_check_button.active = false
+              w.password_entry.text = ''
             end
-          end
-        end
 
-        # ニックネームエントリのオブザーバを返す
-        # @param [Gtk::Entry] entry
-        # @return [Proc]
-        def nick_entry(entry)
-          lambda do |config, _index|
-            entry.text = config.nick
-          end
-        end
-
-        # チャンネルエントリのオブザーバを返す
-        # @param [Gtk::Entry] entry
-        # @return [Proc]
-        def channel_entry(entry)
-          lambda do |config, _index|
-            entry.text = config.channel
+            w.nick_entry.text = config.nick
+            w.channel_entry.text = config.channel
           end
         end
 

@@ -19,6 +19,7 @@ require_relative '../categorizable_logger'
 require_relative 'mediator'
 require_relative 'state'
 require_relative 'preset_store'
+require_relative 'widget_set'
 require_relative 'preset_store_view_model'
 require_relative 'combo_box'
 
@@ -78,6 +79,9 @@ module BCDiceIRC
         # GUIビルダー
         # @type [Gtk::Builder]
         @builder = Gtk::Builder.new
+        # ウィジェット集
+        # @type [WidgetSet]
+        @widget_set = WidgetSet.new(@builder)
         # シグナルハンドラを格納するハッシュ
         # @type [Hash<Symbol, Integer>]
         @handler_ids = {}
@@ -133,7 +137,7 @@ module BCDiceIRC
         change_state(:disconnected)
         set_last_selected_preset
 
-        @main_window.show_all
+        w.main_window.show_all
 
         @setting_up = false
         @logger.debug('Setup end')
@@ -172,7 +176,7 @@ module BCDiceIRC
       # @return [self]
       # @note ウィジェットの準備が完了してから使うこと。
       def update_main_window_title
-        @main_window.title = "#{state.main_window_title} - BCDice IRC"
+        w.main_window.title = "#{state.main_window_title} - BCDice IRC"
         self
       end
 
@@ -201,7 +205,7 @@ module BCDiceIRC
       def show_connection_error_dialog(e)
         message_utf8 = e.message.encode('UTF-8', invalid: :replace, undef: :replace)
         dialog = Gtk::MessageDialog.new(
-          parent: @main_window,
+          parent: w.main_window,
           flags: :destroy_with_parent,
           type: :error,
           buttons: :ok,
@@ -219,7 +223,7 @@ module BCDiceIRC
       # @return [:cancel] キャンセルボタンが押された場合
       def show_confirm_deleting_preset_dialog(preset_name)
         dialog = Gtk::MessageDialog.new(
-          parent: @main_window,
+          parent: w.main_window,
           flags: :destroy_with_parent,
           type: :warning,
           buttons: :ok_cancel,
@@ -240,7 +244,7 @@ module BCDiceIRC
         save_presets_file
         true
       rescue => e
-        @status_bar&.push(
+        w.status_bar&.push(
           @status_bar_context_ids.fetch(:save_presets),
           'プリセット設定ファイルの保存に失敗しました'
         )
@@ -259,6 +263,12 @@ module BCDiceIRC
       end
 
       private
+
+      # ウィジェット集を返す
+      # @return [WidgetSet]
+      def w
+        @widget_set
+      end
 
       # ダイスボットを収集し、キャッシュする
       # @return [self]
@@ -296,94 +306,21 @@ module BCDiceIRC
       def load_glade_file
         glade_file = File.expand_path('bcdice-irc.glade', __dir__)
         @builder.add_from_file(glade_file)
-        @builder.connect_signals { |handler| method(handler) }
 
         self
-      end
-
-      # ビルダーからウィジェットを取得する
-      # @param [String] object_id オブジェクトID
-      # @return [Gtk::Widget]
-      def w(object_id)
-        widget = @builder.get_object(object_id)
-        raise "widget #{object_id.inspect} not found" unless widget
-
-        widget
       end
 
       # ウィジェットを用意する
       # @return [self]
       def setup_widgets
-        load_widgets_from_builder
+        @widget_set.load_from_builder
+
         setup_status_bar_context_ids
         connect_signals
         put_version_number_to_version_label
         setup_encoding_combo_box
         setup_preset_combo_box
         setup_game_system_combo_box
-
-        self
-      end
-
-      # ビルダーからウィジェットを読み込む
-      # @return [self]
-      def load_widgets_from_builder
-        # メインウィンドウ
-        # @type [Gtk::Window]
-        @main_window = w('main_window')
-
-        # プリセットコンボボックス
-        # @type [Gtk::ComboBox]
-        @preset_combo_box = w('preset_combo_box')
-        # プリセット名エントリ
-        # @type [Gtk::Entry]
-        @preset_entry = w('preset_entry')
-        # プリセット保存ボタン
-        # @type [Gtk::Button]
-        @preset_save_button = w('preset_save_button')
-        # プリセット削除ボタン
-        # @type [Gtk::Button]
-        @preset_delete_button = w('preset_delete_button')
-
-        # ホスト名エントリ
-        # @type [Gtk::Entry]
-        @hostname_entry = w('hostname_entry')
-        # ポート番号スピンボタン
-        # @type [Gtk::SpinButton]
-        @port_spin_button = w('port_spin_button')
-        # パスワードチェックボタン
-        # @type [Gtk::CheckButton]
-        @password_check_button = w('password_check_button')
-        # パスワードエントリ
-        # @type [Gtk::Entry]
-        @password_entry = w('password_entry')
-        # 文字コードコンボボックス
-        # @type [Gtk::ComboBox]
-        @encoding_combo_box = w('encoding_combo_box')
-        # ニックネームエントリ
-        # @type [Gtk::Entry]
-        @nick_entry = w('nick_entry')
-        # チャンネルエントリ
-        # @type [Gtk::Entry]
-        @channel_entry = w('channel_entry')
-        # 接続/切断ボタン
-        # @type [Gtk::Button]
-        @connect_disconnect_button = w('connect_disconnect_button')
-
-        # ゲームシステムコンボボックス
-        # @type [Gtk::ComboBox]
-        @game_system_combo_box = w('game_system_combo_box')
-        # ヘルプのテキストビュー
-        # @type [Gtk::TextView]
-        @help_text_view = w('help_text_view')
-
-        # バージョン情報ラベル
-        # @type [Gtk::Label]
-        @bcdice_version_label = w('bcdice_version_label')
-
-        # ステータスバー
-        # @type [Gtk::StatusBar, nil]
-        @status_bar = w('status_bar')
 
         self
       end
@@ -403,7 +340,7 @@ module BCDiceIRC
         # ステータスバーのコンテクストIDを格納するハッシュ
         # @type [Hash<Symbol, Integer>]
         @status_bar_context_ids = STATUS_BAR_CONTEXTS
-                                  .map { |c| [c, @status_bar.get_context_id(c.to_s)] }
+                                  .map { |c| [c, w.status_bar.get_context_id(c.to_s)] }
                                   .to_h
 
         self
@@ -415,59 +352,59 @@ module BCDiceIRC
         ids = @handler_ids
         h = SignalHandlers
 
-        ids[:main_window_on_destroy] = @main_window.signal_connect(
+        ids[:main_window_on_destroy] = w.main_window.signal_connect(
           :destroy, &h.main_window_on_destroy(self)
         )
 
-        ids[:preset_combo_box_on_changed] = @preset_combo_box.signal_connect(
+        ids[:preset_combo_box_on_changed] = w.preset_combo_box.signal_connect(
           :changed, &h.preset_combo_box_on_changed(self)
         )
-        ids[:preset_save_button_on_clicked] = @preset_save_button.signal_connect(
+        ids[:preset_save_button_on_clicked] = w.preset_save_button.signal_connect(
           :clicked,
           &h.preset_save_button_on_clicked(
             self,
-            @preset_entry,
-            @status_bar,
+            w.preset_entry,
+            w.status_bar,
             @status_bar_context_ids.fetch(:save_presets)
           )
         )
-        ids[:preset_delete_button_on_clicked] = @preset_delete_button.signal_connect(
+        ids[:preset_delete_button_on_clicked] = w.preset_delete_button.signal_connect(
           :clicked,
           &h.preset_delete_button_on_clicked(
             self,
-            @preset_entry,
-            @status_bar,
+            w.preset_entry,
+            w.status_bar,
             @status_bar_context_ids.fetch(:save_presets)
           )
         )
 
-        ids[:hostname_entry_on_changed] = @hostname_entry.signal_connect(
+        ids[:hostname_entry_on_changed] = w.hostname_entry.signal_connect(
           :changed, &h.hostname_entry_on_changed(@irc_bot_config)
         )
-        ids[:port_spin_button_on_value_changed] = @port_spin_button.signal_connect(
+        ids[:port_spin_button_on_value_changed] = w.port_spin_button.signal_connect(
           :value_changed, &h.port_spin_button_on_value_changed(@irc_bot_config)
         )
-        ids[:password_check_button_on_toggled] = @password_check_button.signal_connect(
+        ids[:password_check_button_on_toggled] = w.password_check_button.signal_connect(
           :toggled, &h.password_check_button_on_toggled(self)
         )
-        ids[:password_entry_on_changed] = @password_entry.signal_connect(
+        ids[:password_entry_on_changed] = w.password_entry.signal_connect(
           :changed, &h.password_entry_on_changed(self)
         )
-        ids[:encoding_combo_box_on_changed] = @encoding_combo_box.signal_connect(
+        ids[:encoding_combo_box_on_changed] = w.encoding_combo_box.signal_connect(
           :changed, &h.encoding_combo_box_on_changed(@irc_bot_config)
         )
-        ids[:nick_entry_on_changed] = @nick_entry.signal_connect(
+        ids[:nick_entry_on_changed] = w.nick_entry.signal_connect(
           :changed, &h.nick_entry_on_changed(@irc_bot_config)
         )
-        ids[:channel_entry_on_changed] = @channel_entry.signal_connect(
+        ids[:channel_entry_on_changed] = w.channel_entry.signal_connect(
           :changed, &h.channel_entry_on_changed(@irc_bot_config)
         )
 
-        ids[:game_system_combo_box_on_changed] = @game_system_combo_box.signal_connect(
+        ids[:game_system_combo_box_on_changed] = w.game_system_combo_box.signal_connect(
           :changed, &h.game_system_combo_box_on_changed(self)
         )
 
-        ids[:connect_disconnect_button_on_clicked] = @connect_disconnect_button.signal_connect(
+        ids[:connect_disconnect_button_on_clicked] = w.connect_disconnect_button.signal_connect(
           :clicked, &h.connect_disconnect_button_on_clicked(self)
         )
       end
@@ -475,18 +412,18 @@ module BCDiceIRC
       # バージョン情報ラベルにバージョン番号を入れる
       # @return [self]
       def put_version_number_to_version_label
-        @bcdice_version_label.text %= [BCDiceIRC::VERSION, BCDice::VERSION]
+        w.bcdice_version_label.text %= [BCDiceIRC::VERSION, BCDice::VERSION]
         self
       end
 
       # 文字コードコンボボックスを用意する
       # @return [self]
       def setup_encoding_combo_box
-        ComboBox::Setup.bind(@encoding_combo_box, AVAILABLE_ENCODINGS)
-        ComboBox::Setup.pack_cell_renderer_text(@encoding_combo_box)
+        ComboBox::Setup.bind(w.encoding_combo_box, AVAILABLE_ENCODINGS)
+        ComboBox::Setup.pack_cell_renderer_text(w.encoding_combo_box)
 
         @encoding_combo_box_activator = ComboBox::Activator.new(
-          @encoding_combo_box,
+          w.encoding_combo_box,
           AVAILABLE_ENCODINGS.map(&:name)
         )
 
@@ -499,7 +436,7 @@ module BCDiceIRC
         @preset_store_vm
           .preset_names
           .each do |preset_name|
-            @preset_combo_box.append_text(preset_name)
+            w.preset_combo_box.append_text(preset_name)
           end
 
         self
@@ -508,16 +445,18 @@ module BCDiceIRC
       # ゲームシステムのコンボボックスを用意する
       # @return [self]
       def setup_game_system_combo_box
-        ComboBox::Setup.bind(@game_system_combo_box, @dice_bot_wrappers, &:name)
-        ComboBox::Setup.pack_cell_renderer_text(@game_system_combo_box)
+        ComboBox::Setup.bind(w.game_system_combo_box, @dice_bot_wrappers, &:name)
+        ComboBox::Setup.pack_cell_renderer_text(w.game_system_combo_box)
 
+        # ゲームシステムIDを指定して項目をアクティブにする処理
         @game_system_combo_box_activator_id = ComboBox::Activator.new(
-          @game_system_combo_box,
+          w.game_system_combo_box,
           @dice_bots.map(&:id)
         )
 
+        # ゲームシステム名を指定して項目をアクティブにする処理
         @game_system_combo_box_activator_name = ComboBox::Activator.new(
-          @game_system_combo_box,
+          w.game_system_combo_box,
           @dice_bots.map(&:name)
         )
 
@@ -534,11 +473,11 @@ module BCDiceIRC
         setup_preset_delete_observers
 
         @preset_store_vm.add_preset_save_action_updated_handlers(
-          Observers::PresetSaveAction.preset_save_button(@preset_save_button)
+          Observers::PresetSaveAction.preset_save_button(w.preset_save_button)
         )
 
         @preset_store_vm.add_preset_deletability_updated_handlers(
-          Observers::PresetDeletability.preset_delete_button(@preset_delete_button)
+          Observers::PresetDeletability.preset_delete_button(w.preset_delete_button)
         )
 
         setup_password_usage_observers
@@ -548,29 +487,15 @@ module BCDiceIRC
       # アプリケーションの状態のオブザーバを用意する
       # @return [self]
       def setup_state_observers
-        widgets = [
-          @preset_combo_box,
-          @preset_save_button,
-          @preset_delete_button,
-
-          @hostname_entry,
-          @port_spin_button,
-          @encoding_combo_box,
-          @nick_entry,
-          @channel_entry,
-
-          @game_system_combo_box,
-        ]
-
         @state.add_observers(
           Observers::State.main_window_title(self),
-          Observers::State.general_widgets(widgets),
-          Observers::State.widgets_for_password(@password_check_button, self),
-          Observers::State.connect_disconnect_button(@connect_disconnect_button),
+          Observers::State.general_widgets(@widget_set),
+          Observers::State.widgets_for_password(w.password_check_button, self),
+          Observers::State.connect_disconnect_button(w.connect_disconnect_button),
           Observers::State.logger(@logger),
           Observers::State.status_bar(
             self,
-            @status_bar,
+            w.status_bar,
             @status_bar_context_ids.fetch(:connection)
           )
         )
@@ -582,16 +507,12 @@ module BCDiceIRC
       # @return [self]
       def setup_preset_load_observers
         @preset_store_vm.add_preset_load_handlers(
-          Observers::PresetLoad.hostname_entry(@hostname_entry),
-          Observers::PresetLoad.port_spin_button(@port_spin_button),
-          Observers::PresetLoad.widgets_for_password(@password_check_button, @password_entry),
-          Observers::PresetLoad.nick_entry(@nick_entry),
-          Observers::PresetLoad.channel_entry(@channel_entry),
+          Observers::PresetLoad.connection_settings_form(@widget_set),
           Observers::PresetLoad.encoding_combo_box(@encoding_combo_box_activator),
           Observers::PresetLoad.game_system_combo_box(@game_system_combo_box_activator_id),
           Observers::PresetLoad.irc_bot_config(@irc_bot_config),
           Observers::PresetLoad.status_bar(
-            @status_bar,
+            w.status_bar,
             @status_bar_context_ids.fetch(:preset_load)
           )
         )
@@ -603,12 +524,12 @@ module BCDiceIRC
       # @return [self]
       def setup_preset_save_observers
         preset_combo_box_active_observer = Observers::PresetSave.preset_combo_box_active(
-          @preset_combo_box,
+          w.preset_combo_box,
           @handler_ids.fetch(:preset_combo_box_on_changed)
         )
 
         @preset_store_vm.add_preset_append_handlers(
-          Observers::PresetSave.preset_combo_box_append_item(@preset_combo_box),
+          Observers::PresetSave.preset_combo_box_append_item(w.preset_combo_box),
           preset_combo_box_active_observer
         )
 
@@ -623,8 +544,8 @@ module BCDiceIRC
       # @return [self]
       def setup_preset_delete_observers
         @preset_store_vm.add_preset_delete_handlers(
-          Observers::PresetDelete.preset_combo_box_remove_item(@preset_combo_box),
-          Observers::PresetDelete.preset_entry_clear(@preset_entry)
+          Observers::PresetDelete.preset_combo_box_remove_item(w.preset_combo_box),
+          Observers::PresetDelete.preset_entry_clear(w.preset_entry)
         )
 
         self
@@ -634,8 +555,8 @@ module BCDiceIRC
       # @return [self]
       def setup_password_usage_observers
         @use_password.add_observers(
-          Observers::PasswordUsage.irc_bot_config(@irc_bot_config, @password_entry),
-          Observers::PasswordUsage.password_entry(@password_entry, self)
+          Observers::PasswordUsage.irc_bot_config(@irc_bot_config, w.password_entry),
+          Observers::PasswordUsage.password_entry(w.password_entry, self)
         )
 
         self
@@ -646,11 +567,11 @@ module BCDiceIRC
       def setup_dice_bot_wrapper_observers
         @dice_bot_wrapper.add_observers(
           Observers::GameSystem.irc_bot_config(@irc_bot_config),
-          Observers::GameSystem.help_text_view(@help_text_view),
+          Observers::GameSystem.help_text_view(w.help_text_view),
           Observers::GameSystem.main_window_title(self),
           Observers::GameSystem.status_bar(
             self,
-            @status_bar,
+            w.status_bar,
             @status_bar_context_ids.fetch(:game_system_change)
           )
         )
@@ -663,11 +584,11 @@ module BCDiceIRC
       def set_last_selected_preset
         # コンボボックス：無効な値が設定されていた場合に備えて、
         # あらかじめ最初の項目を選んでおく
-        @encoding_combo_box.active = 0
-        @game_system_combo_box.active = 0
+        w.encoding_combo_box.active = 0
+        w.game_system_combo_box.active = 0
 
         # activeが必ず0以上になるようにする
-        @preset_combo_box.active =
+        w.preset_combo_box.active =
           [0, @preset_store_vm.index_last_selected].max
 
         self
