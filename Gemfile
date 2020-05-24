@@ -18,9 +18,12 @@ group :development, :test do
 end
 
 group :development do
-  gem 'byebug'
   gem 'rubocop', require: false
+
+  gem 'byebug'
+
   gem 'yard'
+  gem 'redcarpet'
 end
 
 group :test do

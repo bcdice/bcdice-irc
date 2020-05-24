@@ -12,9 +12,17 @@ Rake::TestTask.new(:test) do |t|
 end
 
 YARD::Rake::YardocTask.new do |t|
+  t.files = [
+    'lib/**/*.rb',
+    'exe/**/*.rb',
+    '-',
+    'README.md',
+    'master_commands.md',
+  ]
   t.options = [
     '--protected',
     '--private',
+    '--markup-provider=redcarpet',
     '--markup=markdown',
   ]
 end

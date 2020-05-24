@@ -17,7 +17,7 @@ module BCDiceIRC
         end
 
         # IRCボット設定の一般的なウィジェットのオブザーバを返す
-        # @param [WidgetSet] w
+        # @param [WidgetSet] widget_set ウィジェット集
         # @return [Proc]
         def general_widgets(widget_set)
           widgets = [
