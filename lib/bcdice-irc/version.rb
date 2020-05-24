@@ -4,7 +4,7 @@ require 'open3'
 
 module BCDiceIRC
   # バージョン番号
-  VERSION = '0.1.0'
+  VERSION = '0.1.1'
 
   # コミットID
   COMMIT_ID = Dir.chdir(__dir__) do
