@@ -70,31 +70,51 @@ module BCDiceIRC
       # @param [String] presets_yaml_path プリセット集のYAMLファイルのパス
       # @param [Symbol] log_level ログレベル
       def initialize(presets_yaml_path, log_level)
+        # プリセット集のYAMLファイルのパス
         @presets_yaml_path = presets_yaml_path
+        # ログレベル
         @log_level = log_level
 
+        # GUIビルダー
+        # @type [Gtk::Builder]
         @builder = Gtk::Builder.new
+        # シグナルハンドラを格納するハッシュ
+        # @type [Hash<Symbol, Integer>]
         @handler_ids = {}
 
+        # パスワードを使用するか
         @use_password = SimpleObservable.new
+        # ダイスボットラッパ
         @dice_bot_wrapper = SimpleObservable.new
+        # プリセット集
         @preset_store = PresetStore.new
+        # プリセット集のビューモデル
         @preset_store_vm = PresetStoreViewModel.new(@preset_store)
+        # IRCボット設定
+        # @type [IRCBotConfig]
         @irc_bot_config = IRCBotConfig::DEFAULT.deep_dup
+        # 起動時の準備中か
         @setting_up = true
+        # 最後に発生した接続エラー
+        # @type [StandardError, nil]
         @last_connection_error = nil
 
+        # アプリケーションの状態を格納するハッシュ
+        # @type [Hash<Symbol, State::Base>]
         @states = {
           disconnected: State::Disconnected.new(self),
           connecting: State::Connecting.new(self),
           connected: State::Connected.new(self),
           disconnecting: State::Disconnecting.new(self),
         }
+        # アプリケーションの状態
         @state = SimpleObservable.new
 
+        # ロガー
         @logger = CategorizableLogger.new('Application', $stderr, level: @log_level)
         @preset_store.logger = @logger
 
+        # IRCボットとGUIとの仲介
         @mediator = Mediator.new(self, @log_level)
       end
 
@@ -142,6 +162,7 @@ module BCDiceIRC
       # アプリケーションの状態を変更する
       # @param [Symbol] id 状態のID
       # @return [self]
+      # @raise [KeyError] IDに対応する状態が存在しない場合
       def change_state(id)
         self.state = @states.fetch(id)
         self
@@ -242,7 +263,11 @@ module BCDiceIRC
       # ダイスボットを収集し、キャッシュする
       # @return [self]
       def collect_dice_bots
+        # ダイスボットの配列
+        # @type [Array<DiceBot>]
         @dice_bots = [DiceBot.new] + DiceBotLoader.collectDiceBots
+        # ダイスボットラッパの配列
+        # @type [Array<DiceBotWrapper::General, DiceBotWrapper::GameSystemSpecified>]
         @dice_bot_wrappers = @dice_bots.map { |bot| DiceBotWrapper.wrap(bot) }
 
         self
@@ -289,35 +314,97 @@ module BCDiceIRC
       # ウィジェットを用意する
       # @return [self]
       def setup_widgets
-        @main_window = w('main_window')
-
-        @preset_combo_box = w('preset_combo_box')
-        @preset_entry = w('preset_entry')
-        @preset_save_button = w('preset_save_button')
-        @preset_delete_button = w('preset_delete_button')
-
-        @hostname_entry = w('hostname_entry')
-        @port_spin_button = w('port_spin_button')
-        @password_check_button = w('password_check_button')
-        @password_entry = w('password_entry')
-        @encoding_combo_box = w('encoding_combo_box')
-        @nick_entry = w('nick_entry')
-        @channel_entry = w('channel_entry')
-        @connect_disconnect_button = w('connect_disconnect_button')
-
-        @game_system_combo_box = w('game_system_combo_box')
-        @help_text_view = w('help_text_view')
-
-        @bcdice_version_label = w('bcdice_version_label')
-
-        @status_bar = w('status_bar')
-
+        load_widgets_from_builder
         setup_status_bar_context_ids
         connect_signals
-        setup_version_labels
+        put_version_number_to_version_label
         setup_encoding_combo_box
         setup_preset_combo_box
         setup_game_system_combo_box
+
+        self
+      end
+
+      # ビルダーからウィジェットを読み込む
+      # @return [self]
+      def load_widgets_from_builder
+        # メインウィンドウ
+        # @type [Gtk::Window]
+        @main_window = w('main_window')
+
+        # プリセットコンボボックス
+        # @type [Gtk::ComboBox]
+        @preset_combo_box = w('preset_combo_box')
+        # プリセット名エントリ
+        # @type [Gtk::Entry]
+        @preset_entry = w('preset_entry')
+        # プリセット保存ボタン
+        # @type [Gtk::Button]
+        @preset_save_button = w('preset_save_button')
+        # プリセット削除ボタン
+        # @type [Gtk::Button]
+        @preset_delete_button = w('preset_delete_button')
+
+        # ホスト名エントリ
+        # @type [Gtk::Entry]
+        @hostname_entry = w('hostname_entry')
+        # ポート番号スピンボタン
+        # @type [Gtk::SpinButton]
+        @port_spin_button = w('port_spin_button')
+        # パスワードチェックボタン
+        # @type [Gtk::CheckButton]
+        @password_check_button = w('password_check_button')
+        # パスワードエントリ
+        # @type [Gtk::Entry]
+        @password_entry = w('password_entry')
+        # 文字コードコンボボックス
+        # @type [Gtk::ComboBox]
+        @encoding_combo_box = w('encoding_combo_box')
+        # ニックネームエントリ
+        # @type [Gtk::Entry]
+        @nick_entry = w('nick_entry')
+        # チャンネルエントリ
+        # @type [Gtk::Entry]
+        @channel_entry = w('channel_entry')
+        # 接続/切断ボタン
+        # @type [Gtk::Button]
+        @connect_disconnect_button = w('connect_disconnect_button')
+
+        # ゲームシステムコンボボックス
+        # @type [Gtk::ComboBox]
+        @game_system_combo_box = w('game_system_combo_box')
+        # ヘルプのテキストビュー
+        # @type [Gtk::TextView]
+        @help_text_view = w('help_text_view')
+
+        # バージョン情報ラベル
+        # @type [Gtk::Label]
+        @bcdice_version_label = w('bcdice_version_label')
+
+        # ステータスバー
+        # @type [Gtk::StatusBar, nil]
+        @status_bar = w('status_bar')
+
+        self
+      end
+
+      # ステータスバーに表示する項目の種類
+      # @return [Array<Symbol>]
+      STATUS_BAR_CONTEXTS = [
+        :preset_load,
+        :save_presets,
+        :game_system_change,
+        :connection,
+      ].freeze
+
+      # ステータスバーのコンテクストIDを用意する
+      # @return [self]
+      def setup_status_bar_context_ids
+        # ステータスバーのコンテクストIDを格納するハッシュ
+        # @type [Hash<Symbol, Integer>]
+        @status_bar_context_ids = STATUS_BAR_CONTEXTS
+                                  .map { |c| [c, @status_bar.get_context_id(c.to_s)] }
+                                  .to_h
 
         self
       end
@@ -385,27 +472,9 @@ module BCDiceIRC
         )
       end
 
-      # ステータスバーに表示する項目の種類
-      STATUS_BAR_CONTEXTS = [
-        :preset_load,
-        :save_presets,
-        :game_system_change,
-        :connection,
-      ].freeze
-
-      # ステータスバーのコンテクストIDを用意する
+      # バージョン情報ラベルにバージョン番号を入れる
       # @return [self]
-      def setup_status_bar_context_ids
-        @status_bar_context_ids = STATUS_BAR_CONTEXTS
-                                  .map { |c| [c, @status_bar.get_context_id(c.to_s)] }
-                                  .to_h
-
-        self
-      end
-
-      # バージョン情報のラベルを用意する
-      # @return [self]
-      def setup_version_labels
+      def put_version_number_to_version_label
         @bcdice_version_label.text %= [BCDiceIRC::VERSION, BCDice::VERSION]
         self
       end
