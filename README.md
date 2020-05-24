@@ -3,6 +3,8 @@
 -->
 # BCDice IRC
 
+[![Build Status](https://travis-ci.com/ochaochaocha3/bcdice-irc.svg?branch=master)](https://travis-ci.com/ochaochaocha3/bcdice-irc)
+
 BCDice IRCは、TRPG向けダイスエンジン[BCDice](https://bcdice.org/)を搭載したIRCボットです。このボットを使用すると、IRCでのチャットにおいて、ダイスロールをはじめとするBCDiceのオンラインセッション支援機能を利用できます。
 
 ## 1. 主な機能
