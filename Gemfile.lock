@@ -52,6 +52,7 @@ GEM
     power_assert (1.2.0)
     rainbow (3.0.0)
     rake (13.0.1)
+    redcarpet (3.5.0)
     rexml (3.2.4)
     rubocop (0.84.0)
       parallel (~> 1.10)
@@ -82,6 +83,7 @@ DEPENDENCIES
   gtk3
   mcinch (>= 2.4)
   rake
+  redcarpet
   rubocop
   test-unit
   yard

@@ -9,3 +9,5 @@ vendor/bundle
 doc/
 
 config/*.yaml
+
+/archive-*

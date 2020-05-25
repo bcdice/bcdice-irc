@@ -5,8 +5,9 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 ruby '>= 2.5.0'
 
-# GUI
-gem 'gtk3'
+group :gui do
+  gem 'gtk3'
+end
 
 # IRCボットフレームワーク
 gem 'mcinch', '>= 2.4'
@@ -18,9 +19,12 @@ group :development, :test do
 end
 
 group :development do
-  gem 'byebug'
   gem 'rubocop', require: false
+
+  gem 'byebug'
+
   gem 'yard'
+  gem 'redcarpet'
 end
 
 group :test do
