@@ -19,6 +19,9 @@ module BCDiceIRC
     class PresetStoreViewModel
       extend Forwardable
 
+      # @return [Boolean] プリセット集を操作可能か
+      attr_reader :sensitive
+
       # 一時的なプリセット名
       #
       # この名前でのプリセットの保存/更新、および削除が可能かを判断する。
@@ -51,6 +54,7 @@ module BCDiceIRC
       def initialize(store)
         @store = store
 
+        @sensitive = true
         @temporary_preset_name = ''
         @preset_save_action = :none
         @can_delete_preset = false
@@ -63,6 +67,15 @@ module BCDiceIRC
         @preset_deletability_updated_handlers = []
       end
 
+      # プリセット集が操作可能かを設定する
+      # @param [Boolean] value プリセット集を操作可能か
+      def sensitive=(value)
+        @sensitive = value
+
+        update_preset_save_action
+        update_preset_deletability
+      end
+
       # 一時的なプリセット名を設定する
       #
       # 設定後、その名前でプリセットを保存/更新可能か、および削除可能かを更新する。
@@ -71,16 +84,8 @@ module BCDiceIRC
       def temporary_preset_name=(value)
         @temporary_preset_name = value
 
-        @preset_save_action = @store.preset_save_action(@temporary_preset_name)
-        @can_delete_preset = @store.can_delete_preset?(@temporary_preset_name)
-
-        @preset_save_action_updated_handlers.each do |handler|
-          handler[@preset_save_action]
-        end
-
-        @preset_deletability_updated_handlers.each do |handler|
-          handler[@can_delete_preset]
-        end
+        update_preset_save_action
+        update_preset_deletability
       end
 
       # プリセットの削除が可能かを返す
@@ -207,6 +212,37 @@ module BCDiceIRC
         end
 
         delete_result
+      end
+
+      private
+
+      # プリセットの保存について実行可能なアクションを更新する
+      # @return [self]
+      def update_preset_save_action
+        @preset_save_action =
+          if @sensitive
+            @store.preset_save_action(@temporary_preset_name)
+          else
+            :none
+          end
+
+        @preset_save_action_updated_handlers.each do |handler|
+          handler[@preset_save_action]
+        end
+
+        self
+      end
+
+      # プリセットの削除が可能かを更新する
+      # @return [self]
+      def update_preset_deletability
+        @can_delete_preset = @sensitive && @store.can_delete_preset?(@temporary_preset_name)
+
+        @preset_deletability_updated_handlers.each do |handler|
+          handler[@can_delete_preset]
+        end
+
+        self
       end
     end
   end

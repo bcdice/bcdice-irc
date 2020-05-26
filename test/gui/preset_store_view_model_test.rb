@@ -275,6 +275,49 @@ module BCDiceIRC
         assert_nil(preset_index)
         assert_nil(preset_name)
       end
+
+      test '#sensitive= should correctly update preset_save_action and preset_deletability' do
+        @store.push(@config1)
+        @store.push(@config2)
+        @store.index_last_selected = 1
+
+        preset_save_button_sensitive = nil
+        preset_delete_button_sensitive = nil
+
+        @view_model.add_preset_save_action_updated_handlers(
+          ->action { preset_save_button_sensitive = action != :none }
+        )
+
+        @view_model.add_preset_deletability_updated_handlers(
+          ->can_delete_preset { preset_delete_button_sensitive = can_delete_preset }
+        )
+
+        @view_model.sensitive = true
+
+        @view_model.temporary_preset_name = 'Config 1'
+        assert_true(preset_save_button_sensitive)
+        assert_true(preset_delete_button_sensitive)
+
+        @view_model.temporary_preset_name = 'Config 2'
+        assert_true(preset_save_button_sensitive)
+        assert_false(preset_delete_button_sensitive)
+
+        @view_model.sensitive = false
+        assert_false(preset_save_button_sensitive)
+        assert_false(preset_delete_button_sensitive)
+
+        @view_model.temporary_preset_name = 'Config 1'
+        assert_false(preset_save_button_sensitive)
+        assert_false(preset_delete_button_sensitive)
+
+        @view_model.sensitive = true
+        assert_true(preset_save_button_sensitive)
+        assert_true(preset_delete_button_sensitive)
+
+        @view_model.temporary_preset_name = 'Config 2'
+        assert_true(preset_save_button_sensitive)
+        assert_false(preset_delete_button_sensitive)
+      end
     end
   end
 end
