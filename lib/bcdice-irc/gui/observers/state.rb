@@ -16,14 +16,21 @@ module BCDiceIRC
           end
         end
 
+        # プリセット集のビューモデルのオブザーバを返す
+        # @param [PresetStoreViewModel] preset_store_vm
+        # @return [Proc]
+        def preset_store_view_model(preset_store_vm)
+          lambda do |state|
+            preset_store_vm.sensitive = state.general_widgets_sensitive
+          end
+        end
+
         # IRCボット設定の一般的なウィジェットのオブザーバを返す
         # @param [WidgetSet] widget_set ウィジェット集
         # @return [Proc]
         def general_widgets(widget_set)
           widgets = [
             widget_set.preset_combo_box,
-            widget_set.preset_save_button,
-            widget_set.preset_delete_button,
 
             widget_set.hostname_entry,
             widget_set.port_spin_button,

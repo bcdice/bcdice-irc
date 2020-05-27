@@ -489,6 +489,7 @@ module BCDiceIRC
       def setup_state_observers
         @state.add_observers(
           Observers::State.main_window_title(self),
+          Observers::State.preset_store_view_model(@preset_store_vm),
           Observers::State.general_widgets(@widget_set),
           Observers::State.widgets_for_password(w.password_check_button, self),
           Observers::State.connect_disconnect_button(w.connect_disconnect_button),
