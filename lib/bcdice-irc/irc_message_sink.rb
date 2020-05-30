@@ -20,9 +20,6 @@ module BCDiceIRC
       @new_game_system_name = nil
     end
 
-    # IRCボットを終了させる処理（何もしない）
-    def quit; end
-
     # 指定したチャンネルにメッセージを送信する
     #
     # BCDiceとインターフェースを合わせるためのメソッド。

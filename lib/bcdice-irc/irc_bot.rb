@@ -36,7 +36,6 @@ module BCDiceIRC
       @bcdice = bcdice_maker.newBcDice
       @bot = new_bot
 
-      bcdice_maker.quitFunction = -> { quit! }
       @bcdice.setGameByTitle(@config.game_system_id)
     end
 
