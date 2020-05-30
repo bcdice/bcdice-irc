@@ -29,4 +29,6 @@ end
 
 group :test do
   gem 'test-unit'
+
+  gem 'cinch-test', github: 'cre-ne-jp/cinch-test'
 end

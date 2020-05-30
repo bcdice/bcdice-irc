@@ -7,15 +7,21 @@ module BCDiceIRC
     GAME_SYSTEM_HAS_BEEN_CHANGED_RE =
       /\AGame設定を(.+)に設定しました\z/.freeze
 
+    # 既定のIRCメッセージの送信対象オブジェクトを作る手続き
+    # @return [Proc]
+    DEFAULT_NEW_TARGET_PROC = ->(to, bot) { Cinch::Target.new(to, bot) }
+
     # 変更後のゲームシステム名
     attr_reader :new_game_system_name
 
     # 初期化する
     # @param [Cinch::Bot] bot Cinchボット
     # @param [Cinch::User] sender メッセージの送信者
-    def initialize(bot, sender)
+    # @param [Proc] new_target_proc IRCメッセージの送信対象オブジェクトを作る手続き
+    def initialize(bot, sender, new_target_proc = DEFAULT_NEW_TARGET_PROC)
       @bot = bot
       @sender = sender
+      @new_target_proc = new_target_proc
 
       @new_game_system_name = nil
     end
@@ -24,11 +30,11 @@ module BCDiceIRC
     #
     # BCDiceとインターフェースを合わせるためのメソッド。
     #
-    # @param [String] channel チャンネル
+    # @param [String] to 送信先（チャンネル、ユーザー）
     # @param [String] message BCDiceが生成した、送信するメッセージ
     # @return [void]
-    def sendMessage(channel, message)
-      target = Cinch::Target.new(channel, @bot)
+    def sendMessage(to, message)
+      target = @new_target_proc[to, @bot]
       target.notice(message)
     end
 

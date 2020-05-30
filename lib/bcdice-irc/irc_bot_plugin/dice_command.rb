@@ -34,7 +34,7 @@ module BCDiceIRC
         # ボットに直接送られたメッセージは設定用と見なす
         return if !m.channel || m.target == m.user
 
-        message_sink = IRCMessageSink.new(bot, m.user)
+        message_sink = IRCMessageSink.new(bot, m.user, config.new_target_proc)
         @bcdice.setIrcClient(message_sink)
 
         @bcdice.setMessage(m.message)

@@ -6,6 +6,7 @@ require 'cinch'
 require 'bcdiceCore'
 
 require_relative 'categorizable_logger'
+require_relative 'irc_message_sink'
 require_relative 'irc_bot_plugin_config'
 require_relative 'irc_bot_plugin'
 
@@ -82,7 +83,8 @@ module BCDiceIRC
 
         plugin_config = IRCBotPluginConfig.new(
           bcdice: @bcdice,
-          mediator: @mediator
+          mediator: @mediator,
+          new_target_proc: IRCMessageSink::DEFAULT_NEW_TARGET_PROC,
         )
         c.plugins.options = c.plugins.plugins
                              .map { |klass| [klass, plugin_config] }
