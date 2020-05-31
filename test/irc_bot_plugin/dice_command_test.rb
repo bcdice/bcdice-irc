@@ -32,7 +32,7 @@ module BCDiceIRC
         @bot.config.channels = %w(#test #test2)
       end
 
-      test 'should respond to a AddDice message' do
+      test 'should respond to an AddDice message' do
         message = make_message(@bot, '2d6', channel: '#test')
         bcdice_reply = get_bcdice_replies(message)
 
