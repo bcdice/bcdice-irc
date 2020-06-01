@@ -140,7 +140,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Upper->5')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(5, @bcdice_maker.diceBot.upplerRollThreshold)
+        assert_equal(5, @bcdice.diceBot.upplerRollThreshold)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -156,7 +156,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Upper->0')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(0, @bcdice_maker.diceBot.upplerRollThreshold)
+        assert_equal(0, @bcdice.diceBot.upplerRollThreshold)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -172,7 +172,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Reroll->100')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(100, @bcdice_maker.diceBot.rerollLimitCount)
+        assert_equal(100, @bcdice.diceBot.rerollLimitCount)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -188,7 +188,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Reroll->0')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(0, @bcdice_maker.diceBot.rerollLimitCount)
+        assert_equal(0, @bcdice.diceBot.rerollLimitCount)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -204,7 +204,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Sort->3')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(3, @bcdice_maker.diceBot.sortType)
+        assert_equal(3, @bcdice.diceBot.sortType)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -220,7 +220,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Sort->0')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(0, @bcdice_maker.diceBot.sortType)
+        assert_equal(0, @bcdice.diceBot.sortType)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -236,7 +236,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set ViewMode->0')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(0, @bcdice_maker.diceBot.sendMode)
+        assert_equal(0, @bcdice.diceBot.sendMode)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -255,7 +255,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set ViewMode->0')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(0, @bcdice_maker.diceBot.sendMode)
+        assert_equal(0, @bcdice.diceBot.sendMode)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -268,7 +268,7 @@ module BCDiceIRC
       end
 
       test 'cannot set view mode when master is not bot' do
-        @bcdice_maker.diceBot.setSendMode(2)
+        @bcdice.diceBot.setSendMode(2)
 
         message = make_message(@bot, 'Set Master->foo')
         bcdice_reply = get_bcdice_replies(message)
@@ -276,7 +276,7 @@ module BCDiceIRC
         message = make_message(@bot, 'Set ViewMode->0')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal(2, @bcdice_maker.diceBot.sendMode)
+        assert_equal(2, @bcdice.diceBot.sendMode)
         assert_equal(0, bcdice_reply.direct_messages.length)
       end
 
