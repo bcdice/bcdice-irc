@@ -408,24 +408,6 @@ module BCDiceIRC
         assert_equal(0, bcdice_reply.channel_messages.length)
       end
 
-      test 'help' do
-        message = make_message(@bot, 'Help')
-        bcdice_reply = get_bcdice_replies(message)
-
-        assert_operator(2, :<, bcdice_reply.direct_messages.length)
-        assert(bcdice_reply.direct_messages.all? { |m| m.event == :notice })
-        assert_match(/END/, bcdice_reply.direct_messages.last.text)
-      end
-
-      test 'c-help' do
-        message = make_message(@bot, 'C-Help')
-        bcdice_reply = get_bcdice_replies(message)
-
-        assert_operator(2, :<, bcdice_reply.direct_messages.length)
-        assert(bcdice_reply.direct_messages.all? { |m| m.event == :notice })
-        assert_match(/END/, bcdice_reply.direct_messages.last.text)
-      end
-
       test 'can check mode when master is not set' do
         message = make_message(@bot, 'Mode')
         bcdice_reply = get_bcdice_replies(message)
