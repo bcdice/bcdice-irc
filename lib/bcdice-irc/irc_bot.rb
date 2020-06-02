@@ -85,7 +85,7 @@ module BCDiceIRC
         plugin_config = IRCBotPluginConfig.new(
           bcdice: @bcdice,
           mediator: @mediator,
-          new_target_proc: IRCMessageSink::DEFAULT_NEW_TARGET_PROC,
+          new_target_proc: IRCMessageSink::DEFAULT_NEW_TARGET_PROC
         )
         c.plugins.options = c.plugins.plugins
                              .map { |klass| [klass, plugin_config] }
