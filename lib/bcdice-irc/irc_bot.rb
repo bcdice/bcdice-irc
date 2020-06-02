@@ -79,6 +79,7 @@ module BCDiceIRC
           IRCBotPlugin::IRCChannel,
           IRCBotPlugin::DiceCommand,
           IRCBotPlugin::MasterCommand,
+          IRCBotPlugin::HelpCommand,
         ]
 
         plugin_config = IRCBotPluginConfig.new(
