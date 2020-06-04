@@ -13,8 +13,9 @@ module BCDiceIRC
       include Cinch::Plugin
 
       self.plugin_name = 'MasterCommand'
-      self.help = 'BCDiceのマスターコマンドを実行します'
       self.prefix = ''
+
+      match(/\Aset\s+game->([!&. \w]+)/i, method: :set_game_system)
 
       listen_to(:privmsg, method: :on_privmsg)
 
@@ -27,6 +28,24 @@ module BCDiceIRC
       end
 
       private
+
+      # ゲームシステム変更コマンドに対応する処理
+      # @param [Cinch::Message] m メッセージ
+      # @param [String] game_system_id ゲームシステムID
+      # @return [void]
+      def set_game_system(m, game_system_id)
+        # ボットに直接送られていないメッセージは設定用と見なさない
+        return if m.channel || m.target != m.user
+
+        @bcdice.setGameByTitle(game_system_id)
+        new_dice_bot = @bcdice.diceBot
+
+        @mediator.notify_game_system_has_been_changed(new_dice_bot.id)
+
+        bot.channels.each do |channel|
+          channel.notice("Game設定を#{new_dice_bot.name}に設定しました")
+        end
+      end
 
       # PRIVMSGを受信したときの処理
       # @param [Cinch::Message] m メッセージ
@@ -43,12 +62,6 @@ module BCDiceIRC
         @bcdice.setMessage(command)
         @bcdice.setChannel(m.user.nick)
         @bcdice.recieveMessage(m.user.nick, arg || '')
-
-        if message_sink.new_game_system_name
-          @mediator.notify_game_system_has_been_changed(
-            message_sink.new_game_system_name
-          )
-        end
       end
     end
   end

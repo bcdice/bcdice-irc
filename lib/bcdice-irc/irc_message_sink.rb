@@ -3,16 +3,9 @@
 module BCDiceIRC
   # BCDiceからのメッセージの送信先
   class IRCMessageSink
-    # ゲームシステム変更通知のメッセージの正規表現
-    GAME_SYSTEM_HAS_BEEN_CHANGED_RE =
-      /\AGame設定を(.+)に設定しました\z/.freeze
-
     # 既定のIRCメッセージの送信対象オブジェクトを作る手続き
     # @return [Proc]
     DEFAULT_NEW_TARGET_PROC = ->(to, bot) { Cinch::Target.new(to, bot) }
-
-    # 変更後のゲームシステム名
-    attr_reader :new_game_system_name
 
     # 初期化する
     # @param [Cinch::Bot] bot Cinchボット
@@ -22,8 +15,6 @@ module BCDiceIRC
       @bot = bot
       @sender = sender
       @new_target_proc = new_target_proc
-
-      @new_game_system_name = nil
     end
 
     # 指定したチャンネルにメッセージを送信する
@@ -51,23 +42,9 @@ module BCDiceIRC
     # @param [String] message BCDiceが生成した、送信するメッセージ
     # @return [void]
     def sendMessageToChannels(message)
-      update_new_game_system_name(message)
-
       @bot.channels.each do |channel|
         channel.notice(message)
       end
-    end
-
-    private
-
-    # new_game_system_nameを更新する
-    # @param [String] message BCDiceが生成した、送信するメッセージ
-    # @return [self]
-    def update_new_game_system_name(message)
-      m = message.match(GAME_SYSTEM_HAS_BEEN_CHANGED_RE)
-      @new_game_system_name = m.to_a[1]
-
-      self
     end
   end
 end

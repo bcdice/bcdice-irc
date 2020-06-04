@@ -6,10 +6,10 @@ module BCDiceIRC
   module IRCBotPlugin
     class TestMasterCommand < Test::Unit::TestCase
       class MockMediator
-        attr_reader :game_system_name
+        attr_reader :game_system_id
 
-        def notify_game_system_has_been_changed(game_system_name)
-          @game_system_name = game_system_name
+        def notify_game_system_has_been_changed(game_system_id)
+          @game_system_id = game_system_id
         end
       end
 
@@ -44,7 +44,7 @@ module BCDiceIRC
         bcdice_reply = get_bcdice_replies(message)
 
         assert_equal('Cthulhu', @bcdice.getGameType)
-        assert_equal('クトゥルフ', @mediator.game_system_name)
+        assert_equal('Cthulhu', @mediator.game_system_id)
         assert_equal(2, bcdice_reply.channel_messages.length)
 
         replies_in_test = bcdice_reply.channel_messages['#test']
@@ -55,12 +55,92 @@ module BCDiceIRC
         assert_equal('Game設定をクトゥルフに設定しました', reply.text)
       end
 
+      test 'set game to Alter_raise' do
+        message = make_message(@bot, 'Set Game->Alter_raise')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal('Alter_raise', @bcdice.getGameType)
+        assert_equal('Alter_raise', @mediator.game_system_id)
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('Game設定を心衝想機TRPGアルトレイズに設定しました', reply.text)
+      end
+
+      test 'set game to Elric!' do
+        message = make_message(@bot, 'Set Game->Elric!')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal('Elric!', @bcdice.getGameType)
+        assert_equal('Elric!', @mediator.game_system_id)
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('Game設定をエルリック！に設定しました', reply.text)
+      end
+
+      test 'set game to Chaos Flare' do
+        message = make_message(@bot, 'Set Game->Chaos Flare')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal('Chaos Flare', @bcdice.getGameType)
+        assert_equal('Chaos Flare', @mediator.game_system_id)
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('Game設定をカオスフレアに設定しました', reply.text)
+      end
+
+      test 'set game to Tunnels & Trolls' do
+        message = make_message(@bot, 'Set Game->Tunnels & Trolls')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal('Tunnels & Trolls', @bcdice.getGameType)
+        assert_equal('Tunnels & Trolls', @mediator.game_system_id)
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('Game設定をトンネルズ＆トロールズに設定しました', reply.text)
+      end
+
+      test 'set game to SwordWorld 2.0' do
+        message = make_message(@bot, 'Set Game->SwordWorld 2.0')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal('SwordWorld2.0', @bcdice.getGameType)
+        assert_equal('SwordWorld2.0', @mediator.game_system_id)
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('Game設定をソードワールド2.0に設定しました', reply.text)
+      end
+
       test 'set game to an unknown game system' do
         message = make_message(@bot, 'Set Game->Unknown')
         bcdice_reply = get_bcdice_replies(message)
 
         assert_equal('DiceBot', @bcdice.getGameType)
-        assert_equal('DiceBot', @mediator.game_system_name)
+        assert_equal('DiceBot', @mediator.game_system_id)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
