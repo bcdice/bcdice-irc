@@ -11,7 +11,6 @@ module BCDiceIRC
       include Cinch::Plugin
 
       self.plugin_name = 'IRCChannel'
-      self.help = 'IRCチャンネル関連の処理を担当します'
       self.prefix = ''
 
       listen_to(:join, method: :on_join)

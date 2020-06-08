@@ -6,14 +6,16 @@ require 'bcdiceCore'
 
 require_relative '../irc_message_sink'
 
+require_relative 'utils'
+
 module BCDiceIRC
   module IRCBotPlugin
     # ダイスコマンドを実行するプラグイン
     class DiceCommand
       include Cinch::Plugin
+      include Utils
 
       self.plugin_name = 'DiceCommand'
-      self.help = 'BCDiceのダイスコマンドを実行します'
       self.prefix = ''
 
       listen_to(:privmsg, method: :on_privmsg)
@@ -31,8 +33,7 @@ module BCDiceIRC
       # @param [Cinch::Message] m メッセージ
       # @return [void]
       def on_privmsg(m)
-        # ボットに直接送られたメッセージは設定用と見なす
-        return if !m.channel || m.target == m.user
+        return unless channel_message?(m)
 
         message_sink = IRCMessageSink.new(bot, m.user, config.new_target_proc)
         @bcdice.setIrcClient(message_sink)

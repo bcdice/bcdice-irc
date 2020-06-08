@@ -6,11 +6,14 @@ require 'bcdiceCore'
 
 require_relative '../irc_message_sink'
 
+require_relative 'utils'
+
 module BCDiceIRC
   module IRCBotPlugin
     # ヘルプコマンドを実行するプラグイン
     class HelpCommand
       include Cinch::Plugin
+      include Utils
 
       self.plugin_name = 'HelpCommand'
       self.prefix = ''
@@ -99,8 +102,7 @@ module BCDiceIRC
       # @param [Cinch::Message] m メッセージ
       # @return [void]
       def help(m)
-        # ボットに直接送られていないメッセージは無視する
-        return if m.channel || m.target != m.user
+        return unless direct_message?(m)
 
         notice_each_line(m.user, HELP_MESSAGE_1)
 
@@ -119,20 +121,9 @@ module BCDiceIRC
       # @param [Cinch::Message] m メッセージ
       # @return [void]
       def c_help(m)
-        # ボットに直接送られていないメッセージは無視する
-        return if m.channel || m.target != m.user
+        return unless direct_message?(m)
 
         notice_each_line(m.user, C_HELP_MESSAGE)
-      end
-
-      # メッセージの各行をNOTICEする
-      # @param [Cinch::Target] target 送信対象
-      # @param [String] message 送信するメッセージ
-      # @return [void]
-      def notice_each_line(target, message)
-        message.each_line do |line|
-          target.notice(line.chomp)
-        end
       end
     end
   end
