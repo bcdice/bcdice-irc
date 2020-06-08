@@ -216,6 +216,24 @@ module BCDiceIRC
         assert_equal('Masterはfooさんになっています', reply.text)
       end
 
+      test 'set master with nick when master is not bot' do
+        message = make_message(@bot, 'Set Master->foo')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal('foo', @bcdice_maker.master)
+
+        message = make_message(@bot, 'Set Master->test')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal('foo', @bcdice_maker.master)
+
+        assert_equal(1, bcdice_reply.direct_messages.length)
+
+        reply = bcdice_reply.direct_messages[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('Masterはfooさんになっています', reply.text)
+      end
+
       test 'set upper' do
         message = make_message(@bot, 'Set Upper->5')
         bcdice_reply = get_bcdice_replies(message)
