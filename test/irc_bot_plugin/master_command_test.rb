@@ -156,8 +156,6 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Master')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('test', @bcdice_maker.master)
-
         assert_equal(2, bcdice_reply.channel_messages.length)
 
         replies_in_test = bcdice_reply.channel_messages['#test']
@@ -169,8 +167,6 @@ module BCDiceIRC
 
         message = make_message(@bot, 'Set Master')
         bcdice_reply = get_bcdice_replies(message)
-
-        assert_equal('', @bcdice_maker.master)
 
         assert_equal(2, bcdice_reply.channel_messages.length)
 
@@ -186,8 +182,6 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Master->foo')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('foo', @bcdice_maker.master)
-
         assert_equal(2, bcdice_reply.channel_messages.length)
 
         replies_in_test = bcdice_reply.channel_messages['#test']
@@ -202,12 +196,8 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Master->foo')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('foo', @bcdice_maker.master)
-
         message = make_message(@bot, 'Set Master')
         bcdice_reply = get_bcdice_replies(message)
-
-        assert_equal('foo', @bcdice_maker.master)
 
         assert_equal(1, bcdice_reply.direct_messages.length)
 
@@ -220,12 +210,8 @@ module BCDiceIRC
         message = make_message(@bot, 'Set Master->foo')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('foo', @bcdice_maker.master)
-
         message = make_message(@bot, 'Set Master->test')
         bcdice_reply = get_bcdice_replies(message)
-
-        assert_equal('foo', @bcdice_maker.master)
 
         assert_equal(1, bcdice_reply.direct_messages.length)
 
