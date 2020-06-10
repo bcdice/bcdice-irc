@@ -234,7 +234,7 @@ module BCDiceIRC
         assert_equal('Masterはfooさんになっています', reply.text)
       end
 
-      test 'set upper' do
+      test 'can set upper when master is not set' do
         message = make_message(@bot, 'Set Upper->5')
         bcdice_reply = get_bcdice_replies(message)
 
@@ -250,7 +250,7 @@ module BCDiceIRC
         assert_equal('上方無限ロールを5以上に設定しました', reply.text)
       end
 
-      test 'clear upper' do
+      test 'can clear upper when master is not set' do
         message = make_message(@bot, 'Set Upper->0')
         bcdice_reply = get_bcdice_replies(message)
 
@@ -266,7 +266,37 @@ module BCDiceIRC
         assert_equal('上方無限ロールの閾値設定を解除しました', reply.text)
       end
 
-      test 'set reroll' do
+      test 'can set upper when master is bot' do
+        message = make_message(@bot, 'set master')
+        bcdice_reply = get_bcdice_replies(message)
+
+        message = make_message(@bot, 'Set Upper->5')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal(5, @bcdice.diceBot.upperRollThreshold)
+
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('上方無限ロールを5以上に設定しました', reply.text)
+      end
+
+      test 'cannot set upper when master is not bot' do
+        message = make_message(@bot, 'Set Master->foo')
+        bcdice_reply = get_bcdice_replies(message)
+
+        message = make_message(@bot, 'Set Upper->5')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal(0, @bcdice.diceBot.upperRollThreshold)
+        assert_equal(0, bcdice_reply.channel_messages.length)
+      end
+
+      test 'can set reroll when master is not set' do
         message = make_message(@bot, 'Set Reroll->100')
         bcdice_reply = get_bcdice_replies(message)
 
@@ -282,7 +312,7 @@ module BCDiceIRC
         assert_equal('個数振り足しロール回数を100以下に設定しました', reply.text)
       end
 
-      test 'clear reroll' do
+      test 'can clear reroll when master is not set' do
         message = make_message(@bot, 'Set Reroll->0')
         bcdice_reply = get_bcdice_replies(message)
 
@@ -298,7 +328,37 @@ module BCDiceIRC
         assert_equal('個数振り足しロールの回数を無限に設定しました', reply.text)
       end
 
-      test 'set to sort values' do
+      test 'can set reroll when master is bot' do
+        message = make_message(@bot, 'set master')
+        bcdice_reply = get_bcdice_replies(message)
+
+        message = make_message(@bot, 'Set Reroll->100')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal(100, @bcdice.diceBot.rerollLimitCount)
+
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('個数振り足しロール回数を100以下に設定しました', reply.text)
+      end
+
+      test 'cannot set reroll when master is not bot' do
+        message = make_message(@bot, 'Set Master->foo')
+        bcdice_reply = get_bcdice_replies(message)
+
+        message = make_message(@bot, 'Set Reroll->100')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal(10000, @bcdice.diceBot.rerollLimitCount)
+        assert_equal(0, bcdice_reply.channel_messages.length)
+      end
+
+      test 'can set to sort values when master is not set' do
         message = make_message(@bot, 'Set Sort->3')
         bcdice_reply = get_bcdice_replies(message)
 
@@ -314,7 +374,7 @@ module BCDiceIRC
         assert_equal('ソート有りに変更しました', reply.text)
       end
 
-      test 'set not to sort values' do
+      test 'can set not to sort values when master is not set' do
         message = make_message(@bot, 'Set Sort->0')
         bcdice_reply = get_bcdice_replies(message)
 
@@ -328,6 +388,36 @@ module BCDiceIRC
         reply = replies_in_test[0]
         assert_equal(:notice, reply.event)
         assert_equal('ソート無しに変更しました', reply.text)
+      end
+
+      test 'can set to sort values when master is bot' do
+        message = make_message(@bot, 'set master')
+        bcdice_reply = get_bcdice_replies(message)
+
+        message = make_message(@bot, 'Set Sort->3')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal(3, @bcdice.diceBot.sortType)
+
+        assert_equal(2, bcdice_reply.channel_messages.length)
+
+        replies_in_test = bcdice_reply.channel_messages['#test']
+        assert_equal(1, replies_in_test.length)
+
+        reply = replies_in_test[0]
+        assert_equal(:notice, reply.event)
+        assert_equal('ソート有りに変更しました', reply.text)
+      end
+
+      test 'cannot set to sort values when master is not bot' do
+        message = make_message(@bot, 'Set Master->foo')
+        bcdice_reply = get_bcdice_replies(message)
+
+        message = make_message(@bot, 'Set Sort->3')
+        bcdice_reply = get_bcdice_replies(message)
+
+        assert_equal(0, @bcdice.diceBot.sortType)
+        assert_equal(0, bcdice_reply.channel_messages.length)
       end
 
       test 'can set view mode when master is not set' do
@@ -375,7 +465,7 @@ module BCDiceIRC
         bcdice_reply = get_bcdice_replies(message)
 
         assert_equal(2, @bcdice.diceBot.sendMode)
-        assert_equal(0, bcdice_reply.direct_messages.length)
+        assert_equal(0, bcdice_reply.channel_messages.length)
       end
 
       test 'can set to use card place when master is not set' do
