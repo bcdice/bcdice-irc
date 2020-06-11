@@ -152,15 +152,15 @@ module BCDiceIRC
         self
       end
 
-      # ゲームシステムを名前で指定して変更する
+      # ゲームシステムをIDで指定して変更する
       #
-      # ゲームシステム名に対応するダイスボットラッパが設定される。
+      # ゲームシステムIDに対応するダイスボットラッパが設定される。
       # 対応するダイスボットラッパが見つからなかった場合には何もしない。
       #
-      # @param [String] value 新しいゲームシステム名
+      # @param [String] value 新しいゲームシステムID
       # @note ウィジェットの準備が完了してから使うこと。
-      def game_system_name=(value)
-        @game_system_combo_box_activator_name.activate(value)
+      def game_system_id=(value)
+        @game_system_combo_box_activator.activate(value)
       end
 
       # アプリケーションの状態を変更する
@@ -449,15 +449,9 @@ module BCDiceIRC
         ComboBox::Setup.pack_cell_renderer_text(w.game_system_combo_box)
 
         # ゲームシステムIDを指定して項目をアクティブにする処理
-        @game_system_combo_box_activator_id = ComboBox::Activator.new(
+        @game_system_combo_box_activator = ComboBox::Activator.new(
           w.game_system_combo_box,
           @dice_bots.map(&:id)
-        )
-
-        # ゲームシステム名を指定して項目をアクティブにする処理
-        @game_system_combo_box_activator_name = ComboBox::Activator.new(
-          w.game_system_combo_box,
-          @dice_bots.map(&:name)
         )
 
         self
@@ -510,7 +504,7 @@ module BCDiceIRC
         @preset_store_vm.add_preset_load_handlers(
           Observers::PresetLoad.connection_settings_form(@widget_set),
           Observers::PresetLoad.encoding_combo_box(@encoding_combo_box_activator),
-          Observers::PresetLoad.game_system_combo_box(@game_system_combo_box_activator_id),
+          Observers::PresetLoad.game_system_combo_box(@game_system_combo_box_activator),
           Observers::PresetLoad.irc_bot_config(@irc_bot_config),
           Observers::PresetLoad.status_bar(
             w.status_bar,

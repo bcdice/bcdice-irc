@@ -5,6 +5,8 @@ module BCDiceIRC
   module IRCBotPlugin; end
 end
 
+require_relative 'irc_bot_plugin/utils'
+
 require_relative 'irc_bot_plugin/irc_channel'
 require_relative 'irc_bot_plugin/dice_command'
 require_relative 'irc_bot_plugin/master_command'

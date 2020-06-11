@@ -24,7 +24,7 @@ module BCDiceIRC
   module IRCBotTestHelper
     def make_cinch_bot(plugin = nil, opts = {}, &block)
       Cinch::Test::MockBot.new do
-        loggers[0].level = :fatal
+        loggers[0].level = :warn
 
         configure do |c|
           c.nick = 'testbot'

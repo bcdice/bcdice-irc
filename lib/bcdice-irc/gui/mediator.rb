@@ -86,10 +86,10 @@ module BCDiceIRC
       end
 
       # ゲームシステムが変更されたことを通知する
-      # @param [String] game_system_name ゲームシステム名
+      # @param [String] game_system_id ゲームシステムID
       # @return [void]
-      def notify_game_system_has_been_changed(game_system_name)
-        @queue.push([:game_system_has_been_changed, game_system_name])
+      def notify_game_system_has_been_changed(game_system_id)
+        @queue.push([:game_system_has_been_changed, game_system_id])
       end
 
       private
@@ -183,11 +183,11 @@ module BCDiceIRC
       end
 
       # ゲームシステムが変更された場合のメッセージに対する処理
-      # @param [String] game_system_name ゲームシステム名
+      # @param [String] game_system_id ゲームシステムID
       # @return [self]
-      def on_game_system_has_been_changed(game_system_name)
+      def on_game_system_has_been_changed(game_system_id)
         @app.in_idle_time do
-          @app.game_system_name = game_system_name
+          @app.game_system_id = game_system_id
         end
 
         self
