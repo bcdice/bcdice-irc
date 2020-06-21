@@ -14,6 +14,10 @@ gem 'mcinch', '>= 2.4'
 
 gem 'activesupport'
 
+# RPC用
+gem 'grpc'
+gem 'grpc-tools'
+
 group :development, :test do
   gem 'rake'
 end

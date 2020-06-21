@@ -5,6 +5,27 @@ require 'pathname'
 require 'rake/testtask'
 require 'yard'
 
+BCDICE_IRC_PROTO_DIR = 'vendor/bcdice-irc-proto'
+BCDICE_IRC_PROTO = "#{BCDICE_IRC_PROTO_DIR}/bcdice_irc.proto"
+
+GRPC_OUT_DIR = 'lib/bcdice_irc_proto'
+BCDICE_IRC_PROTO_PB_RB = "#{GRPC_OUT_DIR}/bcdice_irc_proto_pb.rb"
+
+desc 'RPC用のライブラリを生成する'
+task proto: BCDICE_IRC_PROTO_PB_RB
+
+directory GRPC_OUT_DIR
+
+file BCDICE_IRC_PROTO_PB_RB => [GRPC_OUT_DIR, BCDICE_IRC_PROTO] do
+  args = [
+    "-I #{BCDICE_IRC_PROTO_DIR}",
+    "--ruby_out=#{GRPC_OUT_DIR}",
+    "--grpc_out=#{GRPC_OUT_DIR}",
+    BCDICE_IRC_PROTO,
+  ]
+  sh "bundle exec grpc_tools_ruby_protoc #{args.join(' ')}"
+end
+
 Rake::TestTask.new(:test) do |t|
   t.libs << 'test'
   t.libs << 'lib'

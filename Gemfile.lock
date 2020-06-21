@@ -37,6 +37,13 @@ GEM
       pkg-config (>= 1.3.5)
     gobject-introspection (3.4.3)
       glib2 (= 3.4.3)
+    google-protobuf (3.12.2)
+    googleapis-common-protos-types (1.0.5)
+      google-protobuf (~> 3.11)
+    grpc (1.28.0)
+      google-protobuf (~> 3.11)
+      googleapis-common-protos-types (~> 1.0)
+    grpc-tools (1.28.0)
     gtk3 (3.4.3)
       atk (= 3.4.3)
       gdk3 (= 3.4.3)
@@ -87,6 +94,8 @@ DEPENDENCIES
   activesupport
   byebug
   cinch-test!
+  grpc
+  grpc-tools
   gtk3
   mcinch (>= 2.4)
   rake
