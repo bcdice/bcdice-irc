@@ -1,3 +1,6 @@
 [submodule "vendor/bcdice"]
 	path = vendor/bcdice
 	url = https://github.com/bcdice/BCDice.git
+[submodule "vendor/bcdice-irc-proto"]
+	path = vendor/bcdice-irc-proto
+	url = git@github.com:ochaochaocha3/bcdice-irc-proto.git
