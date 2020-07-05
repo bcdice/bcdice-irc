@@ -11,6 +11,16 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :bcdice, :string, 1
       optional :bcdice_irc, :string, 2
     end
+    add_message "bcdice_irc_proto.GetDiceBotListRequest" do
+    end
+    add_message "bcdice_irc_proto.GetDiceBotListResponse" do
+      repeated :dice_bots, :message, 1, "bcdice_irc_proto.DiceBot"
+    end
+    add_message "bcdice_irc_proto.DiceBot" do
+      optional :id, :string, 1
+      optional :name, :string, 2
+      optional :help_message, :string, 3
+    end
     add_message "bcdice_irc_proto.StopRequest" do
     end
     add_message "bcdice_irc_proto.StopResponse" do
@@ -21,6 +31,9 @@ end
 module BcdiceIrcProto
   VersionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("bcdice_irc_proto.VersionRequest").msgclass
   VersionResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("bcdice_irc_proto.VersionResponse").msgclass
+  GetDiceBotListRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("bcdice_irc_proto.GetDiceBotListRequest").msgclass
+  GetDiceBotListResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("bcdice_irc_proto.GetDiceBotListResponse").msgclass
+  DiceBot = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("bcdice_irc_proto.DiceBot").msgclass
   StopRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("bcdice_irc_proto.StopRequest").msgclass
   StopResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("bcdice_irc_proto.StopResponse").msgclass
 end

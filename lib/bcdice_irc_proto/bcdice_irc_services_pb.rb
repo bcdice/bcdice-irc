@@ -16,6 +16,8 @@ module BcdiceIrcProto
 
       # Version はBCDice IRCおよび関連プログラムのバージョン情報を返す。
       rpc :Version, VersionRequest, VersionResponse
+      # GetDiceBotList は、ダイスボットの一覧を返す。
+      rpc :GetDiceBotList, GetDiceBotListRequest, GetDiceBotListResponse
       # Stop はサービスを停止する。
       rpc :Stop, StopRequest, StopResponse
     end

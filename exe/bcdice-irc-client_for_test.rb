@@ -84,11 +84,23 @@ def on_stop(stub)
   puts('OK')
 end
 
+def on_dicebots(stub)
+  response = stub.get_dice_bot_list(Proto::GetDiceBotListRequest.new)
+
+  game_system_name_id_list = response.dice_bots.map { |d|
+    "#{d.name}（#{d.id}）"
+  }
+
+  puts(game_system_name_id_list)
+end
+
 case command
 when 'version'
   on_version(stub)
 when 'stop'
   on_stop(stub)
+when 'dicebots'
+  on_dicebots(stub)
 else
   raise ArgumentError, "invalid command: #{command.inspect}"
 end
