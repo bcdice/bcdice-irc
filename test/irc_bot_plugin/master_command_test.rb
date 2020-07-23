@@ -52,15 +52,15 @@ module BCDiceIRC
 
         reply = replies_in_test[0]
         assert_equal(:notice, reply.event)
-        assert_equal('Game設定をクトゥルフに設定しました', reply.text)
+        assert_equal('Game設定をクトゥルフ神話TRPGに設定しました', reply.text)
       end
 
-      test 'set game to Alter_raise' do
-        message = make_message(@bot, 'Set Game->Alter_raise')
+      test 'set game to AlterRaise' do
+        message = make_message(@bot, 'Set Game->AlterRaise')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('Alter_raise', @bcdice.getGameType)
-        assert_equal('Alter_raise', @mediator.game_system_id)
+        assert_equal('AlterRaise', @bcdice.getGameType)
+        assert_equal('AlterRaise', @mediator.game_system_id)
         assert_equal(2, bcdice_reply.channel_messages.length)
 
         replies_in_test = bcdice_reply.channel_messages['#test']
@@ -68,15 +68,15 @@ module BCDiceIRC
 
         reply = replies_in_test[0]
         assert_equal(:notice, reply.event)
-        assert_equal('Game設定を心衝想機TRPGアルトレイズに設定しました', reply.text)
+        assert_equal('Game設定をアルトレイズに設定しました', reply.text)
       end
 
-      test 'set game to Elric!' do
-        message = make_message(@bot, 'Set Game->Elric!')
+      test 'set game to Elric' do
+        message = make_message(@bot, 'Set Game->Elric')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('Elric!', @bcdice.getGameType)
-        assert_equal('Elric!', @mediator.game_system_id)
+        assert_equal('Elric', @bcdice.getGameType)
+        assert_equal('Elric', @mediator.game_system_id)
         assert_equal(2, bcdice_reply.channel_messages.length)
 
         replies_in_test = bcdice_reply.channel_messages['#test']
@@ -87,12 +87,12 @@ module BCDiceIRC
         assert_equal('Game設定をエルリック！に設定しました', reply.text)
       end
 
-      test 'set game to Chaos Flare' do
-        message = make_message(@bot, 'Set Game->Chaos Flare')
+      test 'set game to ChaosFlare' do
+        message = make_message(@bot, 'Set Game->ChaosFlare')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('Chaos Flare', @bcdice.getGameType)
-        assert_equal('Chaos Flare', @mediator.game_system_id)
+        assert_equal('ChaosFlare', @bcdice.getGameType)
+        assert_equal('ChaosFlare', @mediator.game_system_id)
         assert_equal(2, bcdice_reply.channel_messages.length)
 
         replies_in_test = bcdice_reply.channel_messages['#test']
@@ -103,12 +103,12 @@ module BCDiceIRC
         assert_equal('Game設定をカオスフレアに設定しました', reply.text)
       end
 
-      test 'set game to Tunnels & Trolls' do
-        message = make_message(@bot, 'Set Game->Tunnels & Trolls')
+      test 'set game to TunnelsAndTrolls' do
+        message = make_message(@bot, 'Set Game->TunnelsAndTrolls')
         bcdice_reply = get_bcdice_replies(message)
 
-        assert_equal('Tunnels & Trolls', @bcdice.getGameType)
-        assert_equal('Tunnels & Trolls', @mediator.game_system_id)
+        assert_equal('TunnelsAndTrolls', @bcdice.getGameType)
+        assert_equal('TunnelsAndTrolls', @mediator.game_system_id)
         assert_equal(2, bcdice_reply.channel_messages.length)
 
         replies_in_test = bcdice_reply.channel_messages['#test']
