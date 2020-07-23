@@ -10,6 +10,8 @@
 * BCDiceから終了コマンドを削除する（[#27](https://github.com/bcdice/bcdice-irc/pull/27)、[#28](https://github.com/bcdice/bcdice-irc/pull/28)）
 * ヘルプコマンドを実装する（[#31](https://github.com/bcdice/bcdice-irc/pull/31)）
 * マスターコマンドを実装する（[#32](https://github.com/bcdice/bcdice-irc/pull/32)）
+* BCDiceをv2.07.02に更新した。
+* ライブラリを更新した。
 
 ## [0.1.1] - 2020-05-24
 
