@@ -1,13 +1,7 @@
 # frozen_string_literal: true
 
-bcdice_dir = File.expand_path(
-  File.join('..', 'vendor', 'bcdice', 'src'),
-  __dir__
-)
-lib_dir = File.expand_path(
-  File.join('..', 'lib'),
-  __dir__
-)
+bcdice_dir = File.expand_path(File.join('..', 'vendor', 'bcdice', 'src'), __dir__)
+lib_dir = File.expand_path(File.join('..', 'lib'), __dir__)
 dirs = [bcdice_dir, lib_dir]
 dirs.each do |dir|
   $LOAD_PATH.unshift(dir) unless $LOAD_PATH.include?(dir)
@@ -22,17 +16,20 @@ require 'bcdice-irc'
 
 module BCDiceIRC
   module IRCBotTestHelper
-    def make_cinch_bot(plugin = nil, opts = {}, &block)
-      Cinch::Test::MockBot.new do
+    def make_cinch_bot(plugins = [], opts = {}, &block)
+      bot = Cinch::Test::MockBot.new do
         loggers[0].level = :warn
 
         configure do |c|
           c.nick = 'testbot'
           c.server = nil
           c.channels = ['#test']
-          c.plugins.plugins = [plugin] unless plugin.nil?
-          c.plugins.options[plugin] = opts
           c.reconnect = false
+
+          plugins.each do |plugin|
+            c.plugins.plugins.push(plugin)
+            c.plugins.options[plugin] = opts
+          end
         end
 
         instance_eval(&block) if block

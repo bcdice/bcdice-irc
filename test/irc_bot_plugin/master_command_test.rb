@@ -28,7 +28,7 @@ module BCDiceIRC
           mediator: @mediator,
         )
 
-        @bot = make_cinch_bot(MasterCommand, plugin_config)
+        @bot = make_cinch_bot([MasterCommand], plugin_config)
         @bot.config.channels = %w(#test #test2)
       end
 

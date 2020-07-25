@@ -17,7 +17,7 @@ module BCDiceIRC
           bcdice: @bcdice,
         )
 
-        @bot = make_cinch_bot(HelpCommand, plugin_config)
+        @bot = make_cinch_bot([HelpCommand], plugin_config)
         @bot.config.channels = %w(#test #test2)
       end
 
