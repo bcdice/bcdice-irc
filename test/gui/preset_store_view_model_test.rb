@@ -210,7 +210,7 @@ module BCDiceIRC
         config1_modified.hostname = 'irc2.example.net'
 
         @view_model.temporary_preset_name = config1_modified.name.dup
-        result = @view_model.save(config1_modified)
+        @view_model.save(config1_modified)
 
         assert_equal(0, preset_index)
         assert_equal('デフォルト', preset_name)

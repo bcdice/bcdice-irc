@@ -17,7 +17,7 @@ require 'bcdice-irc'
 module BCDiceIRC
   module IRCBotTestHelper
     def make_cinch_bot(plugins = [], opts = {}, &block)
-      bot = Cinch::Test::MockBot.new do
+      Cinch::Test::MockBot.new do
         loggers[0].level = :warn
 
         configure do |c|
