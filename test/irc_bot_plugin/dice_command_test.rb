@@ -5,14 +5,6 @@ require_relative '../test_helper'
 module BCDiceIRC
   module IRCBotPlugin
     class TestDiceCommand < Test::Unit::TestCase
-      class MockMediator
-        attr_reader :game_system_name
-
-        def notify_game_system_has_been_changed(game_system_name)
-          @game_system_name = game_system_name
-        end
-      end
-
       include Cinch::Test
       include IRCBotTestHelper
 
@@ -21,11 +13,9 @@ module BCDiceIRC
         @bcdice = bcdice_maker.newBcDice
         @bcdice.setGameByTitle('DiceBot')
 
-        @mediator = MockMediator.new
-
         plugin_config = IRCBotPluginConfig.new(
           bcdice: @bcdice,
-          mediator: @mediator,
+          mediator: nil,
         )
 
         @bot = make_cinch_bot([DiceCommand], plugin_config)
