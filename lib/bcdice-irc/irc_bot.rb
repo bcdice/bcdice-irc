@@ -78,6 +78,7 @@ module BCDiceIRC
         c.plugins.plugins = [
           IRCBotPlugin::IRCChannel,
           IRCBotPlugin::DiceCommand,
+          IRCBotPlugin::CardCommand,
           IRCBotPlugin::MasterCommand,
           IRCBotPlugin::HelpCommand,
         ]

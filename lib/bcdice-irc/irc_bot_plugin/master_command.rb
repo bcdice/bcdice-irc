@@ -24,17 +24,6 @@ module BCDiceIRC
       self.plugin_name = 'MasterCommand'
       self.prefix = ''
 
-      # ニックネームとして指定可能な文字のパターン
-      #
-      # Charybdisを参考にした。
-      #
-      # 最初の文字は、数字および `'-'` 以外。
-      #
-      # @see https://github.com/charybdis-ircd/charybdis/blob/charybdis-4.1.2/ircd/client.c#L903-L933
-      # @see https://github.com/charybdis-ircd/charybdis/blob/charybdis-4.1.2/include/match.h#L118
-      # @see https://github.com/charybdis-ircd/charybdis/blob/charybdis-4.1.2/ircd/match.c#L659-L793
-      NICK_RE = /[A-Z\[\\\]^_`a-z{|}][-0-9A-Z\[\\\]^_`a-z{|}]*/
-
       match(/\Aset\s+master(?:->(#{NICK_RE}))?/io, method: :set_master)
       match(/\Aset\s+game->([!&. \w]+)/i, method: :set_game_system)
       match(/\Aset\s+upper->(\d+)/i, method: :set_upper_roll_threshold)
