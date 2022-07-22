@@ -76,7 +76,7 @@ GEM
     test-unit (3.3.6)
       power_assert
     thread_safe (0.3.6)
-    tzinfo (1.2.7)
+    tzinfo (1.2.10)
       thread_safe (~> 0.1)
     unicode-display_width (1.7.0)
     yard (0.9.25)
